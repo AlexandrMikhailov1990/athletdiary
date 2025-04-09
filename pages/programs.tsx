@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { SAMPLE_PROGRAMS, Program } from '../models/Program';
 import { SAMPLE_ACTIVE_PROGRAM, ActiveProgram } from '../models/ActiveProgram';
@@ -9,8 +9,14 @@ export default function Programs() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLevel, setSelectedLevel] = useState<string>('');
 
+  // Загрузка программ из localStorage при монтировании
+  useEffect(() => {
+    const savedPrograms = JSON.parse(localStorage.getItem('programs') || '[]');
+    setPrograms([...SAMPLE_PROGRAMS, ...savedPrograms]);
+  }, []);
+
   // Фильтрация программ
-  const filteredPrograms = SAMPLE_PROGRAMS.filter(program => {
+  const filteredPrograms = programs.filter(program => {
     const matchesSearch = program.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          program.description.toLowerCase().includes(searchTerm.toLowerCase());
     

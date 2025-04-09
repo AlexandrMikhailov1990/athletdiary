@@ -38,7 +38,8 @@ export default function CreateProgram() {
   const [selectedExercise, setSelectedExercise] = useState<string>('');
   const [exerciseDetails, setExerciseDetails] = useState<ProgramExercise>({
     exerciseId: '',
-    sets: 3
+    sets: 3,
+    reps: 10
   });
 
   // Инициализация дней тренировок при изменении количества тренировок в неделю
@@ -67,6 +68,15 @@ export default function CreateProgram() {
     });
   };
 
+  // Обработчик изменения деталей упражнения
+  const handleExerciseDetailsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setExerciseDetails(prev => ({
+      ...prev,
+      [name]: Number(value)
+    }));
+  };
+
   // Добавление упражнения в день тренировки
   const addExerciseToDay = () => {
     if (!selectedExercise || !form.workoutDays[currentDay]) return;
@@ -75,8 +85,10 @@ export default function CreateProgram() {
     if (!exercise) return;
 
     const newExercise: ProgramExercise = {
-      ...exerciseDetails,
-      exerciseId: selectedExercise
+      exerciseId: selectedExercise,
+      sets: exerciseDetails.sets,
+      ...(exercise.type === 'reps' ? { reps: exerciseDetails.reps } : { duration: exerciseDetails.duration || 60 }),
+      ...(exercise.type === 'reps' && exerciseDetails.weight ? { weight: exerciseDetails.weight } : {})
     };
 
     setForm(prev => {
@@ -95,7 +107,8 @@ export default function CreateProgram() {
     setSelectedExercise('');
     setExerciseDetails({
       exerciseId: '',
-      sets: 3
+      sets: 3,
+      reps: 10
     });
   };
 
@@ -115,13 +128,39 @@ export default function CreateProgram() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // В реальном приложении здесь будет API запрос
+    // Преобразуем workoutDays в формат workouts
+    const workouts = form.workoutDays.map((day, index) => ({
+      id: `workout-${index + 1}`,
+      name: `День ${index + 1}`,
+      exercises: day.exercises.map(exercise => {
+        const exerciseData = SAMPLE_EXERCISES.find(e => e.id === exercise.exerciseId);
+        if (!exerciseData) throw new Error('Exercise not found');
+        
+        return {
+          exercise: exerciseData,
+          sets: exercise.sets,
+          reps: exercise.reps || (exerciseData.type === 'timed' ? 'timed' : 10),
+          rest: exerciseData.restTime,
+          weight: exercise.weight
+        };
+      }),
+      notes: ''
+    }));
+
+    // Создаем новую программу в правильном формате
     const newProgram = {
       id: Date.now().toString(),
-      ...form
+      name: form.name,
+      description: form.description,
+      level: form.level,
+      duration: form.duration,
+      workoutsPerWeek: form.workoutsPerWeek,
+      workouts: workouts,
+      createdBy: 'user',
+      isPublic: true
     };
 
-    // Сохраняем в localStorage для демонстрации
+    // Сохраняем в localStorage
     const programs = JSON.parse(localStorage.getItem('programs') || '[]');
     programs.push(newProgram);
     localStorage.setItem('programs', JSON.stringify(programs));
@@ -284,33 +323,20 @@ export default function CreateProgram() {
               </div>
 
               {/* Форма добавления упражнения */}
-              <div className="border-t pt-4">
-                <h3 className="text-lg font-medium text-gray-900 mb-3">
-                  Добавить упражнение
+              <div className="bg-white rounded-lg shadow-md p-6 mt-6">
+                <h3 className="text-lg font-semibold text-blue-800 mb-4">
+                  Добавить упражнение в день {currentDay + 1}
                 </h3>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Упражнение
                     </label>
                     <select
-                      className="w-full p-2 border border-gray-300 rounded"
                       value={selectedExercise}
-                      onChange={(e) => {
-                        setSelectedExercise(e.target.value);
-                        const exercise = SAMPLE_EXERCISES.find(ex => ex.id === e.target.value);
-                        if (exercise) {
-                          setExerciseDetails({
-                            exerciseId: exercise.id,
-                            sets: 3,
-                            ...(exercise.type === 'reps' 
-                              ? { reps: exercise.reps, weight: exercise.weight }
-                              : { duration: exercise.duration }
-                            )
-                          });
-                        }
-                      }}
+                      onChange={(e) => setSelectedExercise(e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded"
                     >
                       <option value="">Выберите упражнение</option>
                       {SAMPLE_EXERCISES.map(exercise => (
@@ -327,67 +353,56 @@ export default function CreateProgram() {
                     </label>
                     <input
                       type="number"
+                      name="sets"
                       min="1"
-                      className="w-full p-2 border border-gray-300 rounded"
                       value={exerciseDetails.sets}
-                      onChange={(e) => setExerciseDetails(prev => ({
-                        ...prev,
-                        sets: Number(e.target.value)
-                      }))}
+                      onChange={handleExerciseDetailsChange}
+                      className="w-full p-2 border border-gray-300 rounded"
                     />
                   </div>
 
-                  {selectedExercise && SAMPLE_EXERCISES.find(e => e.id === selectedExercise)?.type === 'reps' && (
+                  {selectedExercise && SAMPLE_EXERCISES.find(e => e.id === selectedExercise)?.type === 'reps' ? (
                     <>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Повторений
+                          Количество повторений
                         </label>
                         <input
                           type="number"
+                          name="reps"
                           min="1"
+                          value={exerciseDetails.reps}
+                          onChange={handleExerciseDetailsChange}
                           className="w-full p-2 border border-gray-300 rounded"
-                          value={exerciseDetails.reps || ''}
-                          onChange={(e) => setExerciseDetails(prev => ({
-                            ...prev,
-                            reps: Number(e.target.value)
-                          }))}
                         />
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Вес (кг)
+                          Вес (кг, опционально)
                         </label>
                         <input
                           type="number"
+                          name="weight"
                           min="0"
-                          step="0.5"
-                          className="w-full p-2 border border-gray-300 rounded"
                           value={exerciseDetails.weight || ''}
-                          onChange={(e) => setExerciseDetails(prev => ({
-                            ...prev,
-                            weight: Number(e.target.value)
-                          }))}
+                          onChange={handleExerciseDetailsChange}
+                          className="w-full p-2 border border-gray-300 rounded"
                         />
                       </div>
                     </>
-                  )}
-
-                  {selectedExercise && SAMPLE_EXERCISES.find(e => e.id === selectedExercise)?.type === 'timed' && (
+                  ) : selectedExercise && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Длительность (секунд)
                       </label>
                       <input
                         type="number"
+                        name="duration"
                         min="1"
+                        value={exerciseDetails.duration || 60}
+                        onChange={handleExerciseDetailsChange}
                         className="w-full p-2 border border-gray-300 rounded"
-                        value={exerciseDetails.duration || ''}
-                        onChange={(e) => setExerciseDetails(prev => ({
-                          ...prev,
-                          duration: Number(e.target.value)
-                        }))}
                       />
                     </div>
                   )}
@@ -395,9 +410,13 @@ export default function CreateProgram() {
 
                 <button
                   type="button"
-                  className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
                   onClick={addExerciseToDay}
                   disabled={!selectedExercise}
+                  className={`mt-4 px-4 py-2 rounded ${
+                    selectedExercise
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
                 >
                   Добавить упражнение
                 </button>
