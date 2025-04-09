@@ -1,4 +1,5 @@
 import { Exercise } from '../models/Exercise';
+import { useState } from 'react';
 
 interface ExerciseCardProps {
   exercise: Exercise;
@@ -6,6 +7,8 @@ interface ExerciseCardProps {
 }
 
 export default function ExerciseCard({ exercise, onSelect }: ExerciseCardProps) {
+  const [imageError, setImageError] = useState(false);
+
   // Функция для отображения уровня сложности на русском языке
   const getDifficultyLabel = (difficulty: string): string => {
     switch (difficulty) {
@@ -20,14 +23,23 @@ export default function ExerciseCard({ exercise, onSelect }: ExerciseCardProps) 
     }
   };
 
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+    <div 
+      className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
+      role="article"
+      aria-label={`Карточка упражнения: ${exercise.name}`}
+    >
       <div className="h-48 bg-gray-200 relative">
-        {exercise.imageUrl ? (
+        {exercise.imageUrl && !imageError ? (
           <img 
             src={exercise.imageUrl} 
             alt={exercise.name} 
             className="w-full h-full object-cover"
+            onError={handleImageError}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-500">
@@ -37,6 +49,7 @@ export default function ExerciseCard({ exercise, onSelect }: ExerciseCardProps) 
               stroke="currentColor"
               viewBox="0 0 24 24"
               xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
             >
               <path 
                 strokeLinecap="round" 
@@ -54,7 +67,11 @@ export default function ExerciseCard({ exercise, onSelect }: ExerciseCardProps) 
           </div>
         )}
         
-        <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded">
+        <div 
+          className="absolute top-2 right-2 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded"
+          role="status"
+          aria-label={`Уровень сложности: ${getDifficultyLabel(exercise.difficulty)}`}
+        >
           {getDifficultyLabel(exercise.difficulty)}
         </div>
       </div>
@@ -62,11 +79,12 @@ export default function ExerciseCard({ exercise, onSelect }: ExerciseCardProps) 
       <div className="p-4">
         <h3 className="text-xl font-semibold text-blue-800 mb-2">{exercise.name}</h3>
         
-        <div className="mb-3 flex flex-wrap">
+        <div className="mb-3 flex flex-wrap" role="list" aria-label="Задействованные мышцы">
           {exercise.muscleGroups.map(group => (
             <span 
               key={group} 
               className="inline-block px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded mr-2 mb-2"
+              role="listitem"
             >
               {group}
             </span>
@@ -87,6 +105,7 @@ export default function ExerciseCard({ exercise, onSelect }: ExerciseCardProps) 
           <button
             onClick={onSelect}
             className="bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded text-sm"
+            aria-label={`Подробнее о упражнении ${exercise.name}`}
           >
             Подробнее
           </button>
