@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Link from 'next/link';
 import { SAMPLE_USER, User } from '../models/User';
 import { SAMPLE_WORKOUT_HISTORY } from '../models/WorkoutHistory';
 
@@ -214,9 +215,9 @@ export default function Profile() {
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-blue-800">Последние тренировки</h2>
-              <a href="/history" className="text-blue-600 hover:text-blue-800">
+              <Link href="/history" className="text-blue-600 hover:text-blue-800">
                 Показать все
-              </a>
+              </Link>
             </div>
             
             {recentWorkouts.length > 0 ? (

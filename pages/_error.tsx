@@ -1,4 +1,5 @@
 import { NextPage } from 'next';
+import Link from 'next/link';
 
 interface ErrorProps {
   statusCode?: number;
@@ -16,12 +17,12 @@ const Error: NextPage<ErrorProps> = ({ statusCode }) => {
             ? `На сервере произошла ошибка ${statusCode}.`
             : 'На клиенте произошла ошибка.'}
         </p>
-        <a
+        <Link
           href="/"
           className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg"
         >
           Вернуться на главную
-        </a>
+        </Link>
       </div>
     </div>
   );
