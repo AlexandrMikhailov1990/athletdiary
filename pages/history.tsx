@@ -1,17 +1,25 @@
-import { useState } from 'react';
-import { SAMPLE_WORKOUT_HISTORY, WorkoutRecord } from '../models/WorkoutHistory';
+import { useState, useEffect } from 'react';
+import { WorkoutRecord } from '../models/WorkoutHistory';
 
 export default function WorkoutHistory() {
-  const [history, setHistory] = useState<WorkoutRecord[]>(SAMPLE_WORKOUT_HISTORY);
+  const [history, setHistory] = useState<WorkoutRecord[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'date' | 'rating'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
+  useEffect(() => {
+    // Загружаем историю тренировок из localStorage
+    const savedHistory = localStorage.getItem('workoutHistory');
+    if (savedHistory) {
+      setHistory(JSON.parse(savedHistory));
+    }
+  }, []);
+
   // Фильтрация и сортировка истории тренировок
-  const filteredHistory = [...SAMPLE_WORKOUT_HISTORY]
+  const filteredHistory = [...history]
     .filter(record => 
-      record.workoutName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (record.notes && record.notes.toLowerCase().includes(searchTerm.toLowerCase()))
+      (record?.workoutName?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+      (record?.notes?.toLowerCase().includes(searchTerm.toLowerCase()) || false)
     )
     .sort((a, b) => {
       if (sortBy === 'date') {
@@ -107,28 +115,19 @@ export default function WorkoutHistory() {
           </div>
         </div>
         
-        {/* Кнопка добавления тренировки */}
-        <div className="mb-8 text-right">
-          <button 
-            className="bg-green-600 hover:bg-green-700 text-white py-2 px-6 rounded-lg"
-          >
-            Добавить тренировку
-          </button>
-        </div>
-        
         {/* История тренировок */}
-        <div className="space-y-4">
+        <div className="space-y-6">
           {filteredHistory.map(record => (
             <div key={record.id} className="bg-white rounded-lg shadow-md p-6">
               <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
-                <h3 className="text-xl font-semibold text-blue-800">{record.workoutName}</h3>
+                <h3 className="text-xl font-semibold text-blue-800">{record.workoutName || 'Без названия'}</h3>
                 <div className="text-gray-500">{formatDate(record.date)}</div>
               </div>
               
-              <div className="grid md:grid-cols-3 gap-4 mb-4">
+              <div className="grid md:grid-cols-3 gap-4 mb-6">
                 <div>
                   <span className="block text-sm font-medium text-gray-700">Продолжительность:</span>
-                  <span className="text-lg">{record.duration} мин</span>
+                  <span className="text-lg">{record.duration || 0} мин</span>
                 </div>
                 
                 <div>
@@ -138,7 +137,32 @@ export default function WorkoutHistory() {
                 
                 <div>
                   <span className="block text-sm font-medium text-gray-700">Упражнений:</span>
-                  <span className="text-lg">{record.exercises.length}</span>
+                  <span className="text-lg">{record.exercises?.length || 0}</span>
+                </div>
+              </div>
+
+              {/* Детали упражнений */}
+              <div className="mb-6">
+                <h4 className="text-lg font-medium text-gray-800 mb-4">Выполненные упражнения:</h4>
+                <div className="space-y-4">
+                  {record.exercises?.map((exercise, index) => (
+                    <div key={index} className="bg-gray-50 p-4 rounded-lg">
+                      <h5 className="font-medium text-gray-800 mb-3">{exercise?.exercise?.name || 'Без названия'}</h5>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {exercise?.sets?.map((set, setIndex) => (
+                          <div key={setIndex} className="bg-white p-3 rounded border border-gray-200">
+                            <div className="text-sm text-gray-600">Подход {setIndex + 1}:</div>
+                            <div className="font-medium">
+                              {set?.weight && `${set.weight} кг`}
+                              {set?.weight && set?.reps && ' × '}
+                              {set?.reps && `${set.reps} повт`}
+                              {exercise?.exercise?.type === 'timed' && exercise?.exercise?.duration && `${exercise.exercise.duration} сек`}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
               
@@ -148,22 +172,13 @@ export default function WorkoutHistory() {
                   <p className="text-gray-600 bg-gray-50 p-3 rounded">{record.notes}</p>
                 </div>
               )}
-              
-              <div className="flex justify-end space-x-2">
-                <button className="bg-blue-600 hover:bg-blue-700 text-white py-1 px-4 rounded">
-                  Подробнее
-                </button>
-                <button className="bg-gray-500 hover:bg-gray-600 text-white py-1 px-4 rounded">
-                  Редактировать
-                </button>
-              </div>
             </div>
           ))}
         </div>
         
         {filteredHistory.length === 0 && (
           <div className="text-center py-8">
-            <p className="text-gray-600 text-lg">Записи не найдены. Попробуйте изменить критерии поиска или добавьте новую тренировку.</p>
+            <p className="text-gray-600 text-lg">История тренировок пуста. Начните тренироваться, чтобы увидеть здесь свои результаты.</p>
           </div>
         )}
       </div>

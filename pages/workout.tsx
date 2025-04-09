@@ -38,6 +38,7 @@ export default function Workout() {
       duration?: number;
     }>;
   }>>([]);
+  const [startTime] = useState<string>(new Date().toISOString());
 
   const completeWorkout = useCallback(() => {
     if (activeProgram && program) {
@@ -74,18 +75,25 @@ export default function Workout() {
 
       // Сохраняем историю тренировок
       const workoutHistory = JSON.parse(localStorage.getItem('workoutHistory') || '[]');
-      workoutHistory.push({
+      const workoutRecord = {
+        id: Date.now().toString(),
+        workoutId: program.workouts[activeProgram.currentDay - 1].id,
+        workoutName: program.workouts[activeProgram.currentDay - 1].name,
         date: new Date().toISOString(),
-        programId: program.id,
-        programName: program.name,
-        week: activeProgram.currentWeek,
-        day: activeProgram.currentDay,
+        duration: Math.round((Date.now() - new Date(startTime).getTime()) / 60000), // конвертируем миллисекунды в минуты
         exercises: exercises.map(ex => ({
-          exerciseId: ex.exercise.id,
-          name: ex.exercise.name,
-          sets: ex.setDetails
-        }))
-      });
+          exercise: ex.exercise,
+          sets: ex.setDetails.map(set => ({
+            weight: set.weight,
+            reps: set.reps,
+            completed: set.completed
+          }))
+        })),
+        notes: '', // можно добавить поле для заметок в интерфейс
+        rating: 0, // можно добавить возможность оценить тренировку
+        userId: 'user' // в будущем заменить на реальный ID пользователя
+      };
+      workoutHistory.push(workoutRecord);
       localStorage.setItem('workoutHistory', JSON.stringify(workoutHistory));
 
       // Перенаправляем на страницу активной программы
@@ -93,59 +101,70 @@ export default function Workout() {
     }
   }, [activeProgram, program, exercises, router]);
 
-  const handleSetComplete = useCallback((weight?: number, completedReps?: number) => {
-    const currentWorkoutExercise = exercises[currentExerciseIndex];
+  const handleSetComplete = useCallback((weight?: number | undefined, reps?: number | undefined) => {
+    if (currentExerciseIndex < 0 || currentExerciseIndex >= exercises.length) return;
+
     const updatedExercises = [...exercises];
+    const currentExercise = updatedExercises[currentExerciseIndex];
     
-    const setDetail: WorkoutSet = currentWorkoutExercise.exercise.type === 'reps'
-      ? {
-          reps: completedReps || (currentWorkoutExercise.exercise as any).reps,
-          weight: weight || (currentWorkoutExercise.exercise as any).weight,
-          completed: true
-        }
-      : {
-          duration: currentWorkoutExercise.exercise.type === 'timed'
-            ? (currentWorkoutExercise.exercise.duration - (exerciseTimer || 0))
-            : undefined,
-          completed: true
-        };
+    if (currentExercise.completedSets < currentExercise.exercise.sets) {
+      const setDetails: WorkoutSet = {
+        completed: true
+      };
 
-    updatedExercises[currentExerciseIndex] = {
-      ...currentWorkoutExercise,
-      completedSets: currentWorkoutExercise.completedSets + 1,
-      setDetails: [...currentWorkoutExercise.setDetails, setDetail]
-    };
-
-    setExercises(updatedExercises);
-    setExerciseTimer(null);
-    setIsExerciseTimerRunning(false);
-
-    if (currentWorkoutExercise.completedSets + 1 < currentWorkoutExercise.exercise.sets) {
-      // Если есть еще сеты, начинаем отдых
-      setRestTimer(currentWorkoutExercise.exercise.restTime);
-      setIsResting(true);
-    } else if (currentExerciseIndex + 1 < exercises.length) {
-      // Переходим к следующему упражнению
-      setCurrentExerciseIndex(prev => prev + 1);
-      setRestTimer(null);
-      setIsResting(false);
-    } else {
-      // Тренировка завершена
-      completeWorkout();
+      // Для силовых упражнений добавляем вес и повторения
+      if (currentExercise.exercise.type === 'reps') {
+        setDetails.weight = weight;
+        setDetails.reps = reps;
+      } else {
+        // Для временных упражнений добавляем длительность
+        setDetails.duration = currentExercise.exercise.duration;
+      }
+      
+      currentExercise.setDetails[currentExercise.completedSets] = setDetails;
+      currentExercise.completedSets += 1;
+      
+      setExercises(updatedExercises);
+      
+      // Reset input fields and timer
+      setCurrentWeight('');
+      setCurrentReps('');
+      setExerciseTimer(null);
+      setIsExerciseTimerRunning(false);
+      
+      // Start rest timer if not on last set
+      if (currentExercise.completedSets < currentExercise.exercise.sets) {
+        setRestTimer(currentExercise.exercise.restTime);
+        setIsResting(true);
+      } else if (currentExerciseIndex + 1 < exercises.length) {
+        // Move to next exercise
+        setCurrentExerciseIndex(prev => prev + 1);
+        setRestTimer(null);
+        setIsResting(false);
+      } else {
+        // Workout completed
+        completeWorkout();
+      }
     }
-  }, [currentExerciseIndex, exercises, exerciseTimer, completeWorkout]);
+  }, [currentExerciseIndex, exercises, setRestTimer, setIsResting, setCurrentExerciseIndex, completeWorkout]);
 
   useEffect(() => {
     if (isExerciseTimerRunning && exerciseTimer !== null && exerciseTimer > 0) {
-      const timer = setTimeout(() => {
-        setExerciseTimer(exerciseTimer - 1);
+      const timer = setInterval(() => {
+        setExerciseTimer(prev => {
+          if (prev === null || prev <= 0) {
+            clearInterval(timer);
+            return 0;
+          }
+          return prev - 1;
+        });
       }, 1000);
-      return () => clearTimeout(timer);
+      return () => clearInterval(timer);
     } else if (exerciseTimer === 0) {
       setIsExerciseTimerRunning(false);
       handleSetComplete();
     }
-  }, [isExerciseTimerRunning, exerciseTimer, handleSetComplete]);
+  }, [isExerciseTimerRunning, handleSetComplete]);
 
   useEffect(() => {
     // Загружаем активную программу
@@ -213,13 +232,23 @@ export default function Workout() {
   const startExerciseTimer = () => {
     const currentExercise = exercises[currentExerciseIndex].exercise;
     if (currentExercise.type === 'timed') {
-      setExerciseTimer(currentExercise.duration);
+      if (exerciseTimer === null) {
+        setExerciseTimer(currentExercise.duration);
+      }
       setIsExerciseTimerRunning(true);
     }
   };
 
   const stopExerciseTimer = () => {
     setIsExerciseTimerRunning(false);
+  };
+
+  const resetExerciseTimer = () => {
+    const currentExercise = exercises[currentExerciseIndex].exercise;
+    if (currentExercise.type === 'timed') {
+      setExerciseTimer(currentExercise.duration);
+      setIsExerciseTimerRunning(false);
+    }
   };
 
   // Функция для пропуска отдыха
@@ -301,7 +330,7 @@ export default function Workout() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {!currentWorkoutExercise ? (
+      {!exercises[currentExerciseIndex] ? (
         <div className="text-center">
           <p className="text-xl mb-4">Упражнения не загружены</p>
           <button
@@ -317,19 +346,19 @@ export default function Workout() {
           
           {/* Информация о текущем упражнении */}
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 className="text-xl font-semibold mb-2">{currentWorkoutExercise.exercise.name}</h2>
-            <p className="text-gray-600 mb-4">{currentWorkoutExercise.exercise.description}</p>
+            <h2 className="text-xl font-semibold mb-2">{exercises[currentExerciseIndex].exercise.name}</h2>
+            <p className="text-gray-600 mb-4">{exercises[currentExerciseIndex].exercise.description}</p>
             
             {/* Прогресс упражнения */}
             <div className="mb-4">
               <p className="text-lg">
-                Сет {currentWorkoutExercise.completedSets + 1} из {currentWorkoutExercise.exercise.sets}
+                Сет {exercises[currentExerciseIndex].completedSets + 1} из {exercises[currentExerciseIndex].exercise.sets}
               </p>
               <div className="w-full bg-gray-200 rounded-full h-2.5">
                 <div
                   className="bg-blue-600 h-2.5 rounded-full"
                   style={{
-                    width: `${(currentWorkoutExercise.completedSets / currentWorkoutExercise.exercise.sets) * 100}%`
+                    width: `${(exercises[currentExerciseIndex].completedSets / exercises[currentExerciseIndex].exercise.sets) * 100}%`
                   }}
                 ></div>
               </div>
@@ -348,7 +377,7 @@ export default function Workout() {
               </div>
             ) : (
               <div>
-                {currentWorkoutExercise.exercise.type === 'reps' ? (
+                {exercises[currentExerciseIndex].exercise.type === 'reps' ? (
                   <div className="space-y-4">
                     <div className="flex gap-4">
                       <input
@@ -368,10 +397,10 @@ export default function Workout() {
                     </div>
                     <button
                       onClick={() => handleSetComplete(
-                        currentWeight ? Number(currentWeight) : undefined,
-                        currentReps ? Number(currentReps) : undefined
+                        currentWeight === '' ? undefined : Number(currentWeight),
+                        currentReps === '' ? undefined : Number(currentReps)
                       )}
-                      className="w-full bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600"
+                      className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-full"
                     >
                       Завершить сет
                     </button>
@@ -380,12 +409,30 @@ export default function Workout() {
                   <div className="space-y-4">
                     <p className="text-xl">Время: {exerciseTimer}с</p>
                     {!isExerciseTimerRunning ? (
-                      <button
-                        onClick={startExerciseTimer}
-                        className="w-full bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600"
-                      >
-                        Начать
-                      </button>
+                      <div className="space-y-2">
+                        <button
+                          onClick={startExerciseTimer}
+                          className="w-full bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600"
+                        >
+                          {exerciseTimer === null ? 'Начать' : 'Продолжить'}
+                        </button>
+                        {exerciseTimer !== null && exerciseTimer > 0 && (
+                          <>
+                            <button
+                              onClick={resetExerciseTimer}
+                              className="w-full bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600"
+                            >
+                              Начать заново
+                            </button>
+                            <button
+                              onClick={() => handleSetComplete()}
+                              className="w-full bg-red-500 text-white px-6 py-3 rounded hover:bg-red-600"
+                            >
+                              Завершить досрочно
+                            </button>
+                          </>
+                        )}
+                      </div>
                     ) : (
                       <div className="space-y-2">
                         <button
@@ -396,7 +443,7 @@ export default function Workout() {
                         </button>
                         <button
                           onClick={() => handleSetComplete()}
-                          className="w-full bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600"
+                          className="w-full bg-red-500 text-white px-6 py-3 rounded hover:bg-red-600"
                         >
                           Завершить досрочно
                         </button>
@@ -408,22 +455,23 @@ export default function Workout() {
             )}
           </div>
 
-          {/* История выполненных сетов текущей тренировки */}
-          {currentWorkoutExercise.setDetails.length > 0 && (
-            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-              <h3 className="text-lg font-semibold mb-4">Текущая тренировка</h3>
-              <div className="space-y-2">
-                {currentWorkoutExercise.setDetails.map((detail, index) => (
-                  <div key={index} className="flex justify-between items-center py-2 border-b">
-                    <span>Сет {index + 1}:</span>
-                    {detail.weight && <span>{detail.weight} кг</span>}
-                    {detail.reps && <span>{detail.reps} повторений</span>}
-                    {detail.duration && <span>{detail.duration} секунд</span>}
-                  </div>
-                ))}
-              </div>
+          {/* История выполненных сетов */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-semibold mb-4">История сетов</h3>
+            <div className="space-y-2">
+              {exercises[currentExerciseIndex].setDetails.map((set, index) => (
+                <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                  <span className="font-medium">Сет {index + 1}</span>
+                  <span className="text-gray-600">
+                    {exercises[currentExerciseIndex].exercise.type === 'reps' 
+                      ? `${set.reps || 0} повт. × ${set.weight || 0} кг`
+                      : `${set.duration || 0} сек`
+                    }
+                  </span>
+                </div>
+              ))}
             </div>
-          )}
+          </div>
 
           {/* История предыдущих тренировок */}
           {exerciseHistory.length > 0 && (

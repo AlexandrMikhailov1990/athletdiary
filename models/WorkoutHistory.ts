@@ -50,4 +50,20 @@ export const SAMPLE_WORKOUT_HISTORY: WorkoutRecord[] = [
     rating: 5,
     userId: 'user123'
   }
-]; 
+];
+
+export interface WorkoutHistory {
+  programId: string;
+  date: string;
+  week: number;
+  day: number;
+  exercises: {
+    exerciseId: string;
+    name: string;
+    sets: {
+      reps: number;
+      weight: number;
+      completed: boolean;
+    }[];
+  }[];
+} 
