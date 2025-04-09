@@ -99,7 +99,7 @@ export default function Workout() {
       // Перенаправляем на страницу активной программы
       router.push('/active-program');
     }
-  }, [activeProgram, program, exercises, router]);
+  }, [activeProgram, program, exercises, router, startTime]);
 
   const handleSetComplete = useCallback((weight?: number | undefined, reps?: number | undefined) => {
     if (currentExerciseIndex < 0 || currentExerciseIndex >= exercises.length) return;
@@ -164,7 +164,7 @@ export default function Workout() {
       setIsExerciseTimerRunning(false);
       handleSetComplete();
     }
-  }, [isExerciseTimerRunning, handleSetComplete]);
+  }, [isExerciseTimerRunning, handleSetComplete, exerciseTimer]);
 
   useEffect(() => {
     // Загружаем активную программу
