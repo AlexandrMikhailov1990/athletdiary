@@ -33,9 +33,70 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+      },
+      spacing: {
+        '72': '18rem',
+        '84': '21rem',
+        '96': '24rem',
+      },
+      maxWidth: {
+        '8xl': '88rem',
+      },
+      zIndex: {
+        '60': '60',
+        '70': '70',
+        '80': '80',
+        '90': '90',
+        '100': '100',
+      },
+      typography: {
+        DEFAULT: {
+          css: {
+            maxWidth: '65ch',
+            color: 'inherit',
+            a: {
+              color: '#2563eb',
+              '&:hover': {
+                color: '#1d4ed8',
+              },
+            },
+            strong: {
+              color: 'inherit',
+            },
+            'ol[type="A"]': {
+              '--list-counter-style': 'upper-alpha',
+            },
+            'ol[type="a"]': {
+              '--list-counter-style': 'lower-alpha',
+            },
+            'ol[type="A" s]': {
+              '--list-counter-style': 'upper-alpha',
+            },
+            'ol[type="a" s]': {
+              '--list-counter-style': 'lower-alpha',
+            },
+            'ol[type="I"]': {
+              '--list-counter-style': 'upper-roman',
+            },
+            'ol[type="i"]': {
+              '--list-counter-style': 'lower-roman',
+            },
+            'ol[type="I" s]': {
+              '--list-counter-style': 'upper-roman',
+            },
+            'ol[type="i" s]': {
+              '--list-counter-style': 'lower-roman',
+            },
+            'ol[type="1"]': {
+              '--list-counter-style': 'decimal',
+            },
+          },
+        },
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/typography'),
+  ],
 }; 

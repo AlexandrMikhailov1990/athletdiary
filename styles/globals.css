@@ -12,26 +12,34 @@
   --secondary-hover: #059669;
 }
 
+html {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background: rgb(var(--background-start-rgb));
   min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+/* Базовые стили для ссылок */
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
 /* Дополнительные стили */
 .container {
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 1rem;
 }
 
 .btn {
-  @apply px-4 py-2 rounded font-medium transition-colors;
+  @apply px-4 py-2 rounded font-medium transition-colors inline-flex items-center justify-center;
 }
 
 .btn-primary {
@@ -52,4 +60,34 @@ body {
 
 .form-input {
   @apply w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+}
+
+/* Стили для навигации */
+.nav-link {
+  @apply px-3 py-2 rounded-md text-sm font-medium transition-colors;
+}
+
+.nav-link-active {
+  @apply bg-blue-100 text-blue-800;
+}
+
+.nav-link-default {
+  @apply text-gray-700 hover:bg-gray-100;
+}
+
+/* Стили для мобильного меню */
+.mobile-menu {
+  @apply fixed inset-0 z-50 bg-white md:hidden;
+}
+
+/* Стили для основного контента */
+.main-content {
+  @apply flex-grow;
+}
+
+/* Исправление для изображений */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
 } 
