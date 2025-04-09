@@ -2,22 +2,19 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import type { ActiveProgram } from '../models/ActiveProgram';
 import { SAMPLE_PROGRAMS, Program } from '../models/Program';
+import { Exercise, SAMPLE_EXERCISES } from '../models/Exercise';
 
-interface Exercise {
-  id: string;
-  name: string;
-  sets: number;
-  reps: number;
+interface WorkoutSet {
+  reps?: number;
   weight?: number;
-  restTime: number; // в секундах
+  duration?: number;
+  completed: boolean;
 }
 
-interface WorkoutExercise extends Exercise {
+interface WorkoutExercise {
+  exercise: Exercise;
   completedSets: number;
-  setDetails: {
-    reps: number;
-    weight?: number;
-  }[];
+  setDetails: WorkoutSet[];
 }
 
 export default function Workout() {
@@ -25,30 +22,17 @@ export default function Workout() {
   const [activeProgram, setActiveProgram] = useState<ActiveProgram | null>(null);
   const [program, setProgram] = useState<Program | null>(null);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
-  const [exercises, setExercises] = useState<WorkoutExercise[]>([
-    {
-      id: '1',
-      name: 'Приседания',
-      sets: 3,
-      reps: 12,
-      restTime: 90,
+  const [exercises, setExercises] = useState<WorkoutExercise[]>(
+    SAMPLE_EXERCISES.map(exercise => ({
+      exercise,
       completedSets: 0,
       setDetails: []
-    },
-    {
-      id: '2',
-      name: 'Жим лежа',
-      sets: 3,
-      reps: 10,
-      weight: 60,
-      restTime: 120,
-      completedSets: 0,
-      setDetails: []
-    },
-    // Добавьте больше упражнений по необходимости
-  ]);
+    }))
+  );
   const [restTimer, setRestTimer] = useState<number | null>(null);
   const [isResting, setIsResting] = useState(false);
+  const [exerciseTimer, setExerciseTimer] = useState<number | null>(null);
+  const [isExerciseTimerRunning, setIsExerciseTimerRunning] = useState(false);
 
   useEffect(() => {
     // Загружаем активную программу
@@ -79,27 +63,60 @@ export default function Workout() {
     }
   }, [isResting, restTimer]);
 
+  useEffect(() => {
+    if (isExerciseTimerRunning && exerciseTimer !== null && exerciseTimer > 0) {
+      const timer = setTimeout(() => {
+        setExerciseTimer(exerciseTimer - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else if (exerciseTimer === 0) {
+      setIsExerciseTimerRunning(false);
+      handleSetComplete();
+    }
+  }, [isExerciseTimerRunning, exerciseTimer]);
+
+  const startExerciseTimer = () => {
+    const currentExercise = exercises[currentExerciseIndex].exercise;
+    if (currentExercise.type === 'timed') {
+      setExerciseTimer(currentExercise.duration);
+      setIsExerciseTimerRunning(true);
+    }
+  };
+
+  const stopExerciseTimer = () => {
+    setIsExerciseTimerRunning(false);
+  };
+
   const handleSetComplete = (weight?: number, completedReps?: number) => {
-    const currentExercise = exercises[currentExerciseIndex];
+    const currentWorkoutExercise = exercises[currentExerciseIndex];
     const updatedExercises = [...exercises];
     
-    updatedExercises[currentExerciseIndex] = {
-      ...currentExercise,
-      completedSets: currentExercise.completedSets + 1,
-      setDetails: [
-        ...currentExercise.setDetails,
-        {
-          reps: completedReps || currentExercise.reps,
-          weight: weight || currentExercise.weight
+    const setDetail: WorkoutSet = currentWorkoutExercise.exercise.type === 'reps'
+      ? {
+          reps: completedReps || (currentWorkoutExercise.exercise as any).reps,
+          weight: weight || (currentWorkoutExercise.exercise as any).weight,
+          completed: true
         }
-      ]
+      : {
+          duration: currentWorkoutExercise.exercise.type === 'timed'
+            ? (currentWorkoutExercise.exercise.duration - (exerciseTimer || 0))
+            : undefined,
+          completed: true
+        };
+
+    updatedExercises[currentExerciseIndex] = {
+      ...currentWorkoutExercise,
+      completedSets: currentWorkoutExercise.completedSets + 1,
+      setDetails: [...currentWorkoutExercise.setDetails, setDetail]
     };
 
     setExercises(updatedExercises);
+    setExerciseTimer(null);
+    setIsExerciseTimerRunning(false);
 
-    if (currentExercise.completedSets + 1 < currentExercise.sets) {
+    if (currentWorkoutExercise.completedSets + 1 < currentWorkoutExercise.exercise.sets) {
       // Если есть еще сеты, начинаем отдых
-      setRestTimer(currentExercise.restTime);
+      setRestTimer(currentWorkoutExercise.exercise.restTime);
       setIsResting(true);
     } else if (currentExerciseIndex + 1 < exercises.length) {
       // Переходим к следующему упражнению
@@ -125,7 +142,6 @@ export default function Workout() {
         currentDay: activeProgram.currentDay + 1
       };
 
-      // Если текущий день превышает количество тренировок в неделю, переходим к следующей неделе
       if (updatedProgram.currentDay > program.workoutsPerWeek) {
         updatedProgram.currentWeek += 1;
         updatedProgram.currentDay = 1;
@@ -147,7 +163,8 @@ export default function Workout() {
     );
   }
 
-  const currentExercise = exercises[currentExerciseIndex];
+  const currentWorkoutExercise = exercises[currentExerciseIndex];
+  const currentExercise = currentWorkoutExercise.exercise;
 
   return (
     <div className="min-h-screen bg-gray-100 py-8">
@@ -176,15 +193,24 @@ export default function Workout() {
                   <div className="text-gray-600">Подходов</div>
                 </div>
 
-                <div className="bg-blue-50 p-4 rounded-lg text-center">
-                  <div className="text-2xl font-bold text-blue-700">
-                    {currentExercise.reps}
+                {currentExercise.type === 'reps' ? (
+                  <div className="bg-blue-50 p-4 rounded-lg text-center">
+                    <div className="text-2xl font-bold text-blue-700">
+                      {currentExercise.reps}
+                    </div>
+                    <div className="text-gray-600">Повторений</div>
                   </div>
-                  <div className="text-gray-600">Повторений</div>
-                </div>
+                ) : (
+                  <div className="bg-blue-50 p-4 rounded-lg text-center">
+                    <div className="text-2xl font-bold text-blue-700">
+                      {currentExercise.duration}с
+                    </div>
+                    <div className="text-gray-600">Длительность</div>
+                  </div>
+                )}
               </div>
 
-              {currentExercise.weight && (
+              {currentExercise.type === 'reps' && currentExercise.weight && (
                 <div className="bg-purple-50 p-4 rounded-lg text-center">
                   <div className="text-2xl font-bold text-purple-700">
                     {currentExercise.weight} кг
@@ -199,21 +225,51 @@ export default function Workout() {
                     Отдых: {restTimer}с
                   </div>
                   <p className="text-gray-600">
-                    Следующий подход: {currentExercise.completedSets + 1} / {currentExercise.sets}
+                    Следующий подход: {currentWorkoutExercise.completedSets + 1} / {currentExercise.sets}
                   </p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   <p className="text-center text-gray-600">
-                    Подход {currentExercise.completedSets + 1} / {currentExercise.sets}
+                    Подход {currentWorkoutExercise.completedSets + 1} / {currentExercise.sets}
                   </p>
                   
-                  <button
-                    className="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-lg font-semibold"
-                    onClick={() => handleSetComplete()}
-                  >
-                    Завершить подход
-                  </button>
+                  {currentExercise.type === 'timed' ? (
+                    <div className="space-y-4">
+                      <div className="text-center">
+                        <div className="text-3xl font-bold text-blue-800 mb-2">
+                          {isExerciseTimerRunning ? (
+                            `${exerciseTimer || 0}с`
+                          ) : (
+                            exerciseTimer === null ? `${currentExercise.duration}с` : `${exerciseTimer}с`
+                          )}
+                        </div>
+                      </div>
+                      
+                      {!isExerciseTimerRunning ? (
+                        <button
+                          className="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-lg font-semibold"
+                          onClick={startExerciseTimer}
+                        >
+                          Начать
+                        </button>
+                      ) : (
+                        <button
+                          className="w-full bg-red-600 hover:bg-red-700 text-white py-3 px-6 rounded-lg font-semibold"
+                          onClick={stopExerciseTimer}
+                        >
+                          Остановить
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <button
+                      className="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-lg font-semibold"
+                      onClick={() => handleSetComplete()}
+                    >
+                      Завершить подход
+                    </button>
+                  )}
                 </div>
               )}
             </div>
