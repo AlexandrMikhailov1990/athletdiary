@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { Exercise, SAMPLE_EXERCISES } from '../../models/Exercise';
 
@@ -42,6 +42,11 @@ export default function CreateProgram() {
     reps: 10
   });
 
+  // Инициализация дней тренировок при монтировании компонента
+  useEffect(() => {
+    initializeWorkoutDays(form.workoutsPerWeek);
+  }, []);
+
   // Инициализация дней тренировок при изменении количества тренировок в неделю
   const initializeWorkoutDays = (count: number) => {
     const totalWorkouts = count * form.duration;
@@ -58,12 +63,25 @@ export default function CreateProgram() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setForm(prev => {
-      const newForm = { ...prev, [name]: value };
+      const newValue = name === 'workoutsPerWeek' || name === 'duration' ? Number(value) : value;
+      const newForm = { ...prev, [name]: newValue };
+      
       if (name === 'workoutsPerWeek' || name === 'duration') {
-        initializeWorkoutDays(
-          name === 'workoutsPerWeek' ? Number(value) : prev.workoutsPerWeek
+        const totalWorkouts = 
+          name === 'workoutsPerWeek' 
+            ? Number(value) * prev.duration
+            : prev.workoutsPerWeek * Number(value);
+            
+        const newWorkoutDays = Array(totalWorkouts).fill(null).map((_, index) => 
+          prev.workoutDays[index] || { exercises: [] }
         );
+        
+        return {
+          ...newForm,
+          workoutDays: newWorkoutDays
+        };
       }
+      
       return newForm;
     });
   };
@@ -263,71 +281,72 @@ export default function CreateProgram() {
               </div>
             </div>
 
-            {/* План тренировок */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-blue-800">
-                  План тренировок
-                </h2>
-                <div className="flex items-center space-x-2">
+            {/* Навигация по дням */}
+            <div className="bg-white rounded-lg shadow-md p-6 mt-6">
+              <h2 className="text-xl font-semibold text-blue-800 mb-4">
+                Дни тренировок
+              </h2>
+              
+              <div className="flex flex-wrap gap-2 mb-4">
+                {form.workoutDays.map((_, index) => (
                   <button
+                    key={index}
                     type="button"
-                    className="text-blue-600 hover:text-blue-700"
-                    onClick={() => setCurrentDay(prev => Math.max(0, prev - 1))}
-                    disabled={currentDay === 0}
+                    onClick={() => setCurrentDay(index)}
+                    className={`px-4 py-2 rounded-lg ${
+                      currentDay === index
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
                   >
-                    ←
+                    День {index + 1}
+                    {form.workoutDays[index].exercises.length > 0 && (
+                      <span className="ml-2 bg-blue-200 text-blue-800 px-2 py-1 rounded-full text-xs">
+                        {form.workoutDays[index].exercises.length}
+                      </span>
+                    )}
                   </button>
-                  <span className="text-gray-600">
-                    День {currentDay + 1} из {form.workoutDays.length}
-                  </span>
-                  <button
-                    type="button"
-                    className="text-blue-600 hover:text-blue-700"
-                    onClick={() => setCurrentDay(prev => Math.min(form.workoutDays.length - 1, prev + 1))}
-                    disabled={currentDay === form.workoutDays.length - 1}
-                  >
-                    →
-                  </button>
-                </div>
+                ))}
               </div>
 
               {/* Список упражнений текущего дня */}
-              <div className="mb-6">
-                {form.workoutDays[currentDay]?.exercises.map((exercise, index) => {
-                  const exerciseData = SAMPLE_EXERCISES.find(e => e.id === exercise.exerciseId);
-                  if (!exerciseData) return null;
-
-                  return (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded mb-2">
-                      <div>
-                        <span className="font-medium">{exerciseData.name}</span>
-                        <span className="text-gray-600 text-sm ml-2">
-                          {exercise.sets} × {
-                            exerciseData.type === 'reps' 
-                              ? `${exercise.reps} повторений` 
-                              : `${exercise.duration}с`
-                          }
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        className="text-red-600 hover:text-red-700"
-                        onClick={() => removeExerciseFromDay(currentDay, index)}
-                      >
-                        Удалить
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
+              {form.workoutDays[currentDay]?.exercises.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-3">
+                    Упражнения - День {currentDay + 1}
+                  </h3>
+                  <div className="space-y-3">
+                    {form.workoutDays[currentDay].exercises.map((exercise, index) => {
+                      const exerciseData = SAMPLE_EXERCISES.find(e => e.id === exercise.exerciseId);
+                      return (
+                        <div key={index} className="flex items-center justify-between bg-gray-50 p-3 rounded">
+                          <div>
+                            <span className="font-medium">{exerciseData?.name}</span>
+                            <span className="text-gray-500 ml-2">
+                              {exercise.sets} × {exercise.reps || exercise.duration}
+                              {exercise.weight ? ` | ${exercise.weight}кг` : ''}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeExerciseFromDay(currentDay, index)}
+                            className="text-red-600 hover:text-red-800"
+                          >
+                            Удалить
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* Форма добавления упражнения */}
-              <div className="bg-white rounded-lg shadow-md p-6 mt-6">
-                <h3 className="text-lg font-semibold text-blue-800 mb-4">
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h3 className="text-lg font-medium text-gray-900 mb-3">
                   Добавить упражнение в день {currentDay + 1}
                 </h3>
-
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -371,7 +390,7 @@ export default function CreateProgram() {
                           type="number"
                           name="reps"
                           min="1"
-                          value={exerciseDetails.reps}
+                          value={exerciseDetails.reps || ''}
                           onChange={handleExerciseDetailsChange}
                           className="w-full p-2 border border-gray-300 rounded"
                         />
@@ -385,6 +404,7 @@ export default function CreateProgram() {
                           type="number"
                           name="weight"
                           min="0"
+                          step="0.5"
                           value={exerciseDetails.weight || ''}
                           onChange={handleExerciseDetailsChange}
                           className="w-full p-2 border border-gray-300 rounded"
@@ -412,7 +432,7 @@ export default function CreateProgram() {
                   type="button"
                   onClick={addExerciseToDay}
                   disabled={!selectedExercise}
-                  className={`mt-4 px-4 py-2 rounded ${
+                  className={`mt-4 px-6 py-2 rounded-lg ${
                     selectedExercise
                       ? 'bg-blue-600 hover:bg-blue-700 text-white'
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
