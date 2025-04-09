@@ -5,15 +5,69 @@ import { SAMPLE_ACTIVE_PROGRAM, ActiveProgram } from '../models/ActiveProgram';
 
 export default function Programs() {
   const router = useRouter();
-  const [programs, setPrograms] = useState<Program[]>(SAMPLE_PROGRAMS);
+  const [programs, setPrograms] = useState<Program[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLevel, setSelectedLevel] = useState<string>('');
+  const [isLoaded, setIsLoaded] = useState(false);
 
-  // Загрузка программ из localStorage при монтировании
-  useEffect(() => {
+  // Функция для загрузки программ из localStorage
+  const loadPrograms = () => {
+    // Получаем пользовательские программы
     const savedPrograms = JSON.parse(localStorage.getItem('programs') || '[]');
-    setPrograms([...SAMPLE_PROGRAMS, ...savedPrograms]);
+    console.log('Загруженные пользовательские программы:', savedPrograms);
+    
+    // Получаем ID удаленных стандартных программ
+    const deletedSampleProgramIds = JSON.parse(localStorage.getItem('deletedSamplePrograms') || '[]');
+    console.log('ID удаленных стандартных программ:', deletedSampleProgramIds);
+    
+    // Фильтруем стандартные программы, исключая удаленные
+    const filteredSamplePrograms = SAMPLE_PROGRAMS.filter(
+      program => !deletedSampleProgramIds.includes(program.id)
+    );
+    console.log('Отфильтрованные стандартные программы:', filteredSamplePrograms);
+    
+    // Объединяем отфильтрованные стандартные программы с пользовательскими
+    const allPrograms = [...filteredSamplePrograms, ...savedPrograms];
+    console.log('Все программы для отображения:', allPrograms);
+    
+    setPrograms(allPrograms);
+    setIsLoaded(true);
+  };
+
+  // Загрузка программ при монтировании компонента
+  useEffect(() => {
+    loadPrograms();
   }, []);
+
+  // Обновление списка программ при фокусе на окне
+  useEffect(() => {
+    const handleFocus = () => {
+      console.log('Окно получило фокус, обновляем список программ');
+      loadPrograms();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, []);
+
+  // Обновление списка программ при возвращении на страницу
+  useEffect(() => {
+    const handleRouteChange = (url: string) => {
+      if (url === '/programs' && isLoaded) {
+        console.log('Вернулись на страницу программ, обновляем список');
+        loadPrograms();
+      }
+    };
+
+    router.events.on('routeChangeComplete', handleRouteChange);
+    
+    return () => {
+      router.events.off('routeChangeComplete', handleRouteChange);
+    };
+  }, [router, isLoaded]);
 
   // Фильтрация программ
   const filteredPrograms = programs.filter(program => {
@@ -55,6 +109,53 @@ export default function Programs() {
   // Функция для просмотра деталей программы
   const viewProgramDetails = (programId: string) => {
     router.push(`/programs/${programId}`);
+  };
+
+  // Функция для удаления программы
+  const deleteProgram = (programId: string) => {
+    if (!confirm('Вы уверены, что хотите удалить эту программу?')) {
+      return;
+    }
+
+    // Проверяем, является ли программа примером
+    const isSample = SAMPLE_PROGRAMS.some(p => p.id === programId);
+    
+    if (isSample) {
+      // Если это пример, запоминаем его ID в списке удаленных
+      const deletedSamplePrograms = JSON.parse(localStorage.getItem('deletedSamplePrograms') || '[]');
+      deletedSamplePrograms.push(programId);
+      localStorage.setItem('deletedSamplePrograms', JSON.stringify(deletedSamplePrograms));
+      
+      // Удаляем из состояния
+      setPrograms(prevPrograms => prevPrograms.filter(p => p.id !== programId));
+    } else {
+      // Если это пользовательская программа, удаляем из localStorage
+      const savedPrograms = JSON.parse(localStorage.getItem('programs') || '[]');
+      const updatedPrograms = savedPrograms.filter((p: Program) => p.id !== programId);
+      localStorage.setItem('programs', JSON.stringify(updatedPrograms));
+      
+      // Обновляем состояние
+      // Получаем ID удаленных стандартных программ
+      const deletedSampleProgramIds = JSON.parse(localStorage.getItem('deletedSamplePrograms') || '[]');
+      
+      // Фильтруем стандартные программы, исключая удаленные
+      const filteredSamplePrograms = SAMPLE_PROGRAMS.filter(
+        program => !deletedSampleProgramIds.includes(program.id)
+      );
+      
+      setPrograms([...filteredSamplePrograms, ...updatedPrograms]);
+    }
+
+    // Если это активная программа, удаляем её
+    const activeProgram = JSON.parse(localStorage.getItem('activeProgram') || 'null');
+    if (activeProgram && activeProgram.programId === programId) {
+      localStorage.removeItem('activeProgram');
+    }
+
+    // Удаляем из activePrograms
+    const activePrograms = JSON.parse(localStorage.getItem('activePrograms') || '[]');
+    const updatedActivePrograms = activePrograms.filter((p: any) => p.programId !== programId);
+    localStorage.setItem('activePrograms', JSON.stringify(updatedActivePrograms));
   };
 
   return (
@@ -99,7 +200,19 @@ export default function Programs() {
         </div>
         
         {/* Кнопка создания программы */}
-        <div className="mb-8 text-right">
+        <div className="mb-8 flex justify-between">
+          <button
+            className="bg-blue-600 hover:bg-blue-700 text-white h-11 px-6 rounded-lg transition-colors duration-200 font-medium"
+            onClick={() => {
+              console.log('localStorage.programs:', JSON.parse(localStorage.getItem('programs') || '[]'));
+              console.log('localStorage.activePrograms:', JSON.parse(localStorage.getItem('activePrograms') || '[]'));
+              console.log('localStorage.activeProgram:', JSON.parse(localStorage.getItem('activeProgram') || 'null'));
+              console.log('localStorage.deletedSamplePrograms:', JSON.parse(localStorage.getItem('deletedSamplePrograms') || '[]'));
+              loadPrograms();
+            }}
+          >
+            Обновить список
+          </button>
           <button 
             className="bg-green-600 hover:bg-green-700 text-white h-11 px-6 rounded-lg transition-colors duration-200 font-medium"
             onClick={() => router.push('/programs/create')}
@@ -151,6 +264,26 @@ export default function Programs() {
                   >
                     Начать
                   </button>
+
+                  {/* Добавляем кнопку удаления для всех программ */}
+                  <button 
+                    className="bg-red-600 hover:bg-red-700 text-white py-2.5 px-4 rounded-lg transition-colors duration-200"
+                    onClick={() => deleteProgram(program.id)}
+                  >
+                    <svg 
+                      className="w-5 h-5" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        strokeWidth={2} 
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" 
+                      />
+                    </svg>
+                  </button>
                 </div>
               </div>
             </div>
@@ -162,6 +295,22 @@ export default function Programs() {
             <p className="text-gray-600 text-lg">Программы не найдены. Попробуйте изменить критерии поиска или создайте новую программу.</p>
           </div>
         )}
+
+        {/* Кнопка сброса данных */}
+        <div className="mt-12 text-center">
+          <button
+            onClick={() => {
+              if (confirm('Вы уверены, что хотите сбросить все данные приложения? Это действие нельзя отменить.')) {
+                localStorage.clear();
+                alert('Все данные сброшены. Страница будет перезагружена.');
+                window.location.reload();
+              }
+            }}
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm transition-colors duration-200"
+          >
+            Сбросить все данные
+          </button>
+        </div>
       </div>
     </div>
   );

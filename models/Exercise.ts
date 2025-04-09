@@ -23,7 +23,24 @@ export interface TimedExercise extends BaseExercise {
   duration: number; // в секундах
 }
 
-export type Exercise = RepsExercise | TimedExercise;
+export interface Exercise {
+  id: string;
+  name: string;
+  type: 'reps' | 'timed'; // reps - повторение, timed - временное упражнение
+  sets?: number; // Количество подходов
+  reps?: number; // Количество повторений (для упражнений типа reps)
+  duration?: number; // Продолжительность в секундах (для упражнений типа timed)
+  restTime?: number; // Отдых между подходами в секундах
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  muscleGroups: string[]; // Группы мышц, задействованные в упражнении
+  description: string;
+  equipment?: string[]; // Необходимое оборудование
+  recommendations?: string[]; // Рекомендации по выполнению
+  video?: string; // URL видео с демонстрацией
+  image?: string; // URL изображения
+  imageUrl?: string; // Альтернативное название для URL изображения (для обратной совместимости)
+  weight?: number; // Вес в кг (для силовых упражнений)
+}
 
 // Примеры упражнений
 export const SAMPLE_EXERCISES: Exercise[] = [
@@ -38,7 +55,8 @@ export const SAMPLE_EXERCISES: Exercise[] = [
     muscleGroups: ['legs', 'glutes'],
     description: 'Базовое упражнение для ног',
     equipment: [],
-    recommendations: ['Держите спину прямо', 'Колени не выходят за носки']
+    recommendations: ['Держите спину прямо', 'Колени не выходят за носки'],
+    imageUrl: '/images/exercises/squats.jpg'
   },
   {
     id: '2',
@@ -52,7 +70,8 @@ export const SAMPLE_EXERCISES: Exercise[] = [
     muscleGroups: ['chest', 'triceps', 'shoulders'],
     description: 'Базовое упражнение для верхней части тела',
     equipment: ['barbell', 'bench'],
-    recommendations: ['Держите локти под грудью', 'Контролируйте движение']
+    recommendations: ['Держите локти под грудью', 'Контролируйте движение'],
+    imageUrl: '/images/exercises/bench-press.jpg'
   },
   {
     id: '3',
@@ -65,7 +84,8 @@ export const SAMPLE_EXERCISES: Exercise[] = [
     muscleGroups: ['core', 'shoulders'],
     description: 'Статическое упражнение для укрепления корпуса',
     equipment: [],
-    recommendations: ['Держите тело прямым', 'Напрягайте пресс']
+    recommendations: ['Держите тело прямым', 'Напрягайте пресс'],
+    imageUrl: '/images/exercises/plank.jpg'
   }
 ];
 
@@ -80,7 +100,8 @@ export const pushUps: RepsExercise = {
   muscleGroups: ['chest', 'triceps', 'shoulders'],
   description: 'A classic bodyweight exercise targeting chest, triceps, and shoulders',
   equipment: [],
-  recommendations: ['Keep your core tight', 'Maintain straight body alignment']
+  recommendations: ['Keep your core tight', 'Maintain straight body alignment'],
+  imageUrl: '/images/exercises/push-ups.jpg'
 };
 
 export const benchPress: RepsExercise = {
@@ -95,7 +116,8 @@ export const benchPress: RepsExercise = {
   muscleGroups: ['chest', 'triceps', 'shoulders'],
   description: 'A compound exercise for building upper body strength',
   equipment: ['barbell', 'bench'],
-  recommendations: ['Keep your feet planted', 'Control the weight throughout']
+  recommendations: ['Keep your feet planted', 'Control the weight throughout'],
+  imageUrl: '/images/exercises/bench-press.jpg'
 };
 
 export const plank: TimedExercise = {
@@ -109,5 +131,26 @@ export const plank: TimedExercise = {
   muscleGroups: ['core', 'shoulders'],
   description: 'An isometric exercise that strengthens your core',
   equipment: [],
-  recommendations: ['Keep your body straight', 'Engage your core']
-}; 
+  recommendations: ['Keep your body straight', 'Engage your core'],
+  imageUrl: '/images/exercises/plank.jpg'
+};
+
+// Добавим функцию для нормализации свойств image и imageUrl
+export function normalizeExerciseImageUrls(exercise: Exercise): Exercise {
+  const normalizedExercise = { ...exercise };
+  
+  // Если есть только imageUrl, добавим его как image
+  if (normalizedExercise.imageUrl && !normalizedExercise.image) {
+    normalizedExercise.image = normalizedExercise.imageUrl;
+  }
+  
+  // Если есть только image, добавим его как imageUrl
+  if (normalizedExercise.image && !normalizedExercise.imageUrl) {
+    normalizedExercise.imageUrl = normalizedExercise.image;
+  }
+  
+  return normalizedExercise;
+}
+
+// Применяем нормализацию к примерам упражнений
+export const NORMALIZED_SAMPLE_EXERCISES = SAMPLE_EXERCISES.map(normalizeExerciseImageUrls); 

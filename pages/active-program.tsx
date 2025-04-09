@@ -121,12 +121,21 @@ export default function ActiveProgram() {
                 Неделя {activeProgram.currentWeek}, День {activeProgram.currentDay}
               </p>
               
-              <button
-                className="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-lg font-semibold"
-                onClick={() => router.push('/workout')}
-              >
-                Начать тренировку
-              </button>
+              <div className="mt-6 flex justify-center space-x-4">
+                <button
+                  onClick={() => router.push('/workout')}
+                  className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg transition-colors duration-200"
+                >
+                  Начать тренировку
+                </button>
+                
+                <button
+                  onClick={() => router.push('/programs')}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors duration-200"
+                >
+                  К списку программ
+                </button>
+              </div>
             </div>
           </div>
 

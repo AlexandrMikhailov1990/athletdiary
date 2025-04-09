@@ -64,10 +64,10 @@ export default function ExerciseDetails({ exercise, onClose, onAddToWorkout }: E
         <div className="p-6">
           <div className="flex flex-col md:flex-row gap-6">
             <div className="w-full md:w-1/2">
-              {exercise.imageUrl && !imageError ? (
+              {exercise.image && !imageError ? (
                 <div className="bg-gray-200 h-64 rounded-lg mb-4">
                   <img 
-                    src={exercise.imageUrl} 
+                    src={exercise.image} 
                     alt={exercise.name} 
                     className="w-full h-full object-cover rounded-lg"
                     onError={() => setImageError(true)}

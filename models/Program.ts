@@ -25,6 +25,8 @@ export interface Program {
   workouts: Workout[];
   createdBy: string;
   isPublic: boolean;
+  restBetweenSets?: number; // Время отдыха между подходами в секундах
+  restBetweenExercises?: number; // Время отдыха между упражнениями в секундах
 }
 
 // Примеры программ

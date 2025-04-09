@@ -127,29 +127,25 @@ export default function ProgramDetails() {
                 
                 <p className="text-gray-600 mb-4">{exercise.exercise.description}</p>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="flex gap-3 flex-wrap mt-3">
                   <div className="bg-white p-3 rounded-lg shadow-sm">
                     <span className="text-gray-600 block text-sm">Подходы:</span>
                     <span className="font-medium text-lg">{exercise.sets}</span>
                   </div>
                   
-                  {exercise.exercise.type === 'reps' ? (
-                    <>
-                      <div className="bg-white p-3 rounded-lg shadow-sm">
-                        <span className="text-gray-600 block text-sm">Повторения:</span>
-                        <span className="font-medium text-lg">{exercise.reps}</span>
-                      </div>
-                      {exercise.weight && (
-                        <div className="bg-white p-3 rounded-lg shadow-sm">
-                          <span className="text-gray-600 block text-sm">Вес:</span>
-                          <span className="font-medium text-lg">{exercise.weight} кг</span>
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <div className="bg-white p-3 rounded-lg shadow-sm">
-                      <span className="text-gray-600 block text-sm">Время выполнения:</span>
+                  <div className="bg-white p-3 rounded-lg shadow-sm">
+                    <span className="text-gray-600 block text-sm">{exercise.exercise.type === 'reps' ? 'Повторения' : 'Время выполнения'}:</span>
+                    {exercise.exercise.type === 'reps' ? (
+                      <span className="font-medium text-lg">{exercise.reps}</span>
+                    ) : (
                       <span className="font-medium text-lg">{exercise.exercise.duration} сек</span>
+                    )}
+                  </div>
+                  
+                  {exercise.exercise.type === 'reps' && exercise.weight && (
+                    <div className="bg-white p-3 rounded-lg shadow-sm">
+                      <span className="text-gray-600 block text-sm">Вес:</span>
+                      <span className="font-medium text-lg">{exercise.weight} кг</span>
                     </div>
                   )}
                   

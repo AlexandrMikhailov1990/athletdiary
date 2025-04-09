@@ -1,15 +1,16 @@
-import { useState, useEffect } from 'react';
-import { Exercise, SAMPLE_EXERCISES } from '../models/Exercise';
+import { Exercise, NORMALIZED_SAMPLE_EXERCISES } from '../models/Exercise';
+import { useState, useEffect, useMemo } from 'react';
 import ExerciseCard from '../components/ExerciseCard';
+import ExerciseDetails from '../components/ExerciseDetails';
 
 const ITEMS_PER_PAGE = 9;
 
 export default function Exercises() {
-  const [exercises, setExercises] = useState<Exercise[]>(SAMPLE_EXERCISES);
+  const [exercises, setExercises] = useState<Exercise[]>(NORMALIZED_SAMPLE_EXERCISES);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedType, setSelectedType] = useState<'all' | 'reps' | 'timed'>('all');
   const [selectedMuscleGroup, setSelectedMuscleGroup] = useState<string>('');
-  const [selectedDifficulty, setSelectedDifficulty] = useState<string>('');
+  const [selectedType, setSelectedType] = useState<string>('');
+  const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
   // Загрузка сохраненных фильтров при монтировании компонента
@@ -19,7 +20,7 @@ export default function Exercises() {
       const { searchTerm, muscleGroup, difficulty } = JSON.parse(savedFilters);
       setSearchTerm(searchTerm);
       setSelectedMuscleGroup(muscleGroup);
-      setSelectedDifficulty(difficulty);
+      setSelectedType(difficulty);
     }
   }, []);
 
@@ -28,24 +29,33 @@ export default function Exercises() {
     localStorage.setItem('exerciseFilters', JSON.stringify({
       searchTerm,
       muscleGroup: selectedMuscleGroup,
-      difficulty: selectedDifficulty
+      difficulty: selectedType
     }));
-  }, [searchTerm, selectedMuscleGroup, selectedDifficulty]);
-
-  // Получение уникальных групп мышц из всех упражнений
-  const muscleGroups = Array.from(
-    new Set(
-      SAMPLE_EXERCISES.flatMap(exercise => exercise.muscleGroups)
-    )
-  ).sort();
+  }, [searchTerm, selectedMuscleGroup, selectedType]);
 
   // Фильтрация упражнений
-  const filteredExercises = SAMPLE_EXERCISES.filter(exercise => {
-    const matchesSearch = exercise.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = selectedType === 'all' || exercise.type === selectedType;
-    
-    return matchesSearch && matchesType;
-  });
+  const filteredExercises = useMemo(() => {
+    return exercises.filter(exercise => {
+      // Фильтр по поисковому запросу
+      const matchesSearch = exercise.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          exercise.description.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      // Фильтр по группе мышц
+      const matchesMuscleGroup = selectedMuscleGroup === '' || 
+                               exercise.muscleGroups.includes(selectedMuscleGroup);
+      
+      // Фильтр по типу упражнения
+      const matchesType = selectedType === '' || exercise.type === selectedType;
+      
+      return matchesSearch && matchesMuscleGroup && matchesType;
+    });
+  }, [exercises, searchTerm, selectedMuscleGroup, selectedType]);
+
+  // Получение уникальных групп мышц
+  const muscleGroups = useMemo(() => {
+    const allMuscleGroups = NORMALIZED_SAMPLE_EXERCISES.flatMap(exercise => exercise.muscleGroups);
+    return Array.from(new Set(allMuscleGroups)).sort();
+  }, []);
 
   // Пагинация
   const totalPages = Math.ceil(filteredExercises.length / ITEMS_PER_PAGE);
@@ -58,6 +68,14 @@ export default function Exercises() {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Для отладки
+  const clearLocalStorageAndResetExercises = () => {
+    if (confirm('Вы уверены, что хотите сбросить все упражнения?')) {
+      localStorage.removeItem('exercises');
+      setExercises(NORMALIZED_SAMPLE_EXERCISES);
+    }
   };
 
   return (
@@ -90,9 +108,9 @@ export default function Exercises() {
                 id="type"
                 className="w-full h-11 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white"
                 value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value as 'all' | 'reps' | 'timed')}
+                onChange={(e) => setSelectedType(e.target.value)}
               >
-                <option value="all">Все типы</option>
+                <option value="">Все типы</option>
                 <option value="reps">Повторения</option>
                 <option value="timed">Время</option>
               </select>

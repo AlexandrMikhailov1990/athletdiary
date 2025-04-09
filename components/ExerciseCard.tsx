@@ -24,9 +24,9 @@ export default function ExerciseCard({ exercise, onSelect }: ExerciseCardProps) 
       aria-label={`Карточка упражнения: ${exercise.name}`}
     >
       <div className="aspect-video bg-gray-100 relative">
-        {exercise.imageUrl && !imageError ? (
+        {exercise.image && !imageError ? (
           <img 
-            src={exercise.imageUrl} 
+            src={exercise.image} 
             alt={exercise.name} 
             className="w-full h-full object-cover"
             onError={handleImageError}
