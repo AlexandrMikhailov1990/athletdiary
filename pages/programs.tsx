@@ -27,15 +27,26 @@ export default function Programs() {
 
   // Функция для запуска программы
   const startProgram = (program: Program) => {
-    // В реальном приложении здесь будет API запрос
+    // Создаем новую активную программу
     const newActiveProgram: ActiveProgram = {
-      ...SAMPLE_ACTIVE_PROGRAM,
       programId: program.id,
-      startDate: new Date().toISOString()
+      userId: 'user', // В реальном приложении здесь будет ID текущего пользователя
+      startDate: new Date().toISOString(),
+      currentWeek: 1,
+      currentDay: 1,
+      completedWorkouts: []
     };
     
     // Сохраняем активную программу в localStorage
     localStorage.setItem('activeProgram', JSON.stringify(newActiveProgram));
+    
+    // Сохраняем полную информацию о программе
+    const activePrograms = JSON.parse(localStorage.getItem('activePrograms') || '[]');
+    activePrograms.push({
+      ...newActiveProgram,
+      program: program // Сохраняем полную информацию о программе
+    });
+    localStorage.setItem('activePrograms', JSON.stringify(activePrograms));
     
     // Перенаправляем на страницу активной программы
     router.push('/active-program');

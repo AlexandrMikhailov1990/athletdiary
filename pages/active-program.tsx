@@ -20,9 +20,21 @@ export default function ActiveProgram() {
     setActiveProgram(activeProgramData);
 
     // Находим программу по ID
-    const programData = SAMPLE_PROGRAMS.find(p => p.id === activeProgramData.programId);
+    const savedPrograms = JSON.parse(localStorage.getItem('programs') || '[]') as Program[];
+    const programData = [...SAMPLE_PROGRAMS, ...savedPrograms].find(p => p.id === activeProgramData.programId);
+    
     if (programData) {
       setProgram(programData);
+    } else {
+      // Если программа не найдена, пробуем найти в активных программах
+      const activePrograms = JSON.parse(localStorage.getItem('activePrograms') || '[]') as (ActiveProgram & { program: Program })[];
+      const activeProgram = activePrograms.find(p => p.programId === activeProgramData.programId);
+      if (activeProgram?.program) {
+        setProgram(activeProgram.program);
+      } else {
+        // Если программа не найдена нигде, возвращаемся к списку программ
+        router.push('/programs');
+      }
     }
   }, [router]);
 
