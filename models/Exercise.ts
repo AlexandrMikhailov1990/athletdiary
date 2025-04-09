@@ -42,6 +42,64 @@ export interface Exercise {
   weight?: number; // Вес в кг (для силовых упражнений)
 }
 
+// Словари для перевода
+export const muscleGroupTranslations: Record<string, string> = {
+  'chest': 'Грудь',
+  'back': 'Спина',
+  'shoulders': 'Плечи',
+  'biceps': 'Бицепс',
+  'triceps': 'Трицепс',
+  'forearms': 'Предплечья',
+  'abs': 'Пресс',
+  'core': 'Кор',
+  'quads': 'Квадрицепсы',
+  'hamstrings': 'Бицепс бедра',
+  'glutes': 'Ягодицы',
+  'calves': 'Икры',
+  'traps': 'Трапеции',
+  'lats': 'Широчайшие',
+  'legs': 'Ноги'
+};
+
+export const difficultyTranslations: Record<string, string> = {
+  'beginner': 'Начинающий',
+  'intermediate': 'Средний',
+  'advanced': 'Продвинутый'
+};
+
+export const equipmentTranslations: Record<string, string> = {
+  'barbell': 'Штанга',
+  'dumbbell': 'Гантели',
+  'kettlebell': 'Гиря',
+  'resistance bands': 'Резиновые петли',
+  'pull-up bar': 'Турник',
+  'bench': 'Скамья',
+  'stability ball': 'Фитбол',
+  'medicine ball': 'Медбол',
+  'cable machine': 'Тросовый тренажер',
+  'squat rack': 'Силовая рама',
+  'bodyweight': 'Собственный вес',
+  'treadmill': 'Беговая дорожка',
+  'exercise bike': 'Велотренажер',
+  'elliptical': 'Эллиптический тренажер',
+  'rowing machine': 'Гребной тренажер'
+};
+
+// Функция для перевода названия группы мышц
+export function translateMuscleGroup(muscleGroup: string): string {
+  return muscleGroupTranslations[muscleGroup] || muscleGroup;
+}
+
+// Функция для перевода сложности
+export function translateDifficulty(difficulty: string): string {
+  return difficultyTranslations[difficulty] || difficulty;
+}
+
+// Функция для перевода оборудования
+export function translateEquipment(equipment: string): string {
+  return equipmentTranslations[equipment] || equipment;
+}
+
 // Примеры упражнений
 export const SAMPLE_EXERCISES: Exercise[] = [
   {
@@ -153,4 +211,29 @@ export function normalizeExerciseImageUrls(exercise: Exercise): Exercise {
 }
 
 // Применяем нормализацию к примерам упражнений
-export const NORMALIZED_SAMPLE_EXERCISES = SAMPLE_EXERCISES.map(normalizeExerciseImageUrls); 
+export const NORMALIZED_SAMPLE_EXERCISES = SAMPLE_EXERCISES.map(normalizeExerciseImageUrls);
+
+// Функция для загрузки всех упражнений (как пользовательских, так и предопределенных)
+export function getAllExercises(): Exercise[] {
+  try {
+    const savedExercises = localStorage.getItem('userExercises');
+    if (savedExercises) {
+      // Объединяем пользовательские упражнения с примерами
+      const parsedExercises = JSON.parse(savedExercises);
+      return [...parsedExercises, ...NORMALIZED_SAMPLE_EXERCISES.filter(ex => 
+        !parsedExercises.some((savedEx: Exercise) => savedEx.id === ex.id)
+      )];
+    }
+  } catch (error) {
+    console.error('Ошибка при загрузке упражнений:', error);
+  }
+  
+  // Если не удалось загрузить пользовательские упражнения, возвращаем только примеры
+  return NORMALIZED_SAMPLE_EXERCISES;
+}
+
+// Функция для получения упражнения по ID
+export function getExerciseById(exerciseId: string): Exercise | undefined {
+  const allExercises = getAllExercises();
+  return allExercises.find(ex => ex.id === exerciseId);
+} 

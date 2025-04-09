@@ -19,9 +19,10 @@ export default function ExerciseCard({ exercise, onSelect }: ExerciseCardProps) 
 
   return (
     <div 
-      className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full transform hover:-translate-y-1"
+      className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full transform hover:-translate-y-1 cursor-pointer"
       role="article"
       aria-label={`Карточка упражнения: ${exercise.name}`}
+      onClick={onSelect}
     >
       <div className="aspect-video bg-gray-100 relative">
         {exercise.image && !imageError ? (
@@ -56,14 +57,6 @@ export default function ExerciseCard({ exercise, onSelect }: ExerciseCardProps) 
             </svg>
           </div>
         )}
-        
-        <div 
-          className="absolute top-3 right-3 bg-blue-600 text-white text-sm font-medium px-3 py-1 rounded-full shadow-sm"
-          role="status"
-          aria-label={`Тип упражнения: ${getExerciseTypeLabel(exercise.type)}`}
-        >
-          {getExerciseTypeLabel(exercise.type)}
-        </div>
       </div>
       
       <div className="p-6 flex flex-col flex-grow">
@@ -99,7 +92,10 @@ export default function ExerciseCard({ exercise, onSelect }: ExerciseCardProps) 
           </div>
           
           <button
-            onClick={onSelect}
+            onClick={(e) => {
+              e.stopPropagation(); // Останавливаем всплытие, чтобы не срабатывал onClick родительского div
+              if (onSelect) onSelect();
+            }}
             className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors duration-200 text-sm font-medium"
             aria-label={`Подробнее о упражнении ${exercise.name}`}
           >

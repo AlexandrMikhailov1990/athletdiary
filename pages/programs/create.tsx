@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { Exercise, NORMALIZED_SAMPLE_EXERCISES } from '../../models/Exercise';
+import { Exercise, getAllExercises } from '../../models/Exercise';
 
 interface ProgramExercise {
   exerciseId: string;
@@ -34,13 +34,11 @@ export default function CreateProgram() {
     sets: 3,
     reps: 10
   });
+  const [availableExercises, setAvailableExercises] = useState<Exercise[]>([]);
 
-  // Удаляем все существующие программы при загрузке страницы
+  // Загружаем все доступные упражнения при монтировании компонента
   useEffect(() => {
-    // Эта функция больше не нужна, так как мы не хотим удалять все программы при создании новой
-    // localStorage.setItem('programs', JSON.stringify([]));
-    // localStorage.setItem('activePrograms', JSON.stringify([]));
-    // localStorage.removeItem('activeProgram');
+    setAvailableExercises(getAllExercises());
   }, []);
 
   // Обработка изменения базовых полей формы
@@ -65,7 +63,7 @@ export default function CreateProgram() {
   const addExercise = () => {
     if (!selectedExercise) return;
 
-    const exercise = NORMALIZED_SAMPLE_EXERCISES.find(e => e.id === selectedExercise);
+    const exercise = availableExercises.find(e => e.id === selectedExercise);
     if (!exercise) return;
 
     const newExercise: ProgramExercise = {
@@ -121,7 +119,7 @@ export default function CreateProgram() {
           id: `workout-1`,
           name: "Тренировка",
           exercises: form.exercises.map(exercise => {
-            const exerciseData = NORMALIZED_SAMPLE_EXERCISES.find(e => e.id === exercise.exerciseId);
+            const exerciseData = availableExercises.find(e => e.id === exercise.exerciseId);
             if (!exerciseData) throw new Error('Exercise not found');
             
             // Создаем копию исходного упражнения, чтобы не менять исходный объект
@@ -283,7 +281,7 @@ export default function CreateProgram() {
                     value={selectedExercise}
                     onChange={(e) => {
                       setSelectedExercise(e.target.value);
-                      const exercise = NORMALIZED_SAMPLE_EXERCISES.find(ex => ex.id === e.target.value);
+                      const exercise = availableExercises.find(ex => ex.id === e.target.value);
                       if (exercise) {
                         setExerciseDetails(prev => ({
                           ...prev,
@@ -295,7 +293,7 @@ export default function CreateProgram() {
                     className="w-full p-2 border border-gray-300 rounded"
                   >
                     <option value="">Выберите упражнение</option>
-                    {NORMALIZED_SAMPLE_EXERCISES.map(exercise => (
+                    {availableExercises.map(exercise => (
                       <option key={exercise.id} value={exercise.id}>
                         {exercise.name}
                       </option>
@@ -320,7 +318,7 @@ export default function CreateProgram() {
                       />
                     </div>
 
-                    {NORMALIZED_SAMPLE_EXERCISES.find(e => e.id === selectedExercise)?.type === 'reps' ? (
+                    {availableExercises.find(e => e.id === selectedExercise)?.type === 'reps' ? (
                       <>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -390,7 +388,7 @@ export default function CreateProgram() {
                   </h3>
                   <div className="space-y-3">
                     {form.exercises.map((exercise, index) => {
-                      const exerciseData = NORMALIZED_SAMPLE_EXERCISES.find(e => e.id === exercise.exerciseId);
+                      const exerciseData = availableExercises.find(e => e.id === exercise.exerciseId);
                       return (
                         <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded">
                           <div>

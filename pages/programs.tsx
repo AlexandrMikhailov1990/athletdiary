@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { SAMPLE_PROGRAMS, Program } from '../models/Program';
 import { SAMPLE_ACTIVE_PROGRAM, ActiveProgram } from '../models/ActiveProgram';
+import { Exercise, translateMuscleGroup } from '../models/Exercise';
 
 export default function Programs() {
   const router = useRouter();
@@ -158,6 +159,30 @@ export default function Programs() {
     localStorage.setItem('activePrograms', JSON.stringify(updatedActivePrograms));
   };
 
+  // Функция для подсчета общего количества упражнений в программе
+  const countExercisesInProgram = (program: Program): number => {
+    let totalExercises = 0;
+    program.workouts.forEach(workout => {
+      totalExercises += workout.exercises.length;
+    });
+    return totalExercises;
+  };
+
+  // Функция для получения списка уникальных мышечных групп в программе
+  const getMuscleGroupsInProgram = (program: Program): string[] => {
+    const muscleGroups = new Set<string>();
+    
+    program.workouts.forEach(workout => {
+      workout.exercises.forEach(workoutExercise => {
+        workoutExercise.exercise.muscleGroups.forEach((muscle: string) => {
+          muscleGroups.add(muscle);
+        });
+      });
+    });
+    
+    return Array.from(muscleGroups);
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 py-8">
       <div className="container mx-auto px-4">
@@ -243,11 +268,42 @@ export default function Programs() {
                     <span className="inline-flex items-center px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
                       {program.workoutsPerWeek} тр/нед
                     </span>
+                    
+                    <span className="inline-flex items-center px-3 py-1 bg-yellow-100 text-yellow-800 text-sm font-medium rounded-full">
+                      {countExercisesInProgram(program)} упражнений
+                    </span>
                   </div>
                   
-                  <p className="text-gray-600 mb-4 line-clamp-3 h-[4.5rem] overflow-hidden">
+                  <p className="text-gray-600 mb-4 line-clamp-3 h-auto overflow-hidden">
                     {program.description}
                   </p>
+                  
+                  {/* Добавляем информацию о мышечных группах */}
+                  <div className="mt-3 mb-4">
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">Целевые мышцы:</h4>
+                    <div className="flex flex-wrap gap-1.5">
+                      {getMuscleGroupsInProgram(program).map(muscle => (
+                        <span key={muscle} className="inline-flex items-center px-2.5 py-0.5 bg-gray-100 text-gray-800 text-xs font-medium rounded">
+                          {translateMuscleGroup(muscle)}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Добавляем краткую информацию о тренировках */}
+                  <div className="mt-3">
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">Тренировки:</h4>
+                    <div className="space-y-2 max-h-32 overflow-y-auto pr-2">
+                      {program.workouts.map((workout, index) => (
+                        <div key={index} className="text-xs border border-gray-200 rounded p-2">
+                          <div className="font-medium">{workout.name}</div>
+                          <div className="text-gray-500 mt-1">
+                            {workout.exercises.length} упражнений
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
                 
                 <div className="flex gap-3 mt-auto pt-4">

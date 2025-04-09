@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import type { Program, Workout, WorkoutExercise } from '@/models/Program';
 import type { WorkoutRecord } from '@/models/WorkoutHistory';
+import { translateMuscleGroup } from '@/models/Exercise';
 
 export default function ProgramDetails() {
   const router = useRouter();
@@ -164,7 +165,7 @@ export default function ProgramDetails() {
                           key={muscleIndex}
                           className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
                         >
-                          {muscle}
+                          {translateMuscleGroup(muscle)}
                         </span>
                       ))}
                     </div>
