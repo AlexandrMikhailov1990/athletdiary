@@ -39,6 +39,60 @@ export default function Workout() {
     }>;
   }>>([]);
 
+  const completeWorkout = useCallback(() => {
+    if (activeProgram && program) {
+      const updatedProgram = {
+        ...activeProgram,
+        completedWorkouts: [
+          ...activeProgram.completedWorkouts,
+          {
+            week: activeProgram.currentWeek,
+            day: activeProgram.currentDay,
+            date: new Date().toISOString(),
+            exercises: exercises.map(ex => ({
+              exerciseId: ex.exercise.id,
+              name: ex.exercise.name,
+              sets: ex.setDetails.map(set => ({
+                reps: set.reps,
+                weight: set.weight,
+                duration: set.duration,
+                completed: set.completed
+              }))
+            }))
+          }
+        ],
+        currentDay: activeProgram.currentDay + 1
+      };
+
+      if (updatedProgram.currentDay > program.workoutsPerWeek) {
+        updatedProgram.currentWeek += 1;
+        updatedProgram.currentDay = 1;
+      }
+
+      // Сохраняем обновленную активную программу
+      localStorage.setItem('activeProgram', JSON.stringify(updatedProgram));
+
+      // Сохраняем историю тренировок
+      const workoutHistory = JSON.parse(localStorage.getItem('workoutHistory') || '[]');
+      workoutHistory.push({
+        date: new Date().toISOString(),
+        programId: program.id,
+        programName: program.name,
+        week: activeProgram.currentWeek,
+        day: activeProgram.currentDay,
+        exercises: exercises.map(ex => ({
+          exerciseId: ex.exercise.id,
+          name: ex.exercise.name,
+          sets: ex.setDetails
+        }))
+      });
+      localStorage.setItem('workoutHistory', JSON.stringify(workoutHistory));
+
+      // Перенаправляем на страницу активной программы
+      router.push('/active-program');
+    }
+  }, [activeProgram, program, exercises, router]);
+
   const handleSetComplete = useCallback((weight?: number, completedReps?: number) => {
     const currentWorkoutExercise = exercises[currentExerciseIndex];
     const updatedExercises = [...exercises];
@@ -79,7 +133,7 @@ export default function Workout() {
       // Тренировка завершена
       completeWorkout();
     }
-  }, [currentExerciseIndex, exercises, exerciseTimer]);
+  }, [currentExerciseIndex, exercises, exerciseTimer, completeWorkout]);
 
   useEffect(() => {
     if (isExerciseTimerRunning && exerciseTimer !== null && exerciseTimer > 0) {
@@ -168,64 +222,6 @@ export default function Workout() {
     setIsExerciseTimerRunning(false);
   };
 
-  const completeWorkout = () => {
-    if (activeProgram && program) {
-      const updatedProgram = {
-        ...activeProgram,
-        completedWorkouts: [
-          ...activeProgram.completedWorkouts,
-          {
-            week: activeProgram.currentWeek,
-            day: activeProgram.currentDay,
-            date: new Date().toISOString(),
-            exercises: exercises.map(ex => ({
-              exerciseId: ex.exercise.id,
-              name: ex.exercise.name,
-              sets: ex.setDetails.map(set => ({
-                reps: set.reps,
-                weight: set.weight,
-                duration: set.duration,
-                completed: set.completed
-              }))
-            }))
-          }
-        ],
-        currentDay: activeProgram.currentDay + 1
-      };
-
-      if (updatedProgram.currentDay > program.workoutsPerWeek) {
-        updatedProgram.currentWeek += 1;
-        updatedProgram.currentDay = 1;
-      }
-
-      // Сохраняем обновленную программу
-      localStorage.setItem('activeProgram', JSON.stringify(updatedProgram));
-
-      // Сохраняем историю тренировок
-      const workoutHistory = JSON.parse(localStorage.getItem('workoutHistory') || '[]');
-      workoutHistory.push({
-        date: new Date().toISOString(),
-        programId: program.id,
-        programName: program.name,
-        week: activeProgram.currentWeek,
-        day: activeProgram.currentDay,
-        exercises: exercises.map(ex => ({
-          exerciseId: ex.exercise.id,
-          name: ex.exercise.name,
-          sets: ex.setDetails.map(set => ({
-            reps: set.reps,
-            weight: set.weight,
-            duration: set.duration,
-            completed: set.completed
-          }))
-        }))
-      });
-      localStorage.setItem('workoutHistory', JSON.stringify(workoutHistory));
-
-      router.push('/active-program');
-    }
-  };
-
   // Функция для пропуска отдыха
   const skipRest = () => {
     setRestTimer(null);
@@ -252,6 +248,24 @@ export default function Workout() {
     setExerciseHistory(exerciseHistoryData);
   }, []);
 
+  // Загружаем историю при изменении текущего упражнения
+  useEffect(() => {
+    if (exercises[currentExerciseIndex]?.exercise.id) {
+      loadExerciseHistory(exercises[currentExerciseIndex].exercise.id);
+    }
+  }, [exercises, currentExerciseIndex, loadExerciseHistory]);
+
+  if (!activeProgram || !program) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-800 mx-auto mb-4"></div>
+          <p className="text-gray-600">Загрузка тренировки...</p>
+        </div>
+      </div>
+    );
+  }
+
   const currentWorkoutExercise = exercises[currentExerciseIndex];
   
   // Проверяем, загружены ли упражнения
@@ -265,13 +279,6 @@ export default function Workout() {
       </div>
     );
   }
-
-  // Загружаем историю при изменении текущего упражнения
-  useEffect(() => {
-    if (currentWorkoutExercise?.exercise.id) {
-      loadExerciseHistory(currentWorkoutExercise.exercise.id);
-    }
-  }, [currentWorkoutExercise, loadExerciseHistory]);
 
   const currentExercise = currentWorkoutExercise.exercise;
 

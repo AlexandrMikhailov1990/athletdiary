@@ -9,7 +9,7 @@ const nextConfig = {
     unoptimized: true,
   },
   // Отключаем использование трейлинг слэша
-  trailingSlash: false,
+  trailingSlash: true,
   // Настройка для правильной работы с Netlify
   distDir: 'out',
   // Указываем базовый путь, если сайт размещен в подкаталоге

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { Exercise, SAMPLE_EXERCISES } from '../../models/Exercise';
 
@@ -42,13 +42,8 @@ export default function CreateProgram() {
     reps: 10
   });
 
-  // Инициализация дней тренировок при монтировании компонента
-  useEffect(() => {
-    initializeWorkoutDays(form.workoutsPerWeek);
-  }, []);
-
   // Инициализация дней тренировок при изменении количества тренировок в неделю
-  const initializeWorkoutDays = (count: number) => {
+  const initializeWorkoutDays = useCallback((count: number) => {
     const totalWorkouts = count * form.duration;
     const newWorkoutDays = Array(totalWorkouts).fill(null).map(() => ({
       exercises: []
@@ -57,7 +52,12 @@ export default function CreateProgram() {
       ...prev,
       workoutDays: newWorkoutDays
     }));
-  };
+  }, [form.duration]);
+
+  // Инициализация дней тренировок при монтировании компонента
+  useEffect(() => {
+    initializeWorkoutDays(form.workoutsPerWeek);
+  }, [form.workoutsPerWeek, initializeWorkoutDays]);
 
   // Обработка изменения базовых полей формы
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
