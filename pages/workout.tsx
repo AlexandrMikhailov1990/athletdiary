@@ -22,17 +22,13 @@ export default function Workout() {
   const [activeProgram, setActiveProgram] = useState<ActiveProgram | null>(null);
   const [program, setProgram] = useState<Program | null>(null);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
-  const [exercises, setExercises] = useState<WorkoutExercise[]>(
-    SAMPLE_EXERCISES.map(exercise => ({
-      exercise,
-      completedSets: 0,
-      setDetails: []
-    }))
-  );
+  const [exercises, setExercises] = useState<WorkoutExercise[]>([]);
   const [restTimer, setRestTimer] = useState<number | null>(null);
   const [isResting, setIsResting] = useState(false);
   const [exerciseTimer, setExerciseTimer] = useState<number | null>(null);
   const [isExerciseTimerRunning, setIsExerciseTimerRunning] = useState(false);
+  const [currentWeight, setCurrentWeight] = useState<number | ''>('');
+  const [currentReps, setCurrentReps] = useState<number | ''>('');
 
   const handleSetComplete = useCallback((weight?: number, completedReps?: number) => {
     const currentWorkoutExercise = exercises[currentExerciseIndex];
@@ -67,7 +63,9 @@ export default function Workout() {
       setIsResting(true);
     } else if (currentExerciseIndex + 1 < exercises.length) {
       // Переходим к следующему упражнению
-      setCurrentExerciseIndex(currentExerciseIndex + 1);
+      setCurrentExerciseIndex(prev => prev + 1);
+      setRestTimer(null);
+      setIsResting(false);
     } else {
       // Тренировка завершена
       completeWorkout();
@@ -97,9 +95,43 @@ export default function Workout() {
     const activeProgramData = JSON.parse(savedProgram) as ActiveProgram;
     setActiveProgram(activeProgramData);
 
-    const programData = SAMPLE_PROGRAMS.find(p => p.id === activeProgramData.programId);
-    if (programData) {
-      setProgram(programData);
+    // Ищем программу во всех возможных местах
+    const savedPrograms = JSON.parse(localStorage.getItem('programs') || '[]') as Program[];
+    let foundProgram = [...SAMPLE_PROGRAMS, ...savedPrograms].find(p => p.id === activeProgramData.programId);
+    
+    if (!foundProgram) {
+      // Если программа не найдена в основном хранилище, ищем в активных программах
+      const activePrograms = JSON.parse(localStorage.getItem('activePrograms') || '[]') as (ActiveProgram & { program: Program })[];
+      const activeProgram = activePrograms.find(p => p.programId === activeProgramData.programId);
+      if (activeProgram?.program) {
+        foundProgram = activeProgram.program;
+      }
+    }
+
+    if (foundProgram) {
+      setProgram(foundProgram);
+      
+      // Получаем тренировку для текущего дня
+      const todayWorkout = foundProgram.workouts[activeProgramData.currentDay - 1];
+      
+      if (todayWorkout && todayWorkout.exercises) {
+        // Инициализируем упражнения
+        const workoutExercises: WorkoutExercise[] = todayWorkout.exercises.map(exerciseData => ({
+          exercise: exerciseData.exercise,
+          completedSets: 0,
+          setDetails: []
+        }));
+        
+        setExercises(workoutExercises);
+      } else {
+        // Если тренировка на текущий день не найдена
+        console.error('Тренировка на текущий день не найдена');
+        router.push('/active-program');
+      }
+    } else {
+      // Если программа не найдена нигде
+      console.error('Программа не найдена');
+      router.push('/programs');
     }
   }, [router]);
 
@@ -136,7 +168,17 @@ export default function Workout() {
           {
             week: activeProgram.currentWeek,
             day: activeProgram.currentDay,
-            date: new Date().toISOString()
+            date: new Date().toISOString(),
+            exercises: exercises.map(ex => ({
+              exerciseId: ex.exercise.id,
+              name: ex.exercise.name,
+              sets: ex.setDetails.map(set => ({
+                reps: set.reps,
+                weight: set.weight,
+                duration: set.duration,
+                completed: set.completed
+              }))
+            }))
           }
         ],
         currentDay: activeProgram.currentDay + 1
@@ -147,9 +189,38 @@ export default function Workout() {
         updatedProgram.currentDay = 1;
       }
 
+      // Сохраняем обновленную программу
       localStorage.setItem('activeProgram', JSON.stringify(updatedProgram));
+
+      // Сохраняем историю тренировок
+      const workoutHistory = JSON.parse(localStorage.getItem('workoutHistory') || '[]');
+      workoutHistory.push({
+        date: new Date().toISOString(),
+        programId: program.id,
+        programName: program.name,
+        week: activeProgram.currentWeek,
+        day: activeProgram.currentDay,
+        exercises: exercises.map(ex => ({
+          exerciseId: ex.exercise.id,
+          name: ex.exercise.name,
+          sets: ex.setDetails.map(set => ({
+            reps: set.reps,
+            weight: set.weight,
+            duration: set.duration,
+            completed: set.completed
+          }))
+        }))
+      });
+      localStorage.setItem('workoutHistory', JSON.stringify(workoutHistory));
+
       router.push('/active-program');
     }
+  };
+
+  // Функция для пропуска отдыха
+  const skipRest = () => {
+    setRestTimer(null);
+    setIsResting(false);
   };
 
   if (!activeProgram || !program) {
@@ -164,131 +235,165 @@ export default function Workout() {
   }
 
   const currentWorkoutExercise = exercises[currentExerciseIndex];
+  
+  // Проверяем, загружены ли упражнения
+  if (!currentWorkoutExercise) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-800 mx-auto mb-4"></div>
+          <p className="text-gray-600">Загрузка упражнений...</p>
+        </div>
+      </div>
+    );
+  }
+
   const currentExercise = currentWorkoutExercise.exercise;
 
-  return (
-    <div className="min-h-screen bg-gray-100 py-8">
-      <div className="container mx-auto px-4">
-        <div className="max-w-2xl mx-auto">
-          <h1 className="text-3xl font-bold text-blue-800 mb-8 text-center">
-            Тренировка: Неделя {activeProgram.currentWeek}, День {activeProgram.currentDay}
-          </h1>
+  // Проверяем, есть ли текущее упражнение
+  if (!currentExercise) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600">Ошибка: Упражнение не найдено</p>
+          <button
+            className="mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg"
+            onClick={() => router.push('/active-program')}
+          >
+            Вернуться к программе
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold text-blue-800">
-                {currentExercise.name}
-              </h2>
-              <span className="text-gray-600">
-                {currentExerciseIndex + 1} / {exercises.length}
-              </span>
+  return (
+    <div className="container mx-auto px-4 py-8">
+      {!currentWorkoutExercise ? (
+        <div className="text-center">
+          <p className="text-xl mb-4">Упражнения не загружены</p>
+          <button
+            onClick={() => router.push('/active-program')}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
+            Вернуться к программе
+          </button>
+        </div>
+      ) : (
+        <>
+          <h1 className="text-2xl font-bold mb-6">Тренировка</h1>
+          
+          {/* Информация о текущем упражнении */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 className="text-xl font-semibold mb-2">{currentWorkoutExercise.exercise.name}</h2>
+            <p className="text-gray-600 mb-4">{currentWorkoutExercise.exercise.description}</p>
+            
+            {/* Прогресс упражнения */}
+            <div className="mb-4">
+              <p className="text-lg">
+                Сет {currentWorkoutExercise.completedSets + 1} из {currentWorkoutExercise.exercise.sets}
+              </p>
+              <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div
+                  className="bg-blue-600 h-2.5 rounded-full"
+                  style={{
+                    width: `${(currentWorkoutExercise.completedSets / currentWorkoutExercise.exercise.sets) * 100}%`
+                  }}
+                ></div>
+              </div>
             </div>
 
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-blue-50 p-4 rounded-lg text-center">
-                  <div className="text-2xl font-bold text-blue-700">
-                    {currentExercise.sets}
-                  </div>
-                  <div className="text-gray-600">Подходов</div>
-                </div>
-
-                {currentExercise.type === 'reps' ? (
-                  <div className="bg-blue-50 p-4 rounded-lg text-center">
-                    <div className="text-2xl font-bold text-blue-700">
-                      {currentExercise.reps}
+            {/* Контролы для упражнения */}
+            {isResting ? (
+              <div className="text-center">
+                <p className="text-xl mb-4">Отдых: {restTimer}с</p>
+                <button
+                  onClick={skipRest}
+                  className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600"
+                >
+                  Пропустить отдых
+                </button>
+              </div>
+            ) : (
+              <div>
+                {currentWorkoutExercise.exercise.type === 'reps' ? (
+                  <div className="space-y-4">
+                    <div className="flex gap-4">
+                      <input
+                        type="number"
+                        value={currentWeight}
+                        onChange={(e) => setCurrentWeight(Number(e.target.value))}
+                        placeholder="Вес (кг)"
+                        className="border rounded px-3 py-2 w-full"
+                      />
+                      <input
+                        type="number"
+                        value={currentReps}
+                        onChange={(e) => setCurrentReps(Number(e.target.value))}
+                        placeholder="Повторения"
+                        className="border rounded px-3 py-2 w-full"
+                      />
                     </div>
-                    <div className="text-gray-600">Повторений</div>
+                    <button
+                      onClick={() => handleSetComplete(
+                        currentWeight ? Number(currentWeight) : undefined,
+                        currentReps ? Number(currentReps) : undefined
+                      )}
+                      className="w-full bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600"
+                    >
+                      Завершить сет
+                    </button>
                   </div>
                 ) : (
-                  <div className="bg-blue-50 p-4 rounded-lg text-center">
-                    <div className="text-2xl font-bold text-blue-700">
-                      {currentExercise.duration}с
-                    </div>
-                    <div className="text-gray-600">Длительность</div>
+                  <div className="space-y-4">
+                    <p className="text-xl">Время: {exerciseTimer}с</p>
+                    {!isExerciseTimerRunning ? (
+                      <button
+                        onClick={startExerciseTimer}
+                        className="w-full bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600"
+                      >
+                        Начать
+                      </button>
+                    ) : (
+                      <div className="space-y-2">
+                        <button
+                          onClick={stopExerciseTimer}
+                          className="w-full bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600"
+                        >
+                          Пауза
+                        </button>
+                        <button
+                          onClick={() => handleSetComplete()}
+                          className="w-full bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600"
+                        >
+                          Завершить досрочно
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
+            )}
+          </div>
 
-              {currentExercise.type === 'reps' && currentExercise.weight && (
-                <div className="bg-purple-50 p-4 rounded-lg text-center">
-                  <div className="text-2xl font-bold text-purple-700">
-                    {currentExercise.weight} кг
+          {/* История выполненных сетов */}
+          {currentWorkoutExercise.setDetails.length > 0 && (
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h3 className="text-lg font-semibold mb-4">История сетов</h3>
+              <div className="space-y-2">
+                {currentWorkoutExercise.setDetails.map((detail, index) => (
+                  <div key={index} className="flex justify-between items-center py-2 border-b">
+                    <span>Сет {index + 1}:</span>
+                    {detail.weight && <span>{detail.weight} кг</span>}
+                    {detail.reps && <span>{detail.reps} повторений</span>}
+                    {detail.duration && <span>{detail.duration} секунд</span>}
                   </div>
-                  <div className="text-gray-600">Вес</div>
-                </div>
-              )}
-
-              {isResting ? (
-                <div className="text-center py-6">
-                  <div className="text-3xl font-bold text-blue-800 mb-2">
-                    Отдых: {restTimer}с
-                  </div>
-                  <p className="text-gray-600">
-                    Следующий подход: {currentWorkoutExercise.completedSets + 1} / {currentExercise.sets}
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <p className="text-center text-gray-600">
-                    Подход {currentWorkoutExercise.completedSets + 1} / {currentExercise.sets}
-                  </p>
-                  
-                  {currentExercise.type === 'timed' ? (
-                    <div className="space-y-4">
-                      <div className="text-center">
-                        <div className="text-3xl font-bold text-blue-800 mb-2">
-                          {isExerciseTimerRunning ? (
-                            `${exerciseTimer || 0}с`
-                          ) : (
-                            exerciseTimer === null ? `${currentExercise.duration}с` : `${exerciseTimer}с`
-                          )}
-                        </div>
-                      </div>
-                      
-                      {!isExerciseTimerRunning ? (
-                        <button
-                          className="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-lg font-semibold"
-                          onClick={startExerciseTimer}
-                        >
-                          Начать
-                        </button>
-                      ) : (
-                        <button
-                          className="w-full bg-red-600 hover:bg-red-700 text-white py-3 px-6 rounded-lg font-semibold"
-                          onClick={stopExerciseTimer}
-                        >
-                          Остановить
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    <button
-                      className="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-lg font-semibold"
-                      onClick={() => handleSetComplete()}
-                    >
-                      Завершить подход
-                    </button>
-                  )}
-                </div>
-              )}
+                ))}
+              </div>
             </div>
-          </div>
-
-          <div className="text-center">
-            <button
-              className="text-red-600 hover:text-red-700 font-semibold"
-              onClick={() => {
-                if (confirm('Вы уверены, что хотите прервать тренировку? Прогресс не будет сохранен.')) {
-                  router.push('/active-program');
-                }
-              }}
-            >
-              Прервать тренировку
-            </button>
-          </div>
-        </div>
-      </div>
+          )}
+        </>
+      )}
     </div>
   );
 } 

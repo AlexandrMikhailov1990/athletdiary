@@ -169,10 +169,10 @@ export default function CreateProgram() {
     const newProgram = {
       id: Date.now().toString(),
       name: form.name,
-      description: form.description,
+      description: form.description || 'Персональная программа тренировок',
       level: form.level,
-      duration: form.duration,
-      workoutsPerWeek: form.workoutsPerWeek,
+      duration: Number(form.duration),
+      workoutsPerWeek: Number(form.workoutsPerWeek),
       workouts: workouts,
       createdBy: 'user',
       isPublic: true
@@ -183,7 +183,29 @@ export default function CreateProgram() {
     programs.push(newProgram);
     localStorage.setItem('programs', JSON.stringify(programs));
 
-    router.push('/programs');
+    // Автоматически запускаем программу
+    const newActiveProgram = {
+      programId: newProgram.id,
+      userId: 'user',
+      startDate: new Date().toISOString(),
+      currentWeek: 1,
+      currentDay: 1,
+      completedWorkouts: []
+    };
+
+    // Сохраняем активную программу
+    localStorage.setItem('activeProgram', JSON.stringify(newActiveProgram));
+
+    // Сохраняем полную информацию о программе в activePrograms
+    const activePrograms = JSON.parse(localStorage.getItem('activePrograms') || '[]');
+    activePrograms.push({
+      ...newActiveProgram,
+      program: newProgram
+    });
+    localStorage.setItem('activePrograms', JSON.stringify(activePrograms));
+
+    // Перенаправляем на страницу активной программы
+    router.push('/active-program');
   };
 
   return (
