@@ -64,28 +64,28 @@ export default function Programs() {
         
         {/* Фильтры */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex flex-col">
+              <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
                 Поиск программ
               </label>
               <input
                 type="text"
                 id="search"
-                className="w-full p-2 border border-gray-300 rounded"
+                className="w-full h-11 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
                 placeholder="Название или описание..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
             
-            <div>
-              <label htmlFor="level" className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="flex flex-col">
+              <label htmlFor="level" className="block text-sm font-medium text-gray-700 mb-2">
                 Уровень подготовки
               </label>
               <select
                 id="level"
-                className="w-full p-2 border border-gray-300 rounded"
+                className="w-full h-11 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white"
                 value={selectedLevel}
                 onChange={(e) => setSelectedLevel(e.target.value)}
               >
@@ -101,7 +101,7 @@ export default function Programs() {
         {/* Кнопка создания программы */}
         <div className="mb-8 text-right">
           <button 
-            className="bg-green-600 hover:bg-green-700 text-white py-2 px-6 rounded-lg"
+            className="bg-green-600 hover:bg-green-700 text-white h-11 px-6 rounded-lg transition-colors duration-200 font-medium"
             onClick={() => router.push('/programs/create')}
           >
             Создать новую программу
@@ -111,38 +111,42 @@ export default function Programs() {
         {/* Результаты */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredPrograms.map(program => (
-            <div key={program.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="p-6">
-                <h3 className="text-xl font-semibold text-blue-800 mb-2">{program.name}</h3>
-                
-                <div className="mb-3">
-                  <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded mr-2">
-                    {program.level === 'beginner' && 'Новичок'}
-                    {program.level === 'intermediate' && 'Средний'}
-                    {program.level === 'advanced' && 'Продвинутый'}
-                  </span>
+            <div key={program.id} className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col h-full">
+              <div className="p-6 flex flex-col h-full">
+                <div className="flex-grow">
+                  <h3 className="text-xl font-semibold text-blue-800 mb-4">{program.name}</h3>
                   
-                  <span className="inline-block px-2 py-1 bg-purple-100 text-purple-800 text-xs font-semibold rounded mr-2">
-                    {program.duration} недель
-                  </span>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    <span className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+                      {program.level === 'beginner' && 'Новичок'}
+                      {program.level === 'intermediate' && 'Средний'}
+                      {program.level === 'advanced' && 'Продвинутый'}
+                    </span>
+                    
+                    <span className="inline-flex items-center px-3 py-1 bg-purple-100 text-purple-800 text-sm font-medium rounded-full">
+                      {program.duration} недель
+                    </span>
+                    
+                    <span className="inline-flex items-center px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
+                      {program.workoutsPerWeek} тр/нед
+                    </span>
+                  </div>
                   
-                  <span className="inline-block px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded">
-                    {program.workoutsPerWeek} тренировок в неделю
-                  </span>
+                  <p className="text-gray-600 mb-4 line-clamp-3 h-[4.5rem] overflow-hidden">
+                    {program.description}
+                  </p>
                 </div>
                 
-                <p className="text-gray-600 mb-4">{program.description}</p>
-                
-                <div className="mt-4 flex space-x-2">
+                <div className="flex gap-3 mt-auto pt-4">
                   <button 
-                    className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded flex-1"
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-4 rounded-lg transition-colors duration-200"
                     onClick={() => viewProgramDetails(program.id)}
                   >
                     Подробнее
                   </button>
                   
                   <button 
-                    className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded flex-1"
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2.5 px-4 rounded-lg transition-colors duration-200"
                     onClick={() => startProgram(program)}
                   >
                     Начать

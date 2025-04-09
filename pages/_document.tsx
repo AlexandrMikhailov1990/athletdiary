@@ -5,7 +5,6 @@ export default function Document() {
     <Html lang="ru">
       <Head>
         <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="description" content="AthletDiary - Ваш персональный дневник тренировок" />
         <link rel="icon" href="/favicon.ico" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />

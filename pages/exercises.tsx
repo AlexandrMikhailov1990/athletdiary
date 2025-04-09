@@ -67,28 +67,28 @@ export default function Exercises() {
         
         {/* Фильтры */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex flex-col">
+              <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
                 Поиск упражнений
               </label>
               <input
                 type="text"
                 id="search"
-                className="w-full p-2 border border-gray-300 rounded"
+                className="w-full h-11 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
                 placeholder="Название упражнения..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
             
-            <div>
-              <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="flex flex-col">
+              <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-2">
                 Тип упражнения
               </label>
               <select
                 id="type"
-                className="w-full p-2 border border-gray-300 rounded"
+                className="w-full h-11 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white"
                 value={selectedType}
                 onChange={(e) => setSelectedType(e.target.value as 'all' | 'reps' | 'timed')}
               >

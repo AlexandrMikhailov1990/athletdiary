@@ -22,7 +22,7 @@ export default function Home() {
               onClick={() => router.push('/exercises')}
               className="bg-blue-600 hover:bg-blue-700 text-white py-3 px-8 rounded-lg shadow-lg"
             >
-              Начать тренировку
+              Просмотреть упражнения
             </button>
             <button
               onClick={() => router.push('/programs')}
