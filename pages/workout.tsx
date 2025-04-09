@@ -29,6 +29,15 @@ export default function Workout() {
   const [isExerciseTimerRunning, setIsExerciseTimerRunning] = useState(false);
   const [currentWeight, setCurrentWeight] = useState<number | ''>('');
   const [currentReps, setCurrentReps] = useState<number | ''>('');
+  const [exerciseHistory, setExerciseHistory] = useState<Array<{
+    date: string;
+    programName: string;
+    sets: Array<{
+      weight?: number;
+      reps?: number;
+      duration?: number;
+    }>;
+  }>>([]);
 
   const handleSetComplete = useCallback((weight?: number, completedReps?: number) => {
     const currentWorkoutExercise = exercises[currentExerciseIndex];
@@ -223,16 +232,25 @@ export default function Workout() {
     setIsResting(false);
   };
 
-  if (!activeProgram || !program) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-800 mx-auto mb-4"></div>
-          <p className="text-gray-600">Загрузка тренировки...</p>
-        </div>
-      </div>
-    );
-  }
+  // Функция для загрузки истории упражнения
+  const loadExerciseHistory = useCallback((exerciseId: string) => {
+    const workoutHistory = JSON.parse(localStorage.getItem('workoutHistory') || '[]');
+    const exerciseHistoryData = workoutHistory
+      .filter((workout: any) => 
+        workout.exercises.some((ex: any) => ex.exerciseId === exerciseId)
+      )
+      .map((workout: any) => ({
+        date: workout.date,
+        programName: workout.programName,
+        sets: workout.exercises
+          .find((ex: any) => ex.exerciseId === exerciseId)
+          .sets
+      }))
+      .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 5); // Показываем только последние 5 тренировок
+
+    setExerciseHistory(exerciseHistoryData);
+  }, []);
 
   const currentWorkoutExercise = exercises[currentExerciseIndex];
   
@@ -247,6 +265,13 @@ export default function Workout() {
       </div>
     );
   }
+
+  // Загружаем историю при изменении текущего упражнения
+  useEffect(() => {
+    if (currentWorkoutExercise?.exercise.id) {
+      loadExerciseHistory(currentWorkoutExercise.exercise.id);
+    }
+  }, [currentWorkoutExercise, loadExerciseHistory]);
 
   const currentExercise = currentWorkoutExercise.exercise;
 
@@ -376,10 +401,10 @@ export default function Workout() {
             )}
           </div>
 
-          {/* История выполненных сетов */}
+          {/* История выполненных сетов текущей тренировки */}
           {currentWorkoutExercise.setDetails.length > 0 && (
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-semibold mb-4">История сетов</h3>
+            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+              <h3 className="text-lg font-semibold mb-4">Текущая тренировка</h3>
               <div className="space-y-2">
                 {currentWorkoutExercise.setDetails.map((detail, index) => (
                   <div key={index} className="flex justify-between items-center py-2 border-b">
@@ -390,6 +415,35 @@ export default function Workout() {
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* История предыдущих тренировок */}
+          {exerciseHistory.length > 0 && (
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h3 className="text-lg font-semibold mb-4">История упражнения</h3>
+              {exerciseHistory.map((workout, workoutIndex) => (
+                <div key={workoutIndex} className="mb-6 last:mb-0">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="font-medium">
+                      {new Date(workout.date).toLocaleDateString('ru-RU')}
+                    </span>
+                    <span className="text-sm text-gray-600">{workout.programName}</span>
+                  </div>
+                  <div className="pl-4 space-y-2">
+                    {workout.sets.map((set, setIndex) => (
+                      <div key={setIndex} className="flex justify-between items-center py-1 border-b border-gray-100">
+                        <span className="text-sm">Сет {setIndex + 1}:</span>
+                        <div className="flex gap-4">
+                          {set.weight && <span className="text-sm">{set.weight} кг</span>}
+                          {set.reps && <span className="text-sm">{set.reps} повт.</span>}
+                          {set.duration && <span className="text-sm">{set.duration} сек</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </>
