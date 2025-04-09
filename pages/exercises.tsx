@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { SAMPLE_EXERCISES, Exercise } from '../models/Exercise';
+import { Exercise, SAMPLE_EXERCISES } from '../models/Exercise';
+import ExerciseCard from '../components/ExerciseCard';
 
 const ITEMS_PER_PAGE = 9;
 
 export default function Exercises() {
   const [exercises, setExercises] = useState<Exercise[]>(SAMPLE_EXERCISES);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedType, setSelectedType] = useState<'all' | 'reps' | 'timed'>('all');
   const [selectedMuscleGroup, setSelectedMuscleGroup] = useState<string>('');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -39,16 +41,10 @@ export default function Exercises() {
 
   // Фильтрация упражнений
   const filteredExercises = SAMPLE_EXERCISES.filter(exercise => {
-    const matchesSearch = exercise.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         exercise.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = exercise.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = selectedType === 'all' || exercise.type === selectedType;
     
-    const matchesMuscleGroup = selectedMuscleGroup === '' || 
-                              exercise.muscleGroups.includes(selectedMuscleGroup);
-    
-    const matchesDifficulty = selectedDifficulty === '' || 
-                             exercise.difficulty === selectedDifficulty;
-    
-    return matchesSearch && matchesMuscleGroup && matchesDifficulty;
+    return matchesSearch && matchesType;
   });
 
   // Пагинация
@@ -67,11 +63,11 @@ export default function Exercises() {
   return (
     <div className="min-h-screen bg-gray-100 py-8">
       <div className="container mx-auto px-4">
-        <h1 className="text-3xl font-bold text-blue-800 mb-8 text-center">Каталог упражнений</h1>
+        <h1 className="text-3xl font-bold text-blue-800 mb-8 text-center">Упражнения</h1>
         
         {/* Фильтры */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
                 Поиск упражнений
@@ -80,54 +76,25 @@ export default function Exercises() {
                 type="text"
                 id="search"
                 className="w-full p-2 border border-gray-300 rounded"
-                placeholder="Название или описание..."
+                placeholder="Название упражнения..."
                 value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setCurrentPage(1); // Сброс на первую страницу при поиске
-                }}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
             
             <div>
-              <label htmlFor="muscleGroup" className="block text-sm font-medium text-gray-700 mb-1">
-                Группа мышц
+              <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
+                Тип упражнения
               </label>
               <select
-                id="muscleGroup"
+                id="type"
                 className="w-full p-2 border border-gray-300 rounded"
-                value={selectedMuscleGroup}
-                onChange={(e) => {
-                  setSelectedMuscleGroup(e.target.value);
-                  setCurrentPage(1); // Сброс на первую страницу при изменении фильтра
-                }}
+                value={selectedType}
+                onChange={(e) => setSelectedType(e.target.value as 'all' | 'reps' | 'timed')}
               >
-                <option value="">Все группы мышц</option>
-                {muscleGroups.map(group => (
-                  <option key={group} value={group}>
-                    {group}
-                  </option>
-                ))}
-              </select>
-            </div>
-            
-            <div>
-              <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700 mb-1">
-                Уровень сложности
-              </label>
-              <select
-                id="difficulty"
-                className="w-full p-2 border border-gray-300 rounded"
-                value={selectedDifficulty}
-                onChange={(e) => {
-                  setSelectedDifficulty(e.target.value);
-                  setCurrentPage(1); // Сброс на первую страницу при изменении фильтра
-                }}
-              >
-                <option value="">Все уровни</option>
-                <option value="beginner">Новичок</option>
-                <option value="intermediate">Средний</option>
-                <option value="advanced">Продвинутый</option>
+                <option value="all">Все типы</option>
+                <option value="reps">Повторения</option>
+                <option value="timed">Время</option>
               </select>
             </div>
           </div>
@@ -136,50 +103,10 @@ export default function Exercises() {
         {/* Результаты */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {paginatedExercises.map(exercise => (
-            <div key={exercise.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="h-48 bg-gray-200">
-                {exercise.imageUrl ? (
-                  <img 
-                    src={exercise.imageUrl} 
-                    alt={exercise.name} 
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-500">
-                    Изображение недоступно
-                  </div>
-                )}
-              </div>
-              
-              <div className="p-4">
-                <h3 className="text-xl font-semibold text-blue-800 mb-2">{exercise.name}</h3>
-                
-                <div className="mb-2">
-                  <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded mr-2 mb-2">
-                    {exercise.difficulty === 'beginner' && 'Новичок'}
-                    {exercise.difficulty === 'intermediate' && 'Средний'}
-                    {exercise.difficulty === 'advanced' && 'Продвинутый'}
-                  </span>
-                  
-                  {exercise.muscleGroups.map(group => (
-                    <span 
-                      key={group} 
-                      className="inline-block px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded mr-2 mb-2"
-                    >
-                      {group}
-                    </span>
-                  ))}
-                </div>
-                
-                <p className="text-gray-600 mb-4">{exercise.description}</p>
-                
-                <button 
-                  className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded w-full"
-                >
-                  Подробнее
-                </button>
-              </div>
-            </div>
+            <ExerciseCard
+              key={exercise.id}
+              exercise={exercise}
+            />
           ))}
         </div>
         
@@ -234,7 +161,9 @@ export default function Exercises() {
         
         {filteredExercises.length === 0 && (
           <div className="text-center py-8">
-            <p className="text-gray-600 text-lg">Упражнения не найдены. Попробуйте изменить критерии поиска.</p>
+            <p className="text-gray-600 text-lg">
+              Упражнения не найдены. Попробуйте изменить критерии поиска.
+            </p>
           </div>
         )}
       </div>

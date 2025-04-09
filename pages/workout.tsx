@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import type { ActiveProgram } from '../models/ActiveProgram';
 import { SAMPLE_PROGRAMS, Program } from '../models/Program';
@@ -34,60 +34,7 @@ export default function Workout() {
   const [exerciseTimer, setExerciseTimer] = useState<number | null>(null);
   const [isExerciseTimerRunning, setIsExerciseTimerRunning] = useState(false);
 
-  useEffect(() => {
-    // Загружаем активную программу
-    const savedProgram = localStorage.getItem('activeProgram');
-    if (!savedProgram) {
-      router.push('/programs');
-      return;
-    }
-
-    const activeProgramData = JSON.parse(savedProgram) as ActiveProgram;
-    setActiveProgram(activeProgramData);
-
-    const programData = SAMPLE_PROGRAMS.find(p => p.id === activeProgramData.programId);
-    if (programData) {
-      setProgram(programData);
-    }
-  }, [router]);
-
-  useEffect(() => {
-    if (isResting && restTimer !== null && restTimer > 0) {
-      const timer = setTimeout(() => {
-        setRestTimer(restTimer - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    } else if (restTimer === 0) {
-      setIsResting(false);
-      setRestTimer(null);
-    }
-  }, [isResting, restTimer]);
-
-  useEffect(() => {
-    if (isExerciseTimerRunning && exerciseTimer !== null && exerciseTimer > 0) {
-      const timer = setTimeout(() => {
-        setExerciseTimer(exerciseTimer - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    } else if (exerciseTimer === 0) {
-      setIsExerciseTimerRunning(false);
-      handleSetComplete();
-    }
-  }, [isExerciseTimerRunning, exerciseTimer]);
-
-  const startExerciseTimer = () => {
-    const currentExercise = exercises[currentExerciseIndex].exercise;
-    if (currentExercise.type === 'timed') {
-      setExerciseTimer(currentExercise.duration);
-      setIsExerciseTimerRunning(true);
-    }
-  };
-
-  const stopExerciseTimer = () => {
-    setIsExerciseTimerRunning(false);
-  };
-
-  const handleSetComplete = (weight?: number, completedReps?: number) => {
+  const handleSetComplete = useCallback((weight?: number, completedReps?: number) => {
     const currentWorkoutExercise = exercises[currentExerciseIndex];
     const updatedExercises = [...exercises];
     
@@ -125,6 +72,59 @@ export default function Workout() {
       // Тренировка завершена
       completeWorkout();
     }
+  }, [currentExerciseIndex, exercises, exerciseTimer]);
+
+  useEffect(() => {
+    if (isExerciseTimerRunning && exerciseTimer !== null && exerciseTimer > 0) {
+      const timer = setTimeout(() => {
+        setExerciseTimer(exerciseTimer - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else if (exerciseTimer === 0) {
+      setIsExerciseTimerRunning(false);
+      handleSetComplete();
+    }
+  }, [isExerciseTimerRunning, exerciseTimer, handleSetComplete]);
+
+  useEffect(() => {
+    // Загружаем активную программу
+    const savedProgram = localStorage.getItem('activeProgram');
+    if (!savedProgram) {
+      router.push('/programs');
+      return;
+    }
+
+    const activeProgramData = JSON.parse(savedProgram) as ActiveProgram;
+    setActiveProgram(activeProgramData);
+
+    const programData = SAMPLE_PROGRAMS.find(p => p.id === activeProgramData.programId);
+    if (programData) {
+      setProgram(programData);
+    }
+  }, [router]);
+
+  useEffect(() => {
+    if (isResting && restTimer !== null && restTimer > 0) {
+      const timer = setTimeout(() => {
+        setRestTimer(restTimer - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else if (restTimer === 0) {
+      setIsResting(false);
+      setRestTimer(null);
+    }
+  }, [isResting, restTimer]);
+
+  const startExerciseTimer = () => {
+    const currentExercise = exercises[currentExerciseIndex].exercise;
+    if (currentExercise.type === 'timed') {
+      setExerciseTimer(currentExercise.duration);
+      setIsExerciseTimerRunning(true);
+    }
+  };
+
+  const stopExerciseTimer = () => {
+    setIsExerciseTimerRunning(false);
   };
 
   const completeWorkout = () => {

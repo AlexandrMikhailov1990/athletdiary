@@ -7,48 +7,41 @@ interface ExerciseDetailsProps {
   onAddToWorkout?: () => void;
 }
 
+const getExerciseTypeLabel = (type: 'reps' | 'timed'): string => {
+  return type === 'reps' ? 'Повторения' : 'Время';
+};
+
+const getDifficultyColor = (difficulty: string): string => {
+  switch (difficulty.toLowerCase()) {
+    case 'beginner':
+      return 'text-green-600 bg-green-100';
+    case 'intermediate':
+      return 'text-yellow-600 bg-yellow-100';
+    case 'advanced':
+      return 'text-red-600 bg-red-100';
+    default:
+      return 'text-gray-600 bg-gray-100';
+  }
+};
+
 export default function ExerciseDetails({ exercise, onClose, onAddToWorkout }: ExerciseDetailsProps) {
   const [imageError, setImageError] = useState(false);
-  const [videoError, setVideoError] = useState(false);
-
-  // Функция для отображения уровня сложности на русском языке
-  const getDifficultyLabel = (difficulty: string): string => {
-    switch (difficulty) {
-      case 'beginner':
-        return 'Новичок';
-      case 'intermediate':
-        return 'Средний';
-      case 'advanced':
-        return 'Продвинутый';
-      default:
-        return difficulty;
-    }
-  };
-
-  const handleImageError = () => {
-    setImageError(true);
-  };
-
-  const handleVideoError = () => {
-    setVideoError(true);
-  };
 
   return (
-    <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="exercise-title"
-    >
-      <div 
-        className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-90vh overflow-auto"
-        role="document"
-      >
-        <div className="sticky top-0 bg-blue-600 text-white p-4 flex justify-between items-center">
-          <h2 id="exercise-title" className="text-xl font-bold">{exercise.name}</h2>
-          <button 
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center p-6 border-b">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800">{exercise.name}</h2>
+            <div className="flex gap-2 mt-2">
+              <span className={`px-2 py-1 rounded-full text-sm font-medium ${getDifficultyColor(exercise.difficulty)}`}>
+                {exercise.difficulty}
+              </span>
+            </div>
+          </div>
+          <button
             onClick={onClose}
-            className="text-white hover:text-gray-200 focus:outline-none"
+            className="text-gray-500 hover:text-gray-700"
             aria-label="Закрыть"
           >
             <svg 
@@ -57,7 +50,6 @@ export default function ExerciseDetails({ exercise, onClose, onAddToWorkout }: E
               stroke="currentColor" 
               viewBox="0 0 24 24" 
               xmlns="http://www.w3.org/2000/svg"
-              aria-hidden="true"
             >
               <path 
                 strokeLinecap="round" 
@@ -70,148 +62,91 @@ export default function ExerciseDetails({ exercise, onClose, onAddToWorkout }: E
         </div>
 
         <div className="p-6">
-          {/* Основная информация */}
-          <div className="flex flex-col md:flex-row gap-6 mb-6">
+          <div className="flex flex-col md:flex-row gap-6">
             <div className="w-full md:w-1/2">
-              <div className="bg-gray-200 h-64 rounded-lg mb-4">
-                {exercise.imageUrl && !imageError ? (
+              {exercise.imageUrl && !imageError ? (
+                <div className="bg-gray-200 h-64 rounded-lg mb-4">
                   <img 
                     src={exercise.imageUrl} 
                     alt={exercise.name} 
                     className="w-full h-full object-cover rounded-lg"
-                    onError={handleImageError}
+                    onError={() => setImageError(true)}
                   />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-500">
-                    <svg 
-                      className="w-16 h-16"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                      aria-hidden="true"
-                    >
-                      <path 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round" 
-                        strokeWidth={2} 
-                        d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" 
-                      />
-                      <path 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round" 
-                        strokeWidth={2} 
-                        d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" 
-                      />
-                    </svg>
-                  </div>
-                )}
-              </div>
-
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">Основная информация</h3>
-                
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-gray-50 p-3 rounded">
-                    <p className="text-sm text-gray-500">Сложность</p>
-                    <p className="font-medium">{getDifficultyLabel(exercise.difficulty)}</p>
-                  </div>
-                  
-                  <div className="bg-gray-50 p-3 rounded">
-                    <p className="text-sm text-gray-500">Оборудование</p>
-                    <p className="font-medium">
-                      {exercise.equipment.length > 0 
-                        ? exercise.equipment.join(', ')
-                        : 'Не требуется'
-                      }
-                    </p>
-                  </div>
                 </div>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">Задействованные мышцы</h3>
-                <div 
-                  className="flex flex-wrap gap-2"
-                  role="list"
-                  aria-label="Список задействованных мышц"
-                >
-                  {exercise.muscleGroups.map(group => (
-                    <span 
-                      key={group} 
-                      className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm"
-                      role="listitem"
-                    >
-                      {group}
-                    </span>
-                  ))}
+              ) : (
+                <div className="bg-gray-200 h-64 rounded-lg mb-4 flex items-center justify-center">
+                  <span className="text-gray-500">Изображение недоступно</span>
                 </div>
-              </div>
+              )}
+
+              {exercise.description && (
+                <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                  <h3 className="font-semibold mb-2">Описание</h3>
+                  <p className="text-gray-700">{exercise.description}</p>
+                </div>
+              )}
             </div>
 
-            <div className="w-full md:w-1/2">
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">Описание</h3>
-              <p className="text-gray-600 mb-6">{exercise.description}</p>
-              
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">Техника выполнения</h3>
-              <ol 
-                className="list-decimal list-inside space-y-2 mb-6"
-                role="list"
-                aria-label="Пошаговая инструкция выполнения упражнения"
-              >
-                {exercise.instructions.map((instruction, index) => (
-                  <li key={index} className="text-gray-600" role="listitem">{instruction}</li>
-                ))}
-              </ol>
+            <div className="w-full md:w-1/2 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="text-sm text-gray-500 mb-1">Тип упражнения</h3>
+                  <p className="font-medium">{getExerciseTypeLabel(exercise.type)}</p>
+                </div>
 
-              {exercise.videoUrl && !videoError && (
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">Видео</h3>
-                  <div className="bg-gray-100 p-4 rounded-lg">
-                    <a 
-                      href={exercise.videoUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 flex items-center"
-                      aria-label="Открыть видео-инструкцию в новом окне"
-                    >
-                      <svg 
-                        className="w-5 h-5 mr-2" 
-                        fill="currentColor" 
-                        viewBox="0 0 20 20" 
-                        xmlns="http://www.w3.org/2000/svg"
-                        aria-hidden="true"
-                      >
-                        <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
-                      </svg>
-                      Смотреть видео-инструкцию
-                    </a>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="text-sm text-gray-500 mb-1">Целевые мышцы</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {exercise.muscleGroups.map((muscle, index) => (
+                      <span key={index} className="bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded">
+                        {muscle}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="text-sm text-gray-500 mb-1">Рекомендации</h3>
+                  <p className="font-medium">
+                    {exercise.type === 'reps' 
+                      ? `${exercise.sets} подхода по ${exercise.reps} повторений`
+                      : `${exercise.sets} подхода по ${exercise.duration} секунд`
+                    }
+                    {exercise.type === 'reps' && exercise.weight && ` с весом ${exercise.weight} кг`}
+                  </p>
+                </div>
+
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="text-sm text-gray-500 mb-1">Отдых между подходами</h3>
+                  <p className="font-medium">{exercise.restTime} секунд</p>
+                </div>
+              </div>
+
+              {exercise.equipment && exercise.equipment.length > 0 && (
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="text-sm text-gray-500 mb-1">Необходимое оборудование</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {exercise.equipment.map((item, index) => (
+                      <span key={index} className="bg-gray-200 text-gray-800 text-sm px-2 py-1 rounded">
+                        {item}
+                      </span>
+                    ))}
                   </div>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Кнопки действий */}
-          <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100"
-              aria-label="Закрыть окно с деталями упражнения"
-            >
-              Закрыть
-            </button>
-            
-            {onAddToWorkout && (
+          {onAddToWorkout && (
+            <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
               <button
                 onClick={onAddToWorkout}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                aria-label={`Добавить упражнение "${exercise.name}" в тренировку`}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium"
               >
                 Добавить в тренировку
               </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

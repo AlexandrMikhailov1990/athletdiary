@@ -9,18 +9,8 @@ interface ExerciseCardProps {
 export default function ExerciseCard({ exercise, onSelect }: ExerciseCardProps) {
   const [imageError, setImageError] = useState(false);
 
-  // Функция для отображения уровня сложности на русском языке
-  const getDifficultyLabel = (difficulty: string): string => {
-    switch (difficulty) {
-      case 'beginner':
-        return 'Новичок';
-      case 'intermediate':
-        return 'Средний';
-      case 'advanced':
-        return 'Продвинутый';
-      default:
-        return difficulty;
-    }
+  const getExerciseTypeLabel = (type: 'reps' | 'timed'): string => {
+    return type === 'reps' ? 'Повторения' : 'Время';
   };
 
   const handleImageError = () => {
@@ -70,36 +60,42 @@ export default function ExerciseCard({ exercise, onSelect }: ExerciseCardProps) 
         <div 
           className="absolute top-2 right-2 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded"
           role="status"
-          aria-label={`Уровень сложности: ${getDifficultyLabel(exercise.difficulty)}`}
+          aria-label={`Тип упражнения: ${getExerciseTypeLabel(exercise.type)}`}
         >
-          {getDifficultyLabel(exercise.difficulty)}
+          {getExerciseTypeLabel(exercise.type)}
         </div>
       </div>
       
       <div className="p-4">
         <h3 className="text-xl font-semibold text-blue-800 mb-2">{exercise.name}</h3>
         
-        <div className="mb-3 flex flex-wrap" role="list" aria-label="Задействованные мышцы">
-          {exercise.muscleGroups.map(group => (
-            <span 
-              key={group} 
-              className="inline-block px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded mr-2 mb-2"
-              role="listitem"
-            >
-              {group}
-            </span>
-          ))}
+        <div className="mb-3">
+          <div className="grid grid-cols-2 gap-2">
+            <div className="text-sm text-gray-600">
+              <span className="font-semibold">Подходы:</span> {exercise.sets}
+            </div>
+            {exercise.type === 'reps' ? (
+              <>
+                <div className="text-sm text-gray-600">
+                  <span className="font-semibold">Повторения:</span> {exercise.reps}
+                </div>
+                {exercise.weight && (
+                  <div className="text-sm text-gray-600">
+                    <span className="font-semibold">Вес:</span> {exercise.weight} кг
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-sm text-gray-600">
+                <span className="font-semibold">Длительность:</span> {exercise.duration}с
+              </div>
+            )}
+          </div>
         </div>
-        
-        <p className="text-gray-600 mb-4 line-clamp-2">{exercise.description}</p>
         
         <div className="flex justify-between items-center">
           <div className="text-sm text-gray-500">
-            {exercise.equipment.length > 0 ? (
-              <span>Оборудование: {exercise.equipment.join(', ')}</span>
-            ) : (
-              <span>Без оборудования</span>
-            )}
+            Отдых: {exercise.restTime}с
           </div>
           
           <button
