@@ -1,7 +1,10 @@
 import { useState } from 'react';
+import { useRouter } from 'next/router';
 import { SAMPLE_PROGRAMS, Program } from '../models/Program';
+import { SAMPLE_ACTIVE_PROGRAM, ActiveProgram } from '../models/ActiveProgram';
 
 export default function Programs() {
+  const router = useRouter();
   const [programs, setPrograms] = useState<Program[]>(SAMPLE_PROGRAMS);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLevel, setSelectedLevel] = useState<string>('');
@@ -15,6 +18,27 @@ export default function Programs() {
     
     return matchesSearch && matchesLevel;
   });
+
+  // Функция для запуска программы
+  const startProgram = (program: Program) => {
+    // В реальном приложении здесь будет API запрос
+    const newActiveProgram: ActiveProgram = {
+      ...SAMPLE_ACTIVE_PROGRAM,
+      programId: program.id,
+      startDate: new Date().toISOString()
+    };
+    
+    // Сохраняем активную программу в localStorage
+    localStorage.setItem('activeProgram', JSON.stringify(newActiveProgram));
+    
+    // Перенаправляем на страницу активной программы
+    router.push('/active-program');
+  };
+
+  // Функция для просмотра деталей программы
+  const viewProgramDetails = (programId: string) => {
+    router.push(`/programs/${programId}`);
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 py-8">
@@ -61,6 +85,7 @@ export default function Programs() {
         <div className="mb-8 text-right">
           <button 
             className="bg-green-600 hover:bg-green-700 text-white py-2 px-6 rounded-lg"
+            onClick={() => router.push('/programs/create')}
           >
             Создать новую программу
           </button>
@@ -94,12 +119,14 @@ export default function Programs() {
                 <div className="mt-4 flex space-x-2">
                   <button 
                     className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded flex-1"
+                    onClick={() => viewProgramDetails(program.id)}
                   >
                     Подробнее
                   </button>
                   
                   <button 
                     className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded flex-1"
+                    onClick={() => startProgram(program)}
                   >
                     Начать
                   </button>
