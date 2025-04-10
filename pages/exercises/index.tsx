@@ -5,6 +5,8 @@ import ExerciseDetails from '../../components/ExerciseDetails';
 import { useRouter } from 'next/router';
 import { addHomeExercisesToUserExercises } from '../../models/HomeExercises';
 import { addExtendedHomeExercises } from '../../models/HomeExercisesExtended';
+import { pullupExercises } from '../../data/pullup-exercises';
+import { kettlebellExercises } from '../../data/kettlebell-exercises';
 
 const ITEMS_PER_PAGE = 9;
 
@@ -159,9 +161,43 @@ export default function Exercises() {
             </button>
             <button
               onClick={() => {
+                // Добавляем расширенный набор упражнений
                 addExtendedHomeExercises();
+                
+                // Добавляем упражнения с подтягиваниями и гирями напрямую
+                try {
+                  // Получаем текущие упражнения
+                  const existingExercises = JSON.parse(localStorage.getItem('userExercises') || '[]');
+                  
+                  // Проверяем, есть ли уже упражнения с такими ID
+                  const existingIds = new Set(existingExercises.map((ex: any) => ex.id));
+                  
+                  // Фильтруем только новые упражнения с подтягиваниями
+                  const newPullupExercises = pullupExercises.filter((ex: Exercise) => !existingIds.has(ex.id));
+                  
+                  // Фильтруем только новые упражнения с гирями
+                  const newKettlebellExercises = kettlebellExercises.filter((ex: Exercise) => !existingIds.has(ex.id));
+                  
+                  // Объединяем все новые упражнения
+                  const allNewExercises = [...newPullupExercises, ...newKettlebellExercises];
+                  
+                  if (allNewExercises.length > 0) {
+                    // Добавляем новые упражнения
+                    const updatedExercises = [...existingExercises, ...allNewExercises];
+                    localStorage.setItem('userExercises', JSON.stringify(updatedExercises));
+                    console.log(`Добавлено ${allNewExercises.length} новых упражнений (подтягивания и гири).`);
+                  } else {
+                    console.log('Все упражнения с подтягиваниями и гирями уже добавлены.');
+                  }
+                } catch (error) {
+                  console.error('Ошибка при добавлении упражнений:', error);
+                }
+                
+                // Перезагружаем список упражнений
                 loadExercises();
-                alert('Расширенный набор домашних упражнений добавлен');
+                
+                // Уведомление пользователя
+                alert('Расширенный набор упражнений добавлен (включая подтягивания и упражнения с гирей)');
               }}
               className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
             >
