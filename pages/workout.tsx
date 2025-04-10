@@ -339,28 +339,28 @@ export default function Workout() {
             };
           }
           
-          // Установить время отдыха из программы, если оно доступно
+          // Используем количество подходов из exerciseData, а не из exercise
           const exercise = {...exerciseData.exercise};
+          
+          // Устанавливаем количество подходов из exerciseData если оно указано, иначе из упражнения
+          const numSets = exerciseData.sets || exercise.sets || 1;
+          exercise.sets = numSets; // Важно: обновляем sets в самом exercise
+          
           // Используем restTime упражнения (больше не используем restBetweenSets программы)
           if (!exercise.restTime || exercise.restTime < 1) {
             exercise.restTime = 60; // Значение по умолчанию, если не задано
             console.warn('Для упражнения не указано время отдыха, установлено значение по умолчанию: 60 секунд');
           }
           
-          // Проверяем наличие sets и устанавливаем значение по умолчанию, если нет
-          if (!exercise.sets || exercise.sets < 1) {
-            exercise.sets = 1;
-            console.warn('Для упражнения не указано количество подходов, установлено значение по умолчанию: 1');
-          }
-          
           // Инициализируем массив setDetails с правильным количеством подходов
-          const numSets = exercise.sets;
           const setDetails = Array(numSets).fill(null).map(() => ({
             reps: undefined,
             weight: undefined,
             duration: undefined,
             completed: false
           }));
+          
+          console.log(`Инициализация упражнения: ${exercise.name}, подходов: ${numSets}`);
           
           return {
             exercise: exercise,
