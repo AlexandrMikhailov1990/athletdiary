@@ -1,5 +1,5 @@
 import { Program, Workout } from '../models/Program';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface ProgramDetailsProps {
   program: Program;
@@ -9,6 +9,8 @@ interface ProgramDetailsProps {
 
 export default function ProgramDetails({ program, onClose, onStart }: ProgramDetailsProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'schedule'>('overview');
+  const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
+  const [weeks, setWeeks] = useState<{ value: number; label: string }[]>([]);
   
   // Функция для отображения уровня сложности на русском языке
   const getLevelLabel = (level: string): string => {
@@ -34,7 +36,7 @@ export default function ProgramDetails({ program, onClose, onStart }: ProgramDet
     }
 
     // Создаем базовую структуру для недель на основе длительности программы
-    for (let i = 1; i <= program.duration; i++) {
+    for (let i = 1; i <= program.durationWeeks; i++) {
       result[i] = [];
     }
     
@@ -43,7 +45,7 @@ export default function ProgramDetails({ program, onClose, onStart }: ProgramDet
     const workoutsPerWeek = program.workoutsPerWeek;
     let currentWorkoutIndex = 0;
     
-    for (let week = 1; week <= program.duration; week++) {
+    for (let week = 1; week <= program.durationWeeks; week++) {
       for (let i = 0; i < workoutsPerWeek; i++) {
         if (currentWorkoutIndex < program.workouts.length) {
           result[week].push(program.workouts[currentWorkoutIndex]);
@@ -63,6 +65,30 @@ export default function ProgramDetails({ program, onClose, onStart }: ProgramDet
   };
 
   const workoutsByWeek = getWorkoutsByWeek();
+
+  // Генерация данных для недель
+  useEffect(() => {
+    if (program) {
+      const weekOptions = [];
+      for (let i = 1; i <= program.durationWeeks; i++) {
+        weekOptions.push({ value: i, label: `Неделя ${i}` });
+      }
+      setWeeks(weekOptions);
+    }
+  }, [program]);
+
+  // Обновление тренировок при выборе недели
+  useEffect(() => {
+    if (program && selectedWeek) {
+      const workoutDays = [];
+      
+      for (let week = 1; week <= program.durationWeeks; week++) {
+        if (week === selectedWeek) {
+          // ... existing code ...
+        }
+      }
+    }
+  }, [program, selectedWeek]);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -135,7 +161,7 @@ export default function ProgramDetails({ program, onClose, onStart }: ProgramDet
                   
                   <div className="bg-gray-50 p-4 rounded">
                     <p className="text-sm text-gray-500">Длительность</p>
-                    <p className="font-medium">{program.duration} недель</p>
+                    <p className="font-medium">{program.durationWeeks} недель</p>
                   </div>
                   
                   <div className="bg-gray-50 p-4 rounded">
@@ -148,7 +174,7 @@ export default function ProgramDetails({ program, onClose, onStart }: ProgramDet
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-700 mb-3">Что вы получите</h3>
                 <ul className="list-disc list-inside space-y-2 text-gray-600">
-                  <li>Структурированную программу на {program.duration} недель</li>
+                  <li>Структурированную программу на {program.durationWeeks} недель</li>
                   <li>Подробные инструкции для каждой тренировки</li>
                   <li>Правильное распределение нагрузки</li>
                   <li>Возможность отслеживать прогресс</li>

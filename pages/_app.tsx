@@ -5,6 +5,7 @@ import Footer from '../components/Footer';
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import { migratePrograms } from '../models/Program';
 
 function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
@@ -18,6 +19,9 @@ function MyApp({ Component, pageProps }: AppProps) {
         router.push('/');
       }
     }
+    
+    // Мигрируем старые данные программ
+    migratePrograms();
   }, [router]);
 
   return (

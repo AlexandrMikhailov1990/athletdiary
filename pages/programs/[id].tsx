@@ -33,6 +33,8 @@ export default function ProgramDetails() {
         // Преобразуем программу в ExtendedProgram с exercises
         const extendedProgram: ExtendedProgram = {
           ...foundProgram,
+          // Обеспечиваем совместимость со старыми данными - преобразуем duration в durationWeeks если нужно
+          durationWeeks: foundProgram.durationWeeks || foundProgram.duration || 4,
           exercises: foundProgram.exercises || []
         };
         

@@ -16,6 +16,8 @@ interface CreateProgramForm {
   durationWeeks: number;
   workoutsPerWeek: number;
   exercises: ProgramExerciseEdit[];
+  restBetweenSets: number;
+  restBetweenExercises: number;
 }
 
 const CreateProgram: React.FC = () => {
@@ -29,6 +31,8 @@ const CreateProgram: React.FC = () => {
     durationWeeks: 4,
     workoutsPerWeek: 3,
     exercises: [],
+    restBetweenSets: 90,
+    restBetweenExercises: 120,
   });
   
   // Состояние для выбора упражнений
@@ -212,6 +216,8 @@ const CreateProgram: React.FC = () => {
         level: form.level,
         durationWeeks: form.durationWeeks,
         workoutsPerWeek: form.workoutsPerWeek,
+        restBetweenSets: form.restBetweenSets,
+        restBetweenExercises: form.restBetweenExercises,
         workouts: [
           {
             id: uuidv4(),
@@ -319,6 +325,32 @@ const CreateProgram: React.FC = () => {
                   rows={3}
                   className="w-full p-2 border rounded focus:ring focus:ring-blue-300"
                   required
+                />
+              </div>
+              
+              <div>
+                <label className="block mb-1">Отдых между подходами (сек)</label>
+                <input
+                  type="number"
+                  name="restBetweenSets"
+                  value={form.restBetweenSets}
+                  onChange={handleInputChange}
+                  min="0"
+                  max="300"
+                  className="w-full p-2 border rounded focus:ring focus:ring-blue-300"
+                />
+              </div>
+              
+              <div>
+                <label className="block mb-1">Отдых между упражнениями (сек)</label>
+                <input
+                  type="number"
+                  name="restBetweenExercises"
+                  value={form.restBetweenExercises}
+                  onChange={handleInputChange}
+                  min="0"
+                  max="600"
+                  className="w-full p-2 border rounded focus:ring focus:ring-blue-300"
                 />
               </div>
             </div>

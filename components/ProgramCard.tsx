@@ -32,7 +32,7 @@ export default function ProgramCard({ program, onSelect, onStart }: ProgramCardP
           </span>
           
           <span className="inline-block px-2 py-1 bg-purple-100 text-purple-800 text-xs font-semibold rounded mr-2 mb-2">
-            {program.duration} недель
+            {program.durationWeeks} недель
           </span>
           
           <span className="inline-block px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded mb-2">

@@ -48,6 +48,8 @@ export interface Program {
   workouts: Workout[];
   isPublic?: boolean;
   createdBy?: string;
+  restBetweenSets?: number;
+  restBetweenExercises?: number;
 }
 
 interface CompletedWorkout {
@@ -142,7 +144,39 @@ export function initializePrograms(): void {
   localStorage.setItem('programs', JSON.stringify(demoPrograms));
 }
 
-// Примеры программ
+// Функция для миграции старых данных программ
+export function migratePrograms(): void {
+  if (typeof window === 'undefined') return;
+  
+  try {
+    const programsStr = localStorage.getItem('programs');
+    if (!programsStr) return;
+    
+    const programs = JSON.parse(programsStr);
+    let needsUpdate = false;
+    
+    const updatedPrograms = programs.map((program: any) => {
+      // Проверяем, есть ли у программы свойство duration, но нет durationWeeks
+      if (program.duration !== undefined && program.durationWeeks === undefined) {
+        needsUpdate = true;
+        return {
+          ...program,
+          durationWeeks: program.duration
+        };
+      }
+      return program;
+    });
+    
+    if (needsUpdate) {
+      localStorage.setItem('programs', JSON.stringify(updatedPrograms));
+      console.log('Программы обновлены: duration → durationWeeks');
+    }
+  } catch (error) {
+    console.error('Ошибка при миграции программ:', error);
+  }
+}
+
+// Обновим и демо-программы
 export const SAMPLE_PROGRAMS: Program[] = [
   {
     id: '1',

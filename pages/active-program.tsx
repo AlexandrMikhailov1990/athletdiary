@@ -97,17 +97,22 @@ export default function ActiveProgram() {
                 </div>
                 <div className="text-right">
                   <span className="text-xs font-semibold inline-block text-blue-600">
-                    {Math.round((activeProgram.completedWorkouts.length / (program.duration * program.workoutsPerWeek)) * 100)}%
+                    {Math.round((activeProgram.completedWorkouts.length / (program.durationWeeks * program.workoutsPerWeek)) * 100)}%
                   </span>
                 </div>
               </div>
-              <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-blue-200">
-                <div
-                  style={{
-                    width: `${(activeProgram.completedWorkouts.length / (program.duration * program.workoutsPerWeek)) * 100}%`
+              <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+                <div 
+                  className="bg-green-600 h-2.5 rounded-full" 
+                  style={{ 
+                    width: `${(activeProgram.completedWorkouts.length / (program.durationWeeks * program.workoutsPerWeek)) * 100}%`
                   }}
-                  className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500"
                 ></div>
+              </div>
+              
+              <div className="text-xs text-gray-500">
+                Прогресс: {activeProgram.completedWorkouts.length} из {program.durationWeeks * program.workoutsPerWeek} тренировок &bull; 
+                {Math.round((activeProgram.completedWorkouts.length / (program.durationWeeks * program.workoutsPerWeek)) * 100)}%
               </div>
             </div>
           </div>
