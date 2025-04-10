@@ -84,36 +84,63 @@ export default function Programs() {
 
   // Функция для запуска программы
   const startProgram = (program: Program) => {
-    // Убедимся, что у программы есть свойство exercises
-    const programWithExercises = {
-      ...program,
-      // Если exercises отсутствует, берем упражнения из первой тренировки
-      exercises: program.exercises || (program.workouts && program.workouts.length > 0 ? program.workouts[0].exercises : [])
-    };
+    try {
+      // Подгружаем дополнительные наборы упражнений, если они еще не загружены
+      // Так мы гарантируем, что все упражнения доступны
+      import('../models/HomeExercises').then(module => {
+        if (typeof module.addHomeExercisesToUserExercises === 'function') {
+          module.addHomeExercisesToUserExercises();
+        }
+      }).catch(error => {
+        console.error('Ошибка при загрузке базовых упражнений:', error);
+      });
+      
+      import('../models/HomeExercisesExtended').then(module => {
+        if (typeof module.addExtendedHomeExercises === 'function') {
+          module.addExtendedHomeExercises();
+        }
+      }).catch(error => {
+        console.error('Ошибка при загрузке расширенных упражнений:', error);
+      });
 
-    // Создаем новую активную программу
-    const newActiveProgram: ActiveProgram = {
-      programId: program.id,
-      userId: 'user', // В реальном приложении здесь будет ID текущего пользователя
-      startDate: new Date().toISOString(),
-      currentWeek: 1,
-      currentDay: 1,
-      completedWorkouts: []
-    };
-    
-    // Сохраняем активную программу в localStorage
-    localStorage.setItem('activeProgram', JSON.stringify(newActiveProgram));
-    
-    // Сохраняем полную информацию о программе
-    const activePrograms = JSON.parse(localStorage.getItem('activePrograms') || '[]');
-    activePrograms.push({
-      ...newActiveProgram,
-      program: programWithExercises // Сохраняем обновленную программу с exercises
-    });
-    localStorage.setItem('activePrograms', JSON.stringify(activePrograms));
-    
-    // Перенаправляем на страницу активной программы
-    router.push('/active-program');
+      // Убедимся, что у программы есть свойство exercises
+      const programWithExercises = {
+        ...program,
+        // Если exercises отсутствует, берем упражнения из всех тренировок
+        exercises: program.exercises || (
+          program.workouts && program.workouts.length > 0 
+            ? program.workouts.flatMap(workout => workout.exercises)
+            : []
+        )
+      };
+
+      // Создаем новую активную программу
+      const newActiveProgram: ActiveProgram = {
+        programId: program.id,
+        userId: 'user', // В реальном приложении здесь будет ID текущего пользователя
+        startDate: new Date().toISOString(),
+        currentWeek: 1,
+        currentDay: 1,
+        completedWorkouts: []
+      };
+      
+      // Сохраняем активную программу в localStorage
+      localStorage.setItem('activeProgram', JSON.stringify(newActiveProgram));
+      
+      // Сохраняем полную информацию о программе
+      const activePrograms = JSON.parse(localStorage.getItem('activePrograms') || '[]');
+      activePrograms.push({
+        ...newActiveProgram,
+        program: programWithExercises // Сохраняем обновленную программу с exercises
+      });
+      localStorage.setItem('activePrograms', JSON.stringify(activePrograms));
+      
+      // Перенаправляем на страницу активной программы
+      router.push('/active-program');
+    } catch (error) {
+      console.error('Ошибка при запуске программы:', error);
+      alert('Произошла ошибка при запуске программы. Пожалуйста, попробуйте еще раз.');
+    }
   };
 
   // Функция для просмотра деталей программы

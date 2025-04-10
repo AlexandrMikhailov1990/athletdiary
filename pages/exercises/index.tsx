@@ -19,6 +19,51 @@ export default function Exercises() {
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+  const [allExercisesLoaded, setAllExercisesLoaded] = useState(false);
+
+  // Функция для добавления всех наборов упражнений
+  const addAllExerciseSets = useCallback(async () => {
+    try {
+      // Добавляем базовые упражнения
+      addHomeExercisesToUserExercises();
+      
+      // Добавляем расширенный набор упражнений
+      addExtendedHomeExercises();
+      
+      // Добавляем упражнения с подтягиваниями и гирями напрямую
+      try {
+        // Получаем текущие упражнения
+        const existingExercises = JSON.parse(localStorage.getItem('userExercises') || '[]');
+        
+        // Проверяем, есть ли уже упражнения с такими ID
+        const existingIds = new Set(existingExercises.map((ex: any) => ex.id));
+        
+        // Фильтруем только новые упражнения с подтягиваниями
+        const newPullupExercises = pullupExercises.filter((ex: Exercise) => !existingIds.has(ex.id));
+        
+        // Фильтруем только новые упражнения с гирями
+        const newKettlebellExercises = kettlebellExercises.filter((ex: Exercise) => !existingIds.has(ex.id));
+        
+        // Объединяем все новые упражнения
+        const allNewExercises = [...newPullupExercises, ...newKettlebellExercises];
+        
+        if (allNewExercises.length > 0) {
+          // Добавляем новые упражнения
+          const updatedExercises = [...existingExercises, ...allNewExercises];
+          localStorage.setItem('userExercises', JSON.stringify(updatedExercises));
+          console.log(`Добавлено ${allNewExercises.length} новых упражнений (подтягивания и гири).`);
+        } else {
+          console.log('Все упражнения с подтягиваниями и гирями уже добавлены.');
+        }
+      } catch (error) {
+        console.error('Ошибка при добавлении упражнений:', error);
+      }
+      
+      setAllExercisesLoaded(true);
+    } catch (error) {
+      console.error('Ошибка при загрузке всех наборов упражнений:', error);
+    }
+  }, []);
 
   // Загрузка упражнений из localStorage - выносим как переиспользуемую функцию
   const loadExercises = useCallback(() => {
@@ -37,6 +82,17 @@ export default function Exercises() {
       setIsLoading(false);
     }
   }, []);
+
+  // Загрузка всех упражнений при первом рендере
+  useEffect(() => {
+    const initExercises = async () => {
+      setIsLoading(true);
+      await addAllExerciseSets();
+      loadExercises();
+    };
+    
+    initExercises();
+  }, [addAllExerciseSets, loadExercises]);
 
   // Загрузка сохраненных фильтров при монтировании компонента
   useEffect(() => {
@@ -127,11 +183,6 @@ export default function Exercises() {
     }
   };
 
-  // Загрузка упражнений при монтировании компонента
-  useEffect(() => {
-    loadExercises();
-  }, [loadExercises]);
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -151,91 +202,48 @@ export default function Exercises() {
           <div className="flex gap-3">
             <button
               onClick={() => {
-                addHomeExercisesToUserExercises();
-                loadExercises();
-                alert('Домашние упражнения с гантелями добавлены');
-              }}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
-            >
-              + Домашние упражнения
-            </button>
-            <button
-              onClick={() => {
-                // Добавляем расширенный набор упражнений
-                addExtendedHomeExercises();
-                
-                // Добавляем упражнения с подтягиваниями и гирями напрямую
-                try {
-                  // Получаем текущие упражнения
-                  const existingExercises = JSON.parse(localStorage.getItem('userExercises') || '[]');
-                  
-                  // Проверяем, есть ли уже упражнения с такими ID
-                  const existingIds = new Set(existingExercises.map((ex: any) => ex.id));
-                  
-                  // Фильтруем только новые упражнения с подтягиваниями
-                  const newPullupExercises = pullupExercises.filter((ex: Exercise) => !existingIds.has(ex.id));
-                  
-                  // Фильтруем только новые упражнения с гирями
-                  const newKettlebellExercises = kettlebellExercises.filter((ex: Exercise) => !existingIds.has(ex.id));
-                  
-                  // Объединяем все новые упражнения
-                  const allNewExercises = [...newPullupExercises, ...newKettlebellExercises];
-                  
-                  if (allNewExercises.length > 0) {
-                    // Добавляем новые упражнения
-                    const updatedExercises = [...existingExercises, ...allNewExercises];
-                    localStorage.setItem('userExercises', JSON.stringify(updatedExercises));
-                    console.log(`Добавлено ${allNewExercises.length} новых упражнений (подтягивания и гири).`);
-                  } else {
-                    console.log('Все упражнения с подтягиваниями и гирями уже добавлены.');
-                  }
-                } catch (error) {
-                  console.error('Ошибка при добавлении упражнений:', error);
-                }
-                
-                // Перезагружаем список упражнений
-                loadExercises();
-                
-                // Уведомление пользователя
-                alert('Расширенный набор упражнений добавлен (включая подтягивания и упражнения с гирей)');
+                addAllExerciseSets().then(() => {
+                  loadExercises();
+                  alert('Все наборы упражнений успешно добавлены');
+                });
               }}
               className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
             >
-              + Расширенный набор
+              Обновить все упражнения
             </button>
             <button
               onClick={handleCreateExercise}
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
             >
-              + Добавить упражнение
+              Создать упражнение
             </button>
           </div>
         </div>
         
-        {/* Фильтры */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="flex flex-col">
+        {/* Фильтры и поиск */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
               <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
                 Поиск упражнений
               </label>
               <input
-                type="text"
                 id="search"
-                className="w-full h-11 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
-                placeholder="Название упражнения..."
+                type="text"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                placeholder="Название или описание..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
             
-            <div className="flex flex-col">
+            <div>
               <label htmlFor="muscleGroup" className="block text-sm font-medium text-gray-700 mb-2">
                 Группа мышц
               </label>
               <select
                 id="muscleGroup"
-                className="w-full h-11 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white"
                 value={selectedMuscleGroup}
                 onChange={(e) => setSelectedMuscleGroup(e.target.value)}
               >
@@ -248,13 +256,13 @@ export default function Exercises() {
               </select>
             </div>
             
-            <div className="flex flex-col">
+            <div>
               <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-2">
                 Тип упражнения
               </label>
               <select
                 id="type"
-                className="w-full h-11 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white"
                 value={selectedType}
                 onChange={(e) => setSelectedType(e.target.value)}
               >
@@ -269,93 +277,135 @@ export default function Exercises() {
         {/* Результаты */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {paginatedExercises.map(exercise => (
-            <div key={exercise.id} className="relative">
-              <ExerciseCard
-                exercise={exercise}
-                onSelect={() => handleEditExercise(exercise.id)}
-              />
-              
-              <div className="absolute top-2 right-2 flex gap-2">
-                <button
-                  onClick={() => handleEditExercise(exercise.id)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full transition-colors duration-200"
-                  title="Редактировать"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                  </svg>
-                </button>
-                
-                <button
-                  onClick={() => handleDeleteExercise(exercise.id)}
-                  className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-full transition-colors duration-200"
-                  title="Удалить"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                  </svg>
-                </button>
-              </div>
-            </div>
+            <ExerciseCard
+              key={exercise.id}
+              exercise={exercise}
+              onMoreInfo={() => setSelectedExercise(exercise)}
+              onEdit={() => handleEditExercise(exercise.id)}
+              onDelete={() => handleDeleteExercise(exercise.id)}
+            />
           ))}
         </div>
         
+        {/* Сообщение, если нет результатов */}
+        {filteredExercises.length === 0 && (
+          <div className="bg-white rounded-lg shadow-md p-8 text-center mt-6">
+            <p className="text-gray-500 text-lg mb-4">
+              Упражнений не найдено. Попробуйте изменить параметры поиска или создайте новое упражнение.
+            </p>
+            <button
+              onClick={handleCreateExercise}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+            >
+              Создать упражнение
+            </button>
+          </div>
+        )}
+        
         {/* Пагинация */}
         {totalPages > 1 && (
-          <div className="mt-8 flex justify-center">
-            <nav className="flex items-center space-x-2" aria-label="Пагинация">
+          <div className="flex justify-center mt-8">
+            <div className="flex space-x-2">
+              <button
+                onClick={() => handlePageChange(1)}
+                disabled={currentPage === 1}
+                className={`px-4 py-2 rounded-md ${
+                  currentPage === 1
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                &laquo;
+              </button>
+              
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className={`px-3 py-1 rounded ${
+                className={`px-4 py-2 rounded-md ${
                   currentPage === 1
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-white text-blue-600 hover:bg-blue-50'
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
-                aria-label="Предыдущая страница"
               >
-                ←
+                &lt;
               </button>
               
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                <button
-                  key={page}
-                  onClick={() => handlePageChange(page)}
-                  className={`px-3 py-1 rounded ${
-                    currentPage === page
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white text-blue-600 hover:bg-blue-50'
-                  }`}
-                  aria-label={`Страница ${page}`}
-                  aria-current={currentPage === page ? 'page' : undefined}
-                >
-                  {page}
-                </button>
-              ))}
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNumber;
+                
+                if (totalPages <= 5) {
+                  pageNumber = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNumber = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNumber = totalPages - 4 + i;
+                } else {
+                  pageNumber = currentPage - 2 + i;
+                }
+                
+                return (
+                  <button
+                    key={i}
+                    onClick={() => handlePageChange(pageNumber)}
+                    className={`px-4 py-2 rounded-md ${
+                      currentPage === pageNumber
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                  >
+                    {pageNumber}
+                  </button>
+                );
+              })}
               
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className={`px-3 py-1 rounded ${
+                className={`px-4 py-2 rounded-md ${
                   currentPage === totalPages
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-white text-blue-600 hover:bg-blue-50'
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
-                aria-label="Следующая страница"
               >
-                →
+                &gt;
               </button>
-            </nav>
+              
+              <button
+                onClick={() => handlePageChange(totalPages)}
+                disabled={currentPage === totalPages}
+                className={`px-4 py-2 rounded-md ${
+                  currentPage === totalPages
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                &raquo;
+              </button>
+            </div>
           </div>
         )}
         
-        {filteredExercises.length === 0 && (
-          <div className="text-center py-8">
-            <p className="text-gray-600 text-lg">
-              Упражнения не найдены. Попробуйте изменить критерии поиска.
-            </p>
-          </div>
+        {/* Модальное окно с деталями упражнения */}
+        {selectedExercise && (
+          <ExerciseDetails
+            exercise={selectedExercise}
+            onClose={() => setSelectedExercise(null)}
+            onEdit={() => {
+              setSelectedExercise(null);
+              handleEditExercise(selectedExercise.id);
+            }}
+          />
         )}
+        
+        {/* Кнопка сброса для отладки */}
+        <div className="mt-16 text-center">
+          <button
+            onClick={clearLocalStorageAndResetExercises}
+            className="text-xs text-gray-500 hover:text-red-500"
+          >
+            Сбросить все упражнения
+          </button>
+        </div>
       </div>
     </div>
   );

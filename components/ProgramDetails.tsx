@@ -1,16 +1,30 @@
 import { Program, Workout } from '../models/Program';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { FaClock, FaDumbbell, FaCalendarAlt, FaShare, FaDownload, FaChartLine } from 'react-icons/fa';
+import { Exercise } from '../models/Exercise';
+import { motion, AnimatePresence } from 'framer-motion';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import { addHomeExercisesToUserExercises } from '../models/HomeExercises';
+import { addExtendedHomeExercises } from '../models/HomeExercisesExtended';
 
 interface ProgramDetailsProps {
   program: Program;
   onClose: () => void;
   onStart?: () => void;
+  darkMode?: boolean;
 }
 
-export default function ProgramDetails({ program, onClose, onStart }: ProgramDetailsProps) {
+export default function ProgramDetails({ program, onClose, onStart, darkMode = false }: ProgramDetailsProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'schedule'>('overview');
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
   const [weeks, setWeeks] = useState<{ value: number; label: string }[]>([]);
+  const [exercises, setExercises] = useState<any[]>([]);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isLoadingExercises, setIsLoadingExercises] = useState(true);
+  const programRef = useRef<HTMLDivElement>(null);
+  const overviewRef = useRef<HTMLDivElement>(null);
+  const scheduleRef = useRef<HTMLDivElement>(null);
   
   // Функция для отображения уровня сложности на русском языке
   const getLevelLabel = (level: string): string => {
@@ -26,6 +40,57 @@ export default function ProgramDetails({ program, onClose, onStart }: ProgramDet
     }
   };
 
+  // Загрузка дополнительных упражнений
+  useEffect(() => {
+    const loadAllExercises = async () => {
+      setIsLoadingExercises(true);
+      try {
+        // Загружаем базовый набор упражнений
+        await Promise.all([
+          // Загружаем базовые домашние упражнения
+          new Promise<void>((resolve) => {
+            addHomeExercisesToUserExercises();
+            resolve();
+          }),
+          // Загружаем расширенные упражнения
+          new Promise<void>((resolve) => {
+            addExtendedHomeExercises();
+            resolve();
+          })
+        ]);
+        
+      } catch (error) {
+        console.error('Ошибка при загрузке упражнений:', error);
+      } finally {
+        setIsLoadingExercises(false);
+      }
+    };
+    
+    loadAllExercises();
+  }, []);
+
+  // Загрузка упражнений при монтировании компонента
+  useEffect(() => {
+    if (isLoadingExercises) return;
+    
+    // Соберем все уникальные упражнения из всех тренировок
+    if (program.workouts && program.workouts.length > 0) {
+      const allExercises = program.workouts.flatMap(workout => workout.exercises);
+      
+      // Удаляем дубликаты по id упражнения
+      const uniqueExercisesMap = new Map();
+      allExercises.forEach(exercise => {
+        if (!uniqueExercisesMap.has(exercise.id)) {
+          uniqueExercisesMap.set(exercise.id, exercise);
+        }
+      });
+      
+      setExercises(Array.from(uniqueExercisesMap.values()));
+    } else if (program.exercises) {
+      setExercises(program.exercises);
+    }
+  }, [program, isLoadingExercises]);
+
   // Группировка тренировок по неделям
   const getWorkoutsByWeek = () => {
     const result: { [key: number]: Workout[] } = {};
@@ -40,8 +105,7 @@ export default function ProgramDetails({ program, onClose, onStart }: ProgramDet
       result[i] = [];
     }
     
-    // Для демонстрации просто добавляем тренировки к каждой неделе
-    // В реальном приложении здесь была бы логика распределения
+    // Распределяем тренировки по неделям
     const workoutsPerWeek = program.workoutsPerWeek;
     let currentWorkoutIndex = 0;
     
@@ -74,199 +138,401 @@ export default function ProgramDetails({ program, onClose, onStart }: ProgramDet
         weekOptions.push({ value: i, label: `Неделя ${i}` });
       }
       setWeeks(weekOptions);
-    }
-  }, [program]);
-
-  // Обновление тренировок при выборе недели
-  useEffect(() => {
-    if (program && selectedWeek) {
-      const workoutDays = [];
       
-      for (let week = 1; week <= program.durationWeeks; week++) {
-        if (week === selectedWeek) {
-          // ... existing code ...
-        }
+      // Устанавливаем первую неделю по умолчанию
+      if (weekOptions.length > 0 && selectedWeek === null) {
+        setSelectedWeek(1);
       }
     }
   }, [program, selectedWeek]);
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-90vh overflow-auto">
-        <div className="sticky top-0 bg-blue-600 text-white p-4 flex justify-between items-center">
-          <h2 className="text-xl font-bold">{program.name}</h2>
-          <button 
-            onClick={onClose}
-            className="text-white hover:text-gray-200 focus:outline-none"
-            aria-label="Закрыть"
-          >
-            <svg 
-              className="w-6 h-6" 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24" 
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M6 18L18 6M6 6l12 12" 
-              />
-            </svg>
-          </button>
-        </div>
+  // Поделиться программой
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: program.name,
+          text: `Программа тренировок: ${program.name}`,
+          url: window.location.href,
+        });
+      } catch (error) {
+        console.error('Ошибка при попытке поделиться:', error);
+      }
+    } else {
+      // Если Web Share API не поддерживается, копируем ссылку в буфер обмена
+      const url = window.location.href;
+      navigator.clipboard.writeText(url).then(() => {
+        alert('Ссылка скопирована в буфер обмена');
+      });
+    }
+  };
 
-        {/* Табы */}
-        <div className="border-b border-gray-200">
-          <nav className="flex">
-            <button
-              className={`py-4 px-6 font-medium ${
-                activeTab === 'overview'
-                  ? 'border-b-2 border-blue-600 text-blue-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
+  // Скачать программу
+  const handleDownload = async () => {
+    if (!programRef.current) return;
+    
+    setIsExporting(true);
+    
+    try {
+      // Определяем, какую вкладку экспортировать
+      const activeTabElement = activeTab === 'overview' 
+        ? overviewRef.current 
+        : scheduleRef.current;
+      
+      if (!activeTabElement) {
+        throw new Error('Активная вкладка не найдена');
+      }
+      
+      const canvas = await html2canvas(activeTabElement);
+      const imgData = canvas.toDataURL('image/png');
+      
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      
+      // Вычисляем пропорциональные размеры для PDF
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`${program.name}.pdf`);
+    } catch (error) {
+      console.error('Ошибка при экспорте программы:', error);
+      alert('Произошла ошибка при экспорте программы');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Стили для темной темы
+  const bgColor = darkMode ? 'bg-gray-900' : 'bg-white';
+  const textColor = darkMode ? 'text-gray-200' : 'text-gray-700';
+  const borderColor = darkMode ? 'border-gray-700' : 'border-gray-200';
+  const headerBgColor = darkMode ? 'bg-blue-800' : 'bg-blue-600';
+  const infoBlockBg = darkMode ? 'bg-gray-800' : 'bg-gray-50';
+  const tabActiveBorder = darkMode ? 'border-blue-500' : 'border-blue-600';
+  const tabActiveText = darkMode ? 'text-blue-500' : 'text-blue-600';
+  const tabInactiveText = darkMode ? 'text-gray-400' : 'text-gray-500';
+  const btnPrimaryBg = darkMode ? 'bg-blue-700 hover:bg-blue-800' : 'bg-blue-600 hover:bg-blue-700';
+  const btnSecondaryBg = darkMode ? 'bg-gray-700 hover:bg-gray-800' : 'bg-gray-100 hover:bg-gray-200';
+  const btnSecondaryText = darkMode ? 'text-gray-200' : 'text-gray-700';
+  
+  return (
+    <AnimatePresence>
+      <motion.div 
+        className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center p-2 md:p-4 z-50"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+      >
+        <motion.div 
+          className={`${bgColor} rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-auto ${borderColor} border`}
+          initial={{ scale: 0.9, y: 20, opacity: 0 }}
+          animate={{ scale: 1, y: 0, opacity: 1 }}
+          exit={{ scale: 0.9, y: 20, opacity: 0 }}
+          transition={{ type: 'spring', damping: 25 }}
+          onClick={(e: React.MouseEvent) => e.stopPropagation()}
+          ref={programRef}
+        >
+          <div className={`sticky top-0 ${headerBgColor} text-white p-4 flex justify-between items-center z-10`}>
+            <h2 className="text-xl font-bold">{program.name}</h2>
+            <div className="flex space-x-2">
+              <motion.button
+                className="p-2 hover:bg-black hover:bg-opacity-10 rounded-full transition-colors"
+                onClick={handleShare}
+                title="Поделиться программой"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <FaShare />
+              </motion.button>
+              <motion.button
+                className="p-2 hover:bg-black hover:bg-opacity-10 rounded-full transition-colors"
+                onClick={handleDownload}
+                title="Скачать программу"
+                disabled={isExporting}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <FaDownload />
+              </motion.button>
+              <motion.button
+                className="p-2 hover:bg-black hover:bg-opacity-10 rounded-full transition-colors"
+                onClick={onClose}
+                title="Закрыть"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </motion.button>
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <div className={`flex border-b ${borderColor} sticky top-16 ${bgColor} z-10`}>
+            <motion.button
+              className={`flex-1 py-4 font-medium border-b-2 ${
+                activeTab === 'overview' ? `${tabActiveBorder} ${tabActiveText}` : `border-transparent ${tabInactiveText}`
+              } transition-colors relative`}
               onClick={() => setActiveTab('overview')}
+              whileTap={{ scale: 0.97 }}
             >
               Обзор
-            </button>
-            <button
-              className={`py-4 px-6 font-medium ${
-                activeTab === 'schedule'
-                  ? 'border-b-2 border-blue-600 text-blue-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
+              {activeTab === 'overview' && (
+                <motion.div 
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500" 
+                  layoutId="activeTab"
+                />
+              )}
+            </motion.button>
+            <motion.button
+              className={`flex-1 py-4 font-medium border-b-2 ${
+                activeTab === 'schedule' ? `${tabActiveBorder} ${tabActiveText}` : `border-transparent ${tabInactiveText}`
+              } transition-colors relative`}
               onClick={() => setActiveTab('schedule')}
+              whileTap={{ scale: 0.97 }}
             >
               Расписание
-            </button>
-          </nav>
-        </div>
-
-        <div className="p-6">
-          {activeTab === 'overview' ? (
-            <div>
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-700 mb-3">Описание программы</h3>
-                <p className="text-gray-600">{program.description}</p>
-              </div>
-              
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-700 mb-3">Основная информация</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  <div className="bg-gray-50 p-4 rounded">
-                    <p className="text-sm text-gray-500">Сложность</p>
-                    <p className="font-medium">{getLevelLabel(program.level)}</p>
-                  </div>
-                  
-                  <div className="bg-gray-50 p-4 rounded">
-                    <p className="text-sm text-gray-500">Длительность</p>
-                    <p className="font-medium">{program.durationWeeks} недель</p>
-                  </div>
-                  
-                  <div className="bg-gray-50 p-4 rounded">
-                    <p className="text-sm text-gray-500">Тренировок в неделю</p>
-                    <p className="font-medium">{program.workoutsPerWeek}</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-700 mb-3">Что вы получите</h3>
-                <ul className="list-disc list-inside space-y-2 text-gray-600">
-                  <li>Структурированную программу на {program.durationWeeks} недель</li>
-                  <li>Подробные инструкции для каждой тренировки</li>
-                  <li>Правильное распределение нагрузки</li>
-                  <li>Возможность отслеживать прогресс</li>
-                  <li>Советы по технике выполнения упражнений</li>
-                </ul>
-              </div>
-              
-              <div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-3">Рекомендации</h3>
-                <div className="bg-blue-50 p-4 rounded border border-blue-100">
-                  <ul className="space-y-2 text-gray-700">
-                    <li className="flex items-start">
-                      <svg className="w-5 h-5 text-blue-600 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      Перед началом проконсультируйтесь с врачом, если у вас есть проблемы со здоровьем
-                    </li>
-                    <li className="flex items-start">
-                      <svg className="w-5 h-5 text-blue-600 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      Следуйте рекомендациям по технике выполнения упражнений
-                    </li>
-                    <li className="flex items-start">
-                      <svg className="w-5 h-5 text-blue-600 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      Обеспечьте достаточное питание и восстановление между тренировками
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div>
-              <h3 className="text-lg font-semibold text-gray-700 mb-4">Расписание тренировок</h3>
-              
-              {Object.keys(workoutsByWeek).length > 0 ? (
-                <div className="space-y-6">
-                  {Object.entries(workoutsByWeek).map(([weekNumber, workouts]) => (
-                    <div key={weekNumber} className="border border-gray-200 rounded-lg overflow-hidden">
-                      <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                        <h4 className="font-medium">Неделя {weekNumber}</h4>
-                      </div>
-                      <div className="divide-y divide-gray-200">
-                        {workouts.map((workout, index) => (
-                          <div key={workout.id} className="p-4">
-                            <div className="flex justify-between items-center">
-                              <h5 className="font-medium text-blue-700">
-                                День {index + 1}: {workout.name}
-                              </h5>
-                              <span className="text-sm text-gray-500">
-                                {workout.exercises.length} упражнений
-                              </span>
-                            </div>
-                            {workout.notes && (
-                              <p className="text-sm text-gray-600 mt-1">{workout.notes}</p>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-500">Для этой программы еще не добавлены тренировки.</p>
-                </div>
+              {activeTab === 'schedule' && (
+                <motion.div 
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500" 
+                  layoutId="activeTab"
+                />
               )}
-            </div>
-          )}
+            </motion.button>
+          </div>
 
-          {/* Кнопки действий */}
-          <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100"
-            >
-              Закрыть
-            </button>
-            
-            {onStart && (
-              <button
-                onClick={onStart}
-                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+          {/* Content */}
+          <div className={`p-5 ${textColor}`}>
+            {/* Overview tab */}
+            {activeTab === 'overview' && (
+              <motion.div 
+                ref={overviewRef}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
               >
-                Начать программу
-              </button>
+                <p className="mb-6 text-base leading-relaxed">{program.description}</p>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                  <motion.div 
+                    className={`${infoBlockBg} rounded-lg p-4 shadow-md flex flex-col hover:shadow-lg transition-shadow transform`}
+                    whileHover={{ y: -5, scale: 1.02 }}
+                    transition={{ type: 'spring', stiffness: 300 }}
+                  >
+                    <span className="text-sm text-gray-500 mb-1">Сложность</span>
+                    <div className="flex items-center">
+                      <FaChartLine className="w-5 h-5 text-blue-500 mr-2 flex-shrink-0" />
+                      <span className="font-medium">{getLevelLabel(program.level)}</span>
+                    </div>
+                  </motion.div>
+                  
+                  <motion.div 
+                    className={`${infoBlockBg} rounded-lg p-4 shadow-md flex flex-col hover:shadow-lg transition-shadow transform`}
+                    whileHover={{ y: -5, scale: 1.02 }}
+                    transition={{ type: 'spring', stiffness: 300 }}
+                  >
+                    <span className="text-sm text-gray-500 mb-1">Продолжительность</span>
+                    <div className="flex items-center">
+                      <FaCalendarAlt className="w-5 h-5 text-green-500 mr-2 flex-shrink-0" />
+                      <span className="font-medium">{program.durationWeeks} {program.durationWeeks === 1 ? 'неделя' : program.durationWeeks >= 2 && program.durationWeeks <= 4 ? 'недели' : 'недель'}</span>
+                    </div>
+                  </motion.div>
+                  
+                  <motion.div 
+                    className={`${infoBlockBg} rounded-lg p-4 shadow-md flex flex-col hover:shadow-lg transition-shadow transform`}
+                    whileHover={{ y: -5, scale: 1.02 }}
+                    transition={{ type: 'spring', stiffness: 300 }}
+                  >
+                    <span className="text-sm text-gray-500 mb-1">Тренировок в неделю</span>
+                    <div className="flex items-center">
+                      <FaDumbbell className="w-5 h-5 text-red-500 mr-2 flex-shrink-0" />
+                      <span className="font-medium">{program.workoutsPerWeek}</span>
+                    </div>
+                  </motion.div>
+                  
+                  <motion.div 
+                    className={`${infoBlockBg} rounded-lg p-4 shadow-md flex flex-col hover:shadow-lg transition-shadow transform`}
+                    whileHover={{ y: -5, scale: 1.02 }}
+                    transition={{ type: 'spring', stiffness: 300 }}
+                  >
+                    <span className="text-sm text-gray-500 mb-1">Отдых между подходами</span>
+                    <div className="flex items-center">
+                      <FaClock className="w-5 h-5 text-purple-500 mr-2 flex-shrink-0" />
+                      <span className="font-medium">{program.restBetweenSets || 90} сек</span>
+                    </div>
+                  </motion.div>
+                </div>
+                
+                <h3 className="text-xl font-semibold mb-4">Упражнения в программе</h3>
+                
+                {isLoadingExercises ? (
+                  <div className="flex justify-center items-center py-8">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                    <p className="ml-4">Загрузка упражнений...</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3 mb-8">
+                    {exercises && exercises.length > 0 ? (
+                      exercises.map((exercise, index) => (
+                        <motion.div 
+                          key={exercise.id || index}
+                          className={`rounded-lg p-4 border ${borderColor} hover:shadow-md transition-shadow`}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.05, duration: 0.3 }}
+                        >
+                          <div className="flex items-start">
+                            {exercise.exercise?.imageUrl && (
+                              <div className="w-16 h-16 mr-4 rounded-md overflow-hidden flex-shrink-0">
+                                <img 
+                                  src={exercise.exercise.imageUrl} 
+                                  alt={exercise.exercise.name} 
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).src = '/images/exercise-placeholder.png';
+                                  }}
+                                />
+                              </div>
+                            )}
+                            
+                            <div className="flex-1">
+                              <h4 className="font-medium text-lg">{exercise.exercise?.name || exercise.name}</h4>
+                              <p className="text-sm text-gray-500 mb-2">
+                                {exercise.sets} {exercise.sets === 1 ? 'подход' : exercise.sets > 1 && exercise.sets < 5 ? 'подхода' : 'подходов'} × {exercise.reps || '-'} {exercise.reps === 1 ? 'повторение' : exercise.reps && exercise.reps > 1 && exercise.reps < 5 ? 'повторения' : 'повторений'}
+                                {exercise.weight ? ` • ${exercise.weight} кг` : ''}
+                              </p>
+                              
+                              <p className="text-sm">
+                                {exercise.exercise?.description || exercise.description || 'Нет описания'}
+                              </p>
+                              
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                {(exercise.exercise?.muscleGroups || exercise.muscleGroups) && 
+                                  (exercise.exercise?.muscleGroups || exercise.muscleGroups).map((group: string) => (
+                                    <span key={group} className={`${darkMode ? 'bg-blue-900 text-blue-100' : 'bg-blue-100 text-blue-800'} text-xs px-2 py-1 rounded-full`}>
+                                      {group}
+                                    </span>
+                                  ))
+                                }
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))
+                    ) : (
+                      <p className="p-4 text-center bg-gray-50 rounded-lg border border-gray-200">Нет упражнений в программе</p>
+                    )}
+                  </div>
+                )}
+                
+                <div className="flex justify-center mt-8">
+                  {onStart && (
+                    <motion.button 
+                      className={`${btnPrimaryBg} text-white px-6 py-3 rounded-lg font-medium shadow-lg transition`}
+                      onClick={onStart}
+                      whileHover={{ scale: 1.05, y: -3 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      Начать программу
+                    </motion.button>
+                  )}
+                </div>
+              </motion.div>
+            )}
+            
+            {/* Schedule tab */}
+            {activeTab === 'schedule' && (
+              <motion.div 
+                ref={scheduleRef}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="mb-6">
+                  <label className="block text-sm font-medium mb-3">Выберите неделю</label>
+                  
+                  <div className="flex flex-wrap gap-2">
+                    {weeks.map((week) => (
+                      <motion.button
+                        key={week.value}
+                        className={`px-4 py-2 rounded-md ${
+                          selectedWeek === week.value 
+                            ? 'bg-blue-600 text-white' 
+                            : `${btnSecondaryBg} ${btnSecondaryText}`
+                        } transition-colors`}
+                        onClick={() => setSelectedWeek(week.value)}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        {week.label}
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  {selectedWeek && workoutsByWeek[selectedWeek]?.length > 0 ? (
+                    workoutsByWeek[selectedWeek].map((workout, index) => (
+                      <motion.div 
+                        key={`${workout.id || index}`} 
+                        className={`rounded-lg p-5 border ${borderColor} hover:shadow-md transition-shadow`}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.1 }}
+                      >
+                        <h4 className="font-medium text-lg mb-2">День {index + 1}: {workout.name || `Тренировка ${index + 1}`}</h4>
+                        <p className="text-sm mb-4">{workout.notes || 'Нет дополнительных заметок'}</p>
+                        
+                        <div className="space-y-3">
+                          {workout.exercises.map((exercise, exIndex) => (
+                            <motion.div 
+                              key={exercise.id}
+                              className={`p-3 ${infoBlockBg} rounded-md border border-gray-200 hover:shadow-sm transition-shadow`}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ duration: 0.2, delay: 0.2 + exIndex * 0.05 }}
+                            >
+                              <div className="flex items-center">
+                                <div className="flex-1">
+                                  <h5 className="font-medium">{exercise.exercise?.name}</h5>
+                                  <p className="text-sm text-gray-500">
+                                    {exercise.sets} {exercise.sets === 1 ? 'подход' : exercise.sets > 1 && exercise.sets < 5 ? 'подхода' : 'подходов'} x {exercise.reps || '-'} {exercise.reps === 1 ? 'повторение' : exercise.reps && exercise.reps > 1 && exercise.reps < 5 ? 'повторения' : 'повторений'}
+                                    {exercise.weight && ` • ${exercise.weight} кг`}
+                                  </p>
+                                </div>
+                                {exercise.rest && (
+                                  <div className="flex items-center text-sm text-gray-500">
+                                    <FaClock className="mr-1" />
+                                    <span>{exercise.rest} сек отдыха</span>
+                                  </div>
+                                )}
+                              </div>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    ))
+                  ) : (
+                    <motion.div 
+                      className="text-center py-6 bg-gray-50 rounded-lg border border-gray-200"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {selectedWeek ? 
+                        <p>На эту неделю нет запланированных тренировок</p> :
+                        <p>Выберите неделю, чтобы увидеть тренировки</p>
+                      }
+                    </motion.div>
+                  )}
+                </div>
+              </motion.div>
             )}
           </div>
-        </div>
-      </div>
-    </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   );
 } 
