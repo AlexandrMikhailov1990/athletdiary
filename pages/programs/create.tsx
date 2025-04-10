@@ -16,8 +16,16 @@ interface CreateProgramForm {
   durationWeeks: number;
   workoutsPerWeek: number;
   exercises: ProgramExerciseEdit[];
-  restBetweenSets: number;
   restBetweenExercises: number;
+}
+
+interface ActiveProgram {
+  programId: string;
+  userId: string;
+  startDate: string;
+  currentWeek: number;
+  currentDay: number;
+  completedWorkouts: string[];
 }
 
 const CreateProgram: React.FC = () => {
@@ -31,7 +39,6 @@ const CreateProgram: React.FC = () => {
     durationWeeks: 4,
     workoutsPerWeek: 3,
     exercises: [],
-    restBetweenSets: 90,
     restBetweenExercises: 120,
   });
   
@@ -229,7 +236,6 @@ const CreateProgram: React.FC = () => {
         level: form.level,
         durationWeeks: form.durationWeeks,
         workoutsPerWeek: form.workoutsPerWeek,
-        restBetweenSets: form.restBetweenSets,
         restBetweenExercises: form.restBetweenExercises,
         workouts: [
           {
@@ -249,7 +255,25 @@ const CreateProgram: React.FC = () => {
       localStorage.setItem('programs', JSON.stringify([...existingPrograms, program]));
       
       // Устанавливаем активную программу
-      localStorage.setItem('activeProgram', JSON.stringify(program));
+      const newActiveProgram: ActiveProgram = {
+        programId: programId,
+        userId: 'user', // В реальном приложении здесь будет ID текущего пользователя
+        startDate: new Date().toISOString(),
+        currentWeek: 1,
+        currentDay: 1,
+        completedWorkouts: []
+      };
+      
+      // Сохраняем активную программу в localStorage
+      localStorage.setItem('activeProgram', JSON.stringify(newActiveProgram));
+      
+      // Сохраняем полную информацию о программе
+      const activePrograms = JSON.parse(localStorage.getItem('activePrograms') || '[]');
+      activePrograms.push({
+        ...newActiveProgram,
+        program: program // Сохраняем полную информацию о программе
+      });
+      localStorage.setItem('activePrograms', JSON.stringify(activePrograms));
       
       // Перенаправляем на страницу активной программы
       router.push('/active-program');
@@ -331,19 +355,6 @@ const CreateProgram: React.FC = () => {
                   rows={3}
                   className="w-full p-2 border rounded focus:ring focus:ring-blue-300"
                   required
-                />
-              </div>
-              
-              <div>
-                <label className="block mb-1">Отдых между подходами (сек)</label>
-                <input
-                  type="number"
-                  name="restBetweenSets"
-                  value={form.restBetweenSets}
-                  onChange={handleInputChange}
-                  min="0"
-                  max="300"
-                  className="w-full p-2 border rounded focus:ring focus:ring-blue-300"
                 />
               </div>
               

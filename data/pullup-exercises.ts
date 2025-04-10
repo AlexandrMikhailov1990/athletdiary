@@ -11,6 +11,7 @@ export const pullupExercises: Exercise[] = [
     equipment: ['pull-up bar'],
     difficulty: 'intermediate',
     type: 'reps',
+    sets: 3,
     reps: 8,
     restTime: 90,
     isPublic: true,

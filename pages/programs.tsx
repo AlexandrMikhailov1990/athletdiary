@@ -84,6 +84,13 @@ export default function Programs() {
 
   // Функция для запуска программы
   const startProgram = (program: Program) => {
+    // Убедимся, что у программы есть свойство exercises
+    const programWithExercises = {
+      ...program,
+      // Если exercises отсутствует, берем упражнения из первой тренировки
+      exercises: program.exercises || (program.workouts && program.workouts.length > 0 ? program.workouts[0].exercises : [])
+    };
+
     // Создаем новую активную программу
     const newActiveProgram: ActiveProgram = {
       programId: program.id,
@@ -101,7 +108,7 @@ export default function Programs() {
     const activePrograms = JSON.parse(localStorage.getItem('activePrograms') || '[]');
     activePrograms.push({
       ...newActiveProgram,
-      program: program // Сохраняем полную информацию о программе
+      program: programWithExercises // Сохраняем обновленную программу с exercises
     });
     localStorage.setItem('activePrograms', JSON.stringify(activePrograms));
     

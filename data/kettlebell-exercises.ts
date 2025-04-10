@@ -11,6 +11,7 @@ export const kettlebellExercises: Exercise[] = [
     equipment: ['kettlebell'],
     difficulty: 'beginner',
     type: 'reps',
+    sets: 3,
     reps: 15,
     restTime: 60,
     isPublic: true,

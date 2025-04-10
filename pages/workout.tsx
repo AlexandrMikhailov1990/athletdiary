@@ -15,6 +15,7 @@ interface WorkoutExercise {
   exercise: Exercise;
   completedSets: number;
   setDetails: WorkoutSet[];
+  rest?: number;
 }
 
 export default function Workout() {
@@ -158,10 +159,8 @@ export default function Workout() {
       
       // Start rest timer if not on last set
       if (currentExercise.completedSets < exerciseSets) {
-        // Используем время отдыха из упражнения или программы
-        const restTime = currentExercise.exercise.restTime || 
-                         (program && program.restBetweenSets) || 
-                         60;
+        // Используем значение rest из упражнения вместо restTime
+        const restTime = currentExercise.rest || currentExercise.exercise.restTime || 60;
         setRestTimer(restTime);
         setIsResting(true);
       } else if (currentExerciseIndex + 1 < exercises.length) {
@@ -335,15 +334,17 @@ export default function Workout() {
                 isPublic: false
               },
               completedSets: 0,
-              setDetails: [{ completed: false }]
+              setDetails: [{ completed: false }],
+              rest: 60
             };
           }
           
           // Установить время отдыха из программы, если оно доступно
           const exercise = {...exerciseData.exercise};
-          // Если в программе есть restBetweenSets, используем его вместо restTime упражнения
-          if (foundProgram && foundProgram.restBetweenSets !== undefined) {
-            exercise.restTime = foundProgram.restBetweenSets;
+          // Используем restTime упражнения (больше не используем restBetweenSets программы)
+          if (!exercise.restTime || exercise.restTime < 1) {
+            exercise.restTime = 60; // Значение по умолчанию, если не задано
+            console.warn('Для упражнения не указано время отдыха, установлено значение по умолчанию: 60 секунд');
           }
           
           // Проверяем наличие sets и устанавливаем значение по умолчанию, если нет
@@ -364,7 +365,8 @@ export default function Workout() {
           return {
             exercise: exercise,
             completedSets: 0,
-            setDetails: setDetails
+            setDetails: setDetails,
+            rest: exerciseData.rest
           };
         });
         
