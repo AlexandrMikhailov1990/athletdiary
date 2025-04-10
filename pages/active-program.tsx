@@ -250,8 +250,18 @@ export default function ActiveProgram() {
                               <div className="font-medium">{ex.name}</div>
                               <div className="text-gray-600">
                                 {ex.sets?.filter(s => s.completed).length || 0} из {ex.sets?.length || 0} подходов
-                                {ex.sets && ex.sets.length > 0 && ex.sets[0]?.weight > 0 ? 
-                                  ` • ${Math.max(...ex.sets.map(s => s?.weight || 0))} кг` : ''}
+                                {ex.sets && ex.sets.length > 0 ? (
+                                  <div className="text-gray-600 mt-1">
+                                    {ex.sets.filter(s => s.completed && (s.reps || s.weight)).map((set, setIdx) => (
+                                      <div key={setIdx} className="text-xs">
+                                        Подход {setIdx + 1}: 
+                                        {set.weight ? `${set.weight} кг` : ''} 
+                                        {set.weight && set.reps ? ' × ' : ''}
+                                        {set.reps ? `${set.reps} повт.` : ''}
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : ''}
                               </div>
                             </div>
                           ))}

@@ -81,20 +81,41 @@ export default function Workout() {
       // Сохраняем обновленную активную программу
       localStorage.setItem('activeProgram', JSON.stringify(updatedProgram));
 
-      // Сохраняем историю тренировок
+      // Сохраняем историю тренировок для WorkoutHistory
       const workoutHistory = JSON.parse(localStorage.getItem('workoutHistory') || '[]');
+      
+      // Создаем запись о тренировке в формате WorkoutHistory
+      const workoutHistoryRecord = {
+        programId: program.id,
+        date: new Date().toISOString(),
+        week: activeProgram.currentWeek,
+        day: activeProgram.currentDay,
+        exercises: exercises.map(ex => ({
+          exerciseId: ex.exercise.id,
+          name: ex.exercise.name,
+          sets: ex.setDetails.map(set => ({
+            reps: set.reps || 0,  // Убедимся, что значения не undefined
+            weight: set.weight || 0,  // Убедимся, что значения не undefined
+            completed: set.completed
+          }))
+        }))
+      };
+      
+      // Сохраняем запись в формате WorkoutRecord (для совместимости со старым кодом)
       const workoutRecord = {
         id: Date.now().toString(),
         workoutId: program.workouts[activeProgram.currentDay - 1].id,
-        workoutName: program.workouts[activeProgram.currentDay - 1].name,
+        programId: program.id, // Добавляем ID программы для связи
+        workoutName: program.workouts[activeProgram.currentDay - 1].name || 'Тренировка',
         date: new Date().toISOString(),
         duration: Math.round((Date.now() - new Date(startTime).getTime()) / 60000),
         exercises: exercises.map(ex => ({
           exercise: ex.exercise,
+          exerciseId: ex.exercise.id, // Добавляем ID упражнения для связи
           sets: ex.setDetails.map(set => ({
-            weight: set.weight,
-            reps: set.reps,
-            duration: set.duration,
+            weight: set.weight || 0,
+            reps: set.reps || 0,
+            duration: set.duration || 0,
             completed: set.completed
           }))
         })),
@@ -102,8 +123,12 @@ export default function Workout() {
         rating: 0,
         userId: 'user'
       };
-      workoutHistory.push(workoutRecord);
+      
+      // Добавляем обе записи в историю и сохраняем
+      workoutHistory.push(workoutHistoryRecord, workoutRecord);
       localStorage.setItem('workoutHistory', JSON.stringify(workoutHistory));
+
+      console.log('Сохранена история тренировки:', workoutHistoryRecord);
 
       // Перенаправляем на страницу активной программы
       router.push('/active-program');
