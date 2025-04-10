@@ -209,6 +209,19 @@ const CreateProgram: React.FC = () => {
     try {
       // Создаем программу
       const programId = uuidv4();
+      
+      // Подготавливаем массив упражнений для workout
+      const workoutExercises = form.exercises.map(ex => ({
+        id: ex.id,
+        exerciseId: ex.exerciseId,
+        exercise: ex.exerciseData,
+        sets: ex.sets,
+        reps: ex.reps,
+        weight: ex.weight,
+        duration: ex.duration,
+        rest: ex.rest
+      }));
+      
       const program: Program = {
         id: programId,
         name: form.name,
@@ -222,18 +235,11 @@ const CreateProgram: React.FC = () => {
           {
             id: uuidv4(),
             programId: programId,
-            exercises: form.exercises.map(ex => ({
-              id: ex.id,
-              exerciseId: ex.exerciseId,
-              exercise: ex.exerciseData,
-              sets: ex.sets,
-              reps: ex.reps,
-              weight: ex.weight,
-              duration: ex.duration,
-              rest: ex.rest
-            }))
+            exercises: workoutExercises
           }
-        ]
+        ],
+        // Добавляем упражнения также на верхний уровень для отображения на странице программы
+        exercises: workoutExercises
       };
       
       // Получаем существующие программы

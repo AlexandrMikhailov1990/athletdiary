@@ -315,6 +315,30 @@ export default function Workout() {
       if (todayWorkout && todayWorkout.exercises) {
         // Инициализируем упражнения
         const workoutExercises: WorkoutExercise[] = todayWorkout.exercises.map(exerciseData => {
+          // Проверяем, что у нас есть все необходимые данные
+          if (!exerciseData.exercise) {
+            console.error('Ошибка: у упражнения отсутствует свойство exercise', exerciseData);
+            // Создаем базовую заглушку для предотвращения ошибок
+            return {
+              exercise: {
+                id: 'error',
+                name: 'Ошибка загрузки упражнения',
+                description: 'Произошла ошибка при загрузке данных упражнения',
+                type: 'reps',
+                sets: 1,
+                reps: 10,
+                weight: 0,
+                restTime: 60,
+                muscleGroups: [],
+                equipment: ['bodyweight'],
+                difficulty: 'beginner',
+                isPublic: false
+              },
+              completedSets: 0,
+              setDetails: [{ completed: false }]
+            };
+          }
+          
           // Установить время отдыха из программы, если оно доступно
           const exercise = {...exerciseData.exercise};
           // Если в программе есть restBetweenSets, используем его вместо restTime упражнения
@@ -322,10 +346,25 @@ export default function Workout() {
             exercise.restTime = foundProgram.restBetweenSets;
           }
           
+          // Проверяем наличие sets и устанавливаем значение по умолчанию, если нет
+          if (!exercise.sets || exercise.sets < 1) {
+            exercise.sets = 1;
+            console.warn('Для упражнения не указано количество подходов, установлено значение по умолчанию: 1');
+          }
+          
+          // Инициализируем массив setDetails с правильным количеством подходов
+          const numSets = exercise.sets;
+          const setDetails = Array(numSets).fill(null).map(() => ({
+            reps: undefined,
+            weight: undefined,
+            duration: undefined,
+            completed: false
+          }));
+          
           return {
             exercise: exercise,
             completedSets: 0,
-            setDetails: []
+            setDetails: setDetails
           };
         });
         

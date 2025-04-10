@@ -35,7 +35,8 @@ export default function ProgramDetails() {
           ...foundProgram,
           // Обеспечиваем совместимость со старыми данными - преобразуем duration в durationWeeks если нужно
           durationWeeks: foundProgram.durationWeeks || foundProgram.duration || 4,
-          exercises: foundProgram.exercises || []
+          // Обеспечиваем совместимость - если exercises не существует, получаем их из первой тренировки
+          exercises: foundProgram.exercises || (foundProgram.workouts?.[0]?.exercises || [])
         };
         
         setProgram(extendedProgram);
@@ -135,14 +136,36 @@ export default function ProgramDetails() {
   // Функция для сохранения обновленной программы
   const saveUpdatedProgram = (updatedProgram: ExtendedProgram) => {
     try {
+      // Проверяем, принадлежит ли программа пользователю или это пример
       const programs = JSON.parse(localStorage.getItem('programs') || '[]');
-      const updatedPrograms = programs.map((p: ExtendedProgram) => 
-        p.id === updatedProgram.id ? updatedProgram : p
-      );
+      const samplePrograms = JSON.parse(localStorage.getItem('samplePrograms') || '[]');
       
-      localStorage.setItem('programs', JSON.stringify(updatedPrograms));
+      const isUserProgram = programs.some((p: Program) => p.id === updatedProgram.id);
+      
+      if (isUserProgram) {
+        // Обновляем пользовательскую программу
+        const updatedPrograms = programs.map((p: Program) => 
+          p.id === updatedProgram.id ? updatedProgram : p
+        );
+        localStorage.setItem('programs', JSON.stringify(updatedPrograms));
+      } else {
+        // Это пример программы - копируем его в пользовательские программы
+        const programCopy = {
+          ...updatedProgram,
+          id: `${updatedProgram.id}-copy-${Date.now()}`, // Создаем новый ID
+          isCopy: true
+        };
+        localStorage.setItem('programs', JSON.stringify([...programs, programCopy]));
+        
+        // Обновляем текущую программу в состоянии
+        setProgram(programCopy);
+        
+        // Перенаправляем на страницу новой копии
+        router.replace(`/programs/${programCopy.id}`);
+      }
     } catch (error) {
       console.error('Ошибка при сохранении программы:', error);
+      alert('Произошла ошибка при сохранении программы. Пожалуйста, попробуйте снова.');
     }
   };
 
@@ -236,10 +259,14 @@ export default function ProgramDetails() {
                       };
                       saveUpdatedProgram(newProgram);
                       alert('Порядок упражнений сохранен!');
+                      setReordering(false); // Выключаем режим редактирования после сохранения
                     }
                   }}
-                  className="bg-green-500 hover:bg-green-600 text-white px-4 py-1 rounded-lg text-sm"
+                  className="bg-green-500 hover:bg-green-600 text-white px-4 py-1 rounded-lg text-sm flex items-center"
                 >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
                   Сохранить порядок
                 </button>
               </div>

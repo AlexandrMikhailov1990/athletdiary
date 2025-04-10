@@ -46,6 +46,7 @@ export interface Program {
   durationWeeks: number;
   workoutsPerWeek: number;
   workouts: Workout[];
+  exercises?: WorkoutExercise[];
   isPublic?: boolean;
   createdBy?: string;
   restBetweenSets?: number;
