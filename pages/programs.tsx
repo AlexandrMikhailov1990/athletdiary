@@ -3,6 +3,8 @@ import { useRouter } from 'next/router';
 import { SAMPLE_PROGRAMS, Program } from '../models/Program';
 import { SAMPLE_ACTIVE_PROGRAM, ActiveProgram } from '../models/ActiveProgram';
 import { Exercise, translateMuscleGroup } from '../models/Exercise';
+import { addHomeProgramToUserPrograms } from '../models/HomeProgram';
+import { addExtendedHomeProgramToUserPrograms } from '../models/ExtendedHomeProgram';
 
 export default function Programs() {
   const router = useRouter();
@@ -183,6 +185,33 @@ export default function Programs() {
     return Array.from(muscleGroups);
   };
 
+  // Функция для удаления тестовых программ с минимальным наполнением
+  const cleanupTestPrograms = () => {
+    // Загружаем сохраненные программы
+    const savedPrograms = JSON.parse(localStorage.getItem('programs') || '[]');
+    
+    // Фильтруем программы, оставляя только те, у которых есть упражнения
+    const validPrograms = savedPrograms.filter((prog: Program) => {
+      // Проверяем, что у программы есть хотя бы одна тренировка с упражнениями
+      return prog.workouts && 
+             prog.workouts.length > 0 && 
+             prog.workouts.some(workout => workout.exercises && workout.exercises.length > 0);
+    });
+    
+    // Если были найдены и удалены программы
+    if (validPrograms.length < savedPrograms.length) {
+      // Сохраняем только валидные программы
+      localStorage.setItem('programs', JSON.stringify(validPrograms));
+      
+      // Обновляем состояние
+      loadPrograms();
+      
+      alert(`Удалено ${savedPrograms.length - validPrograms.length} пустых тестовых программ`);
+    } else {
+      alert('Пустых тестовых программ не найдено');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 py-8">
       <div className="container mx-auto px-4">
@@ -226,18 +255,46 @@ export default function Programs() {
         
         {/* Кнопка создания программы */}
         <div className="mb-8 flex justify-between">
-          <button
-            className="bg-blue-600 hover:bg-blue-700 text-white h-11 px-6 rounded-lg transition-colors duration-200 font-medium"
-            onClick={() => {
-              console.log('localStorage.programs:', JSON.parse(localStorage.getItem('programs') || '[]'));
-              console.log('localStorage.activePrograms:', JSON.parse(localStorage.getItem('activePrograms') || '[]'));
-              console.log('localStorage.activeProgram:', JSON.parse(localStorage.getItem('activeProgram') || 'null'));
-              console.log('localStorage.deletedSamplePrograms:', JSON.parse(localStorage.getItem('deletedSamplePrograms') || '[]'));
-              loadPrograms();
-            }}
-          >
-            Обновить список
-          </button>
+          <div className="flex gap-3">
+            <button
+              className="bg-blue-600 hover:bg-blue-700 text-white h-11 px-6 rounded-lg transition-colors duration-200 font-medium"
+              onClick={() => {
+                console.log('localStorage.programs:', JSON.parse(localStorage.getItem('programs') || '[]'));
+                console.log('localStorage.activePrograms:', JSON.parse(localStorage.getItem('activePrograms') || '[]'));
+                console.log('localStorage.activeProgram:', JSON.parse(localStorage.getItem('activeProgram') || 'null'));
+                console.log('localStorage.deletedSamplePrograms:', JSON.parse(localStorage.getItem('deletedSamplePrograms') || '[]'));
+                loadPrograms();
+              }}
+            >
+              Обновить список
+            </button>
+            <button
+              className="bg-purple-600 hover:bg-purple-700 text-white h-11 px-6 rounded-lg transition-colors duration-200 font-medium"
+              onClick={() => {
+                addHomeProgramToUserPrograms();
+                loadPrograms();
+                alert('Домашняя программа тренировок с гантелями добавлена');
+              }}
+            >
+              + Домашняя программа
+            </button>
+            <button
+              className="bg-green-600 hover:bg-green-700 text-white h-11 px-6 rounded-lg transition-colors duration-200 font-medium"
+              onClick={() => {
+                addExtendedHomeProgramToUserPrograms();
+                loadPrograms();
+                alert('Расширенная домашняя программа тренировок добавлена');
+              }}
+            >
+              + Полная программа
+            </button>
+            <button
+              className="bg-amber-600 hover:bg-amber-700 text-white h-11 px-6 rounded-lg transition-colors duration-200 font-medium"
+              onClick={cleanupTestPrograms}
+            >
+              Удалить тестовые
+            </button>
+          </div>
           <button 
             className="bg-green-600 hover:bg-green-700 text-white h-11 px-6 rounded-lg transition-colors duration-200 font-medium"
             onClick={() => router.push('/programs/create')}
@@ -255,55 +312,53 @@ export default function Programs() {
                   <h3 className="text-xl font-semibold text-blue-800 mb-4">{program.name}</h3>
                   
                   <div className="flex flex-wrap gap-2 mb-4">
-                    <span className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
-                      {program.level === 'beginner' && 'Новичок'}
-                      {program.level === 'intermediate' && 'Средний'}
-                      {program.level === 'advanced' && 'Продвинутый'}
-                    </span>
-                    
-                    <span className="inline-flex items-center px-3 py-1 bg-purple-100 text-purple-800 text-sm font-medium rounded-full">
-                      {program.duration} недель
-                    </span>
-                    
-                    <span className="inline-flex items-center px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
-                      {program.workoutsPerWeek} тр/нед
-                    </span>
-                    
-                    <span className="inline-flex items-center px-3 py-1 bg-yellow-100 text-yellow-800 text-sm font-medium rounded-full">
-                      {countExercisesInProgram(program)} упражнений
-                    </span>
+                    {countExercisesInProgram(program) > 0 && (
+                      <span className="inline-flex items-center px-3 py-1 bg-yellow-100 text-yellow-800 text-sm font-medium rounded-full">
+                        {countExercisesInProgram(program)} {
+                          countExercisesInProgram(program) === 1 ? 'упражнение' : 
+                          countExercisesInProgram(program) < 5 ? 'упражнения' : 'упражнений'
+                        }
+                      </span>
+                    )}
                   </div>
                   
                   <p className="text-gray-600 mb-4 line-clamp-3 h-auto overflow-hidden">
                     {program.description}
                   </p>
                   
-                  {/* Добавляем информацию о мышечных группах */}
-                  <div className="mt-3 mb-4">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">Целевые мышцы:</h4>
-                    <div className="flex flex-wrap gap-1.5">
-                      {getMuscleGroupsInProgram(program).map(muscle => (
-                        <span key={muscle} className="inline-flex items-center px-2.5 py-0.5 bg-gray-100 text-gray-800 text-xs font-medium rounded">
-                          {translateMuscleGroup(muscle)}
-                        </span>
-                      ))}
+                  {/* Добавляем информацию о мышечных группах только если они есть */}
+                  {getMuscleGroupsInProgram(program).length > 0 && (
+                    <div className="mt-3 mb-4">
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">Целевые мышцы:</h4>
+                      <div className="flex flex-wrap gap-1.5">
+                        {getMuscleGroupsInProgram(program).map(muscle => (
+                          <span key={muscle} className="inline-flex items-center px-2.5 py-0.5 bg-gray-100 text-gray-800 text-xs font-medium rounded">
+                            {translateMuscleGroup(muscle)}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
                   
-                  {/* Добавляем краткую информацию о тренировках */}
-                  <div className="mt-3">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">Тренировки:</h4>
-                    <div className="space-y-2 max-h-32 overflow-y-auto pr-2">
-                      {program.workouts.map((workout, index) => (
-                        <div key={index} className="text-xs border border-gray-200 rounded p-2">
-                          <div className="font-medium">{workout.name}</div>
-                          <div className="text-gray-500 mt-1">
-                            {workout.exercises.length} упражнений
+                  {/* Добавляем краткую информацию о тренировках только если они есть */}
+                  {program.workouts && program.workouts.length > 0 && (
+                    <div className="mt-3">
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">Тренировки:</h4>
+                      <div className="space-y-2 max-h-32 overflow-y-auto pr-2">
+                        {program.workouts.map((workout, index) => (
+                          <div key={index} className="text-xs border border-gray-200 rounded p-2">
+                            <div className="font-medium">{workout.name}</div>
+                            <div className="text-gray-500 mt-1">
+                              {workout.exercises.length} {
+                                workout.exercises.length === 1 ? 'упражнение' : 
+                                workout.exercises.length < 5 ? 'упражнения' : 'упражнений'
+                              }
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
                 
                 <div className="flex gap-3 mt-auto pt-4">

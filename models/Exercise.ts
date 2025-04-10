@@ -40,6 +40,9 @@ export interface Exercise {
   image?: string; // URL изображения
   imageUrl?: string; // Альтернативное название для URL изображения (для обратной совместимости)
   weight?: number; // Вес в кг (для силовых упражнений)
+  calories?: number; // Примерный расход калорий за минуту
+  isPublic?: boolean; // Публичное упражнение или пользовательское
+  createdBy?: string; // ID пользователя, создавшего упражнение
 }
 
 // Словари для перевода
@@ -58,7 +61,12 @@ export const muscleGroupTranslations: Record<string, string> = {
   'calves': 'Икры',
   'traps': 'Трапеции',
   'lats': 'Широчайшие',
-  'legs': 'Ноги'
+  'legs': 'Ноги',
+  'lower_back': 'Нижняя часть спины',
+  'full_body': 'Все тело',
+  'arms': 'Руки',
+  'cardio': 'Кардио',
+  'deltoids': 'Дельты',
 };
 
 export const difficultyTranslations: Record<string, string> = {
@@ -78,11 +86,17 @@ export const equipmentTranslations: Record<string, string> = {
   'medicine ball': 'Медбол',
   'cable machine': 'Тросовый тренажер',
   'squat rack': 'Силовая рама',
-  'bodyweight': 'Собственный вес',
+  'bodyweight': 'Вес тела',
   'treadmill': 'Беговая дорожка',
   'exercise bike': 'Велотренажер',
   'elliptical': 'Эллиптический тренажер',
-  'rowing machine': 'Гребной тренажер'
+  'rowing machine': 'Гребной тренажер',
+  'machine': 'Тренажер',
+  'resistance band': 'Резиновая лента',
+  'cable': 'Тросовый тренажер',
+  'box': 'Бокс',
+  'none': 'Без оборудования',
+  'yoga mat': 'Коврик для йоги',
 };
 
 // Функция для перевода названия группы мышц
@@ -215,6 +229,8 @@ export const NORMALIZED_SAMPLE_EXERCISES = SAMPLE_EXERCISES.map(normalizeExercis
 
 // Функция для загрузки всех упражнений (как пользовательских, так и предопределенных)
 export function getAllExercises(): Exercise[] {
+  if (typeof window === 'undefined') return [];
+  
   try {
     const savedExercises = localStorage.getItem('userExercises');
     if (savedExercises) {
@@ -236,4 +252,182 @@ export function getAllExercises(): Exercise[] {
 export function getExerciseById(exerciseId: string): Exercise | undefined {
   const allExercises = getAllExercises();
   return allExercises.find(ex => ex.id === exerciseId);
+}
+
+// Сохранение упражнения
+export function saveExercise(exercise: Exercise): void {
+  if (typeof window === 'undefined') return;
+  
+  try {
+    const exercises = getAllExercises();
+    const existingIndex = exercises.findIndex(e => e.id === exercise.id);
+    
+    if (existingIndex >= 0) {
+      // Обновляем существующее упражнение
+      exercises[existingIndex] = exercise;
+    } else {
+      // Добавляем новое упражнение
+      exercises.push(exercise);
+    }
+    
+    localStorage.setItem('userExercises', JSON.stringify(exercises));
+  } catch (error) {
+    console.error('Ошибка при сохранении упражнения:', error);
+  }
+}
+
+// Удаление упражнения
+export function deleteExercise(id: string): void {
+  if (typeof window === 'undefined') return;
+  
+  try {
+    let exercises = getAllExercises();
+    exercises = exercises.filter(exercise => exercise.id !== id);
+    localStorage.setItem('userExercises', JSON.stringify(exercises));
+  } catch (error) {
+    console.error('Ошибка при удалении упражнения:', error);
+  }
+}
+
+// Получение всех групп мышц
+export function getAllMuscleGroups(): string[] {
+  return Object.keys(muscleGroupTranslations).sort();
+}
+
+// Получение всех типов оборудования
+export function getAllEquipment(): string[] {
+  return Object.keys(equipmentTranslations).sort();
+}
+
+// Инициализация демо-упражнений если их нет в системе
+export function initializeExercises(): void {
+  if (typeof window === 'undefined') return;
+  
+  const existingExercises = getAllExercises();
+  if (existingExercises.length > 0) return;
+  
+  const demoExercises: Exercise[] = [
+    {
+      id: '1',
+      name: 'Отжимания',
+      description: 'Классическое упражнение для развития верхней части тела, особенно грудных мышц и трицепсов.',
+      imageUrl: '/images/exercises/pushup.jpg',
+      muscleGroups: ['chest', 'triceps', 'shoulders', 'core'],
+      equipment: ['bodyweight'],
+      difficulty: 'beginner',
+      type: 'reps',
+      reps: 10,
+      isPublic: true,
+    },
+    {
+      id: '2',
+      name: 'Приседания',
+      description: 'Базовое упражнение для нижней части тела, развивающее квадрицепсы, ягодицы и кор.',
+      imageUrl: '/images/exercises/squat.jpg',
+      muscleGroups: ['legs', 'glutes', 'core'],
+      equipment: ['bodyweight'],
+      difficulty: 'beginner',
+      type: 'reps',
+      reps: 15,
+      isPublic: true,
+    },
+    {
+      id: '3',
+      name: 'Планка',
+      description: 'Статическое упражнение, укрепляющее корпус, плечи и спину.',
+      imageUrl: '/images/exercises/plank.jpg',
+      muscleGroups: ['core', 'shoulders', 'back'],
+      equipment: ['bodyweight'],
+      difficulty: 'beginner',
+      type: 'timed',
+      duration: 30,
+      isPublic: true,
+    },
+    {
+      id: '4',
+      name: 'Подтягивания',
+      description: 'Упражнение для развития верхней части спины, бицепсов и предплечий.',
+      imageUrl: '/images/exercises/pullup.jpg',
+      muscleGroups: ['back', 'biceps', 'forearms'],
+      equipment: ['pull-up bar'],
+      difficulty: 'intermediate',
+      type: 'reps',
+      reps: 8,
+      isPublic: true,
+    },
+    {
+      id: '5',
+      name: 'Жим гантелей лежа',
+      description: 'Упражнение для развития грудных мышц, передних дельт и трицепсов.',
+      imageUrl: '/images/exercises/dumbbell-bench-press.jpg',
+      muscleGroups: ['chest', 'shoulders', 'triceps'],
+      equipment: ['dumbbell', 'bench'],
+      difficulty: 'intermediate',
+      type: 'reps',
+      reps: 10,
+      isPublic: true,
+    },
+    {
+      id: '6',
+      name: 'Бурпи',
+      description: 'Комплексное упражнение, активизирующее все тело и улучшающее выносливость.',
+      imageUrl: '/images/exercises/burpee.jpg',
+      muscleGroups: ['fullbody', 'cardio'],
+      equipment: ['bodyweight'],
+      difficulty: 'intermediate',
+      type: 'timed',
+      duration: 45,
+      isPublic: true,
+    },
+    {
+      id: '7',
+      name: 'Становая тяга',
+      description: 'Базовое упражнение для развития задней цепи мышц - спины, ягодиц, задней поверхности бедра.',
+      imageUrl: '/images/exercises/deadlift.jpg',
+      muscleGroups: ['back', 'glutes', 'hamstrings'],
+      equipment: ['barbell'],
+      difficulty: 'advanced',
+      type: 'reps',
+      reps: 8,
+      isPublic: true,
+    },
+    {
+      id: '8',
+      name: 'Скручивания на пресс',
+      description: 'Упражнение для укрепления мышц брюшного пресса.',
+      imageUrl: '/images/exercises/crunches.jpg',
+      muscleGroups: ['abs', 'core'],
+      equipment: ['bodyweight'],
+      difficulty: 'beginner',
+      type: 'reps',
+      reps: 15,
+      isPublic: true,
+    },
+    {
+      id: '9',
+      name: 'Выпады',
+      description: 'Упражнение для развития ног с акцентом на квадрицепсы и ягодицы.',
+      imageUrl: '/images/exercises/lunges.jpg',
+      muscleGroups: ['legs', 'glutes'],
+      equipment: ['bodyweight'],
+      difficulty: 'beginner',
+      type: 'reps',
+      reps: 12,
+      isPublic: true,
+    },
+    {
+      id: '10',
+      name: 'Махи гирей',
+      description: 'Динамическое упражнение для развития мощности нижней части тела и кардио-нагрузки.',
+      imageUrl: '/images/exercises/kettlebell-swing.jpg',
+      muscleGroups: ['glutes', 'hamstrings', 'core', 'cardio'],
+      equipment: ['kettlebell'],
+      difficulty: 'intermediate',
+      type: 'reps',
+      reps: 15,
+      isPublic: true,
+    },
+  ];
+  
+  localStorage.setItem('userExercises', JSON.stringify(demoExercises));
 } 

@@ -1,18 +1,41 @@
 import { Exercise } from './Exercise';
+import { v4 as uuidv4 } from 'uuid';
+
+export interface ProgramExercise {
+  id: string;
+  exerciseId: string;
+  sets: number;
+  reps?: number;
+  weight?: number;
+  duration?: number;
+  restTime: number;
+}
 
 export interface WorkoutExercise {
+  id: string;
+  exerciseId: string;
   exercise: Exercise;
   sets: number;
-  reps: number | string; // Может быть "до отказа" или конкретное число
-  rest: number; // Отдых в секундах
-  weight?: number; // Вес в кг, опциональный
+  reps?: number;
+  weight?: number;
+  duration?: number;
+  rest: number;
+  completed?: boolean;
+  completedSets?: {
+    reps?: number;
+    weight?: number;
+    duration?: number;
+  }[];
 }
 
 export interface Workout {
   id: string;
-  name: string;
+  programId: string;
+  name?: string;
+  date?: string;
   exercises: WorkoutExercise[];
   notes?: string;
+  completed?: boolean;
 }
 
 export interface Program {
@@ -20,13 +43,103 @@ export interface Program {
   name: string;
   description: string;
   level: 'beginner' | 'intermediate' | 'advanced';
-  duration: number; // Длительность в неделях
+  durationWeeks: number;
   workoutsPerWeek: number;
   workouts: Workout[];
-  createdBy: string;
-  isPublic: boolean;
-  restBetweenSets?: number; // Время отдыха между подходами в секундах
-  restBetweenExercises?: number; // Время отдыха между упражнениями в секундах
+  isPublic?: boolean;
+  createdBy?: string;
+}
+
+interface CompletedWorkout {
+  id: string;
+  workoutId: string;
+  programId: string;
+  date: string;
+  exercises: WorkoutExercise[];
+}
+
+export function getPrograms(): Program[] {
+  if (typeof window === 'undefined') return [];
+  
+  const programs = localStorage.getItem('programs');
+  if (!programs) return [];
+  
+  return JSON.parse(programs);
+}
+
+export function getProgramById(id: string): Program | null {
+  const programs = getPrograms();
+  return programs.find(program => program.id === id) || null;
+}
+
+export function saveProgram(program: Program): void {
+  const programs = getPrograms();
+  const index = programs.findIndex(p => p.id === program.id);
+  
+  if (index >= 0) {
+    programs[index] = program;
+  } else {
+    programs.push(program);
+  }
+  
+  localStorage.setItem('programs', JSON.stringify(programs));
+}
+
+export function deleteProgram(id: string): void {
+  const programs = getPrograms();
+  const filteredPrograms = programs.filter(program => program.id !== id);
+  localStorage.setItem('programs', JSON.stringify(filteredPrograms));
+}
+
+export function getCompletedWorkouts(): CompletedWorkout[] {
+  if (typeof window === 'undefined') return [];
+  
+  const completedWorkouts = localStorage.getItem('completedWorkouts');
+  if (!completedWorkouts) return [];
+  
+  return JSON.parse(completedWorkouts);
+}
+
+export function saveCompletedWorkout(workout: CompletedWorkout): void {
+  const completedWorkouts = getCompletedWorkouts();
+  completedWorkouts.push(workout);
+  localStorage.setItem('completedWorkouts', JSON.stringify(completedWorkouts));
+}
+
+export function getCompletedWorkoutsByProgramId(programId: string): CompletedWorkout[] {
+  const completedWorkouts = getCompletedWorkouts();
+  return completedWorkouts.filter(workout => workout.programId === programId);
+}
+
+export function initializePrograms(): void {
+  if (typeof window === 'undefined') return;
+  
+  const programs = localStorage.getItem('programs');
+  if (programs && JSON.parse(programs).length > 0) return;
+  
+  const demoPrograms: Program[] = [
+    {
+      id: uuidv4(),
+      name: 'Программа для новичков',
+      description: 'Идеальная программа для тех, кто только начинает заниматься',
+      level: 'beginner',
+      durationWeeks: 4,
+      workoutsPerWeek: 3,
+      workouts: [
+        {
+          id: uuidv4(),
+          programId: '1',
+          name: 'День 1: Верхняя часть тела',
+          exercises: [],
+          notes: 'Фокус на грудные мышцы и руки'
+        }
+      ],
+      isPublic: true,
+      createdBy: 'system'
+    }
+  ];
+  
+  localStorage.setItem('programs', JSON.stringify(demoPrograms));
 }
 
 // Примеры программ
@@ -36,21 +149,21 @@ export const SAMPLE_PROGRAMS: Program[] = [
     name: 'Программа на массу для начинающих',
     description: 'Базовая программа для набора мышечной массы с акцентом на основные упражнения',
     level: 'beginner',
-    duration: 8,
+    durationWeeks: 8,
     workoutsPerWeek: 3,
     workouts: [],
-    createdBy: 'admin',
-    isPublic: true
+    isPublic: true,
+    createdBy: 'admin'
   },
   {
     id: '2',
     name: 'Программа для похудения',
     description: 'Интенсивная программа с акцентом на жиросжигание и поддержание мышечной массы',
     level: 'intermediate',
-    duration: 6,
+    durationWeeks: 6,
     workoutsPerWeek: 4,
     workouts: [],
-    createdBy: 'admin',
-    isPublic: true
+    isPublic: true,
+    createdBy: 'admin'
   }
 ]; 

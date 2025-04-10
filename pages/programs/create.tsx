@@ -1,439 +1,607 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
-import { Exercise, getAllExercises } from '../../models/Exercise';
+import Layout from '../../components/Layout';
+import { Exercise, getAllExercises, translateMuscleGroup, translateEquipment, getAllMuscleGroups, getAllEquipment } from '../../models/Exercise';
+import { Program, WorkoutExercise } from '../../models/Program';
+import { v4 as uuidv4 } from 'uuid';
 
-interface ProgramExercise {
-  exerciseId: string;
-  sets: number;
-  reps?: number;
-  weight?: number;
-  duration?: number;
+interface ProgramExerciseEdit extends WorkoutExercise {
+  exerciseData: Exercise;
 }
 
 interface CreateProgramForm {
   name: string;
   description: string;
-  restBetweenSets: number; // Время отдыха между подходами
-  restBetweenExercises: number; // Время отдыха между упражнениями
-  exercises: ProgramExercise[];
+  level: 'beginner' | 'intermediate' | 'advanced';
+  durationWeeks: number;
+  workoutsPerWeek: number;
+  exercises: ProgramExerciseEdit[];
 }
 
-export default function CreateProgram() {
+const CreateProgram: React.FC = () => {
   const router = useRouter();
+  
+  // Состояние формы
   const [form, setForm] = useState<CreateProgramForm>({
     name: '',
     description: '',
-    restBetweenSets: 60,
-    restBetweenExercises: 90,
-    exercises: []
+    level: 'beginner',
+    durationWeeks: 4,
+    workoutsPerWeek: 3,
+    exercises: [],
   });
-
-  const [selectedExercise, setSelectedExercise] = useState<string>('');
-  const [exerciseDetails, setExerciseDetails] = useState<ProgramExercise>({
-    exerciseId: '',
-    sets: 3,
-    reps: 10
-  });
+  
+  // Состояние для выбора упражнений
+  const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
+  const [exerciseDetails, setExerciseDetails] = useState<ProgramExerciseEdit | null>(null);
   const [availableExercises, setAvailableExercises] = useState<Exercise[]>([]);
-
-  // Загружаем все доступные упражнения при монтировании компонента
-  useEffect(() => {
-    setAvailableExercises(getAllExercises());
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectionMode, setSelectionMode] = useState<'list' | 'tree'>('list');
+  const [selectedMuscleGroup, setSelectedMuscleGroup] = useState<string | null>(null);
+  const [selectedEquipment, setSelectedEquipment] = useState<string | null>(null);
+  
+  // Получение уникальных групп мышц и типов оборудования
+  const muscleGroups = useMemo(() => {
+    return getAllMuscleGroups();
   }, []);
-
-  // Обработка изменения базовых полей формы
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  
+  const equipmentTypes = useMemo(() => {
+    return getAllEquipment();
+  }, []);
+  
+  // Фильтрация упражнений
+  const filteredExercises = useMemo(() => {
+    let result = availableExercises;
+    
+    // Поиск по запросу
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(ex => 
+        ex.name.toLowerCase().includes(query) || 
+        ex.description.toLowerCase().includes(query)
+      );
+    }
+    
+    // Фильтрация по группе мышц
+    if (selectedMuscleGroup) {
+      result = result.filter(ex => 
+        ex.muscleGroups.includes(selectedMuscleGroup)
+      );
+    }
+    
+    // Фильтрация по оборудованию
+    if (selectedEquipment) {
+      result = result.filter(ex => 
+        ex.equipment?.includes(selectedEquipment)
+      );
+    }
+    
+    return result;
+  }, [availableExercises, searchQuery, selectedMuscleGroup, selectedEquipment]);
+  
+  // Загрузка упражнений
+  useEffect(() => {
+    const exercises = getAllExercises();
+    setAvailableExercises(exercises);
+  }, []);
+  
+  // Обработчик изменения полей формы
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm(prev => ({
       ...prev,
-      [name]: ['restBetweenSets', 'restBetweenExercises'].includes(name) ? Number(value) : value
+      [name]: name === 'durationWeeks' || name === 'workoutsPerWeek' ? parseInt(value) : value
     }));
   };
-
+  
   // Обработчик изменения деталей упражнения
-  const handleExerciseDetailsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleExerciseDetailChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setExerciseDetails(prev => ({
-      ...prev,
-      [name]: Number(value)
-    }));
-  };
-
-  // Добавление упражнения в программу
-  const addExercise = () => {
-    if (!selectedExercise) return;
-
-    const exercise = availableExercises.find(e => e.id === selectedExercise);
-    if (!exercise) return;
-
-    const newExercise: ProgramExercise = {
-      exerciseId: selectedExercise,
-      sets: exerciseDetails.sets,
-      ...(exercise.type === 'reps' 
-        ? { reps: exerciseDetails.reps } 
-        : { duration: exerciseDetails.duration || exercise.duration || 60 }
-      ),
-      ...(exercise.type === 'reps' && exerciseDetails.weight ? { weight: exerciseDetails.weight } : {})
-    };
-
-    setForm(prev => ({
-      ...prev,
-      exercises: [...prev.exercises, newExercise]
-    }));
-
-    // Сброс формы упражнения
-    setSelectedExercise('');
-    setExerciseDetails({
-      exerciseId: '',
-      sets: 3,
-      reps: 10
+    if (!exerciseDetails) return;
+    
+    setExerciseDetails(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        [name]: ['sets', 'reps', 'weight', 'rest', 'duration'].includes(name) ? parseInt(value) : value
+      };
     });
   };
-
-  // Удаление упражнения из программы
-  const removeExercise = (index: number) => {
+  
+  // Сброс выбора
+  const resetSelection = () => {
+    setSelectedExercise(null);
+    setExerciseDetails(null);
+    setSelectedMuscleGroup(null);
+    setSelectedEquipment(null);
+    setSearchQuery('');
+  };
+  
+  // Переключение режима выбора упражнений
+  const toggleSelectionMode = () => {
+    setSelectionMode(prev => prev === 'list' ? 'tree' : 'list');
+    resetSelection();
+  };
+  
+  // Выбор упражнения
+  const handleSelectExercise = (exercise: Exercise) => {
+    setSelectedExercise(exercise);
+    setExerciseDetails({
+      id: uuidv4(),
+      exercise: exercise,
+      exerciseId: exercise.id,
+      sets: 3,
+      reps: exercise.type === 'reps' ? 10 : undefined,
+      duration: exercise.type === 'timed' ? 30 : undefined,
+      weight: 0,
+      rest: 60,
+      exerciseData: exercise
+    });
+  };
+  
+  // Выбор группы мышц
+  const handleSelectMuscleGroup = (group: string) => {
+    setSelectedMuscleGroup(prev => prev === group ? null : group);
+    setSelectedEquipment(null);
+  };
+  
+  // Выбор оборудования
+  const handleSelectEquipment = (equipment: string) => {
+    setSelectedEquipment(prev => prev === equipment ? null : equipment);
+  };
+  
+  // Добавление упражнения в программу
+  const handleAddExercise = () => {
+    if (!exerciseDetails) return;
+    
     setForm(prev => ({
       ...prev,
-      exercises: prev.exercises.filter((_, exerciseIndex) => exerciseIndex !== index)
+      exercises: [...prev.exercises, exerciseDetails]
+    }));
+    
+    resetSelection();
+  };
+  
+  // Удаление упражнения из программы
+  const handleRemoveExercise = (id: string) => {
+    setForm(prev => ({
+      ...prev,
+      exercises: prev.exercises.filter(ex => ex.id !== id)
     }));
   };
 
-  // Сохранение программы
+  // Изменение порядка упражнений
+  const handleMoveExercise = (id: string, direction: 'up' | 'down') => {
+    const exerciseIndex = form.exercises.findIndex(ex => ex.id === id);
+    if (exerciseIndex === -1) return;
+    
+    const newExercises = [...form.exercises];
+    
+    if (direction === 'up' && exerciseIndex > 0) {
+      // Меняем местами с предыдущим упражнением
+      [newExercises[exerciseIndex], newExercises[exerciseIndex - 1]] = 
+      [newExercises[exerciseIndex - 1], newExercises[exerciseIndex]];
+    } else if (direction === 'down' && exerciseIndex < newExercises.length - 1) {
+      // Меняем местами со следующим упражнением
+      [newExercises[exerciseIndex], newExercises[exerciseIndex + 1]] = 
+      [newExercises[exerciseIndex + 1], newExercises[exerciseIndex]];
+    }
+    
+    setForm(prev => ({
+      ...prev,
+      exercises: newExercises
+    }));
+  };
+  
+  // Отправка формы
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (form.exercises.length === 0) {
-      alert('Добавьте хотя бы одно упражнение в программу');
+    if (!form.name || !form.description || form.exercises.length === 0) {
+      alert('Пожалуйста, заполните все обязательные поля и добавьте хотя бы одно упражнение');
       return;
     }
     
-    // Создаем новую программу
-    const newProgram = {
-      id: Date.now().toString(),
-      name: form.name,
-      description: form.description || 'Персональная программа тренировок',
-      restBetweenSets: form.restBetweenSets,
-      restBetweenExercises: form.restBetweenExercises,
-      workouts: [
-        {
-          id: `workout-1`,
-          name: "Тренировка",
-          exercises: form.exercises.map(exercise => {
-            const exerciseData = availableExercises.find(e => e.id === exercise.exerciseId);
-            if (!exerciseData) throw new Error('Exercise not found');
-            
-            // Создаем копию исходного упражнения, чтобы не менять исходный объект
-            const exerciseCopy = { ...exerciseData };
-            
-            // Обновляем поля упражнения из пользовательских настроек
-            if (exerciseCopy.type === 'timed' && exercise.duration) {
-              exerciseCopy.duration = exercise.duration;
-            } else if (exerciseCopy.type === 'reps' && exercise.reps) {
-              exerciseCopy.reps = exercise.reps;
-            }
-            
-            return {
-              exercise: exerciseCopy,
-              sets: exercise.sets,
-              reps: exercise.reps,
-              duration: exercise.duration,
-              rest: form.restBetweenSets,
-              weight: exercise.weight
-            };
-          }),
-          notes: ''
-        }
-      ],
-      level: 'beginner',
-      duration: 1,
-      workoutsPerWeek: 1,
-      createdBy: 'user',
-      isPublic: true
-    };
-
-    console.log('Создана новая программа:', newProgram);
-
     try {
-      // Сохраняем в localStorage
-      const programs = JSON.parse(localStorage.getItem('programs') || '[]');
-      programs.push(newProgram);
-      localStorage.setItem('programs', JSON.stringify(programs));
-      console.log('Обновленный список программ в localStorage:', programs);
-
-      // Автоматически запускаем программу
-      const newActiveProgram = {
-        programId: newProgram.id,
-        userId: 'user',
-        startDate: new Date().toISOString(),
-        currentWeek: 1,
-        currentDay: 1,
-        completedWorkouts: []
+      // Создаем программу
+      const programId = uuidv4();
+      const program: Program = {
+        id: programId,
+        name: form.name,
+        description: form.description,
+        level: form.level,
+        durationWeeks: form.durationWeeks,
+        workoutsPerWeek: form.workoutsPerWeek,
+        workouts: [
+          {
+            id: uuidv4(),
+            programId: programId,
+            exercises: form.exercises.map(ex => ({
+              id: ex.id,
+              exerciseId: ex.exerciseId,
+              exercise: ex.exerciseData,
+              sets: ex.sets,
+              reps: ex.reps,
+              weight: ex.weight,
+              duration: ex.duration,
+              rest: ex.rest
+            }))
+          }
+        ]
       };
-
-      // Сохраняем активную программу
-      localStorage.setItem('activeProgram', JSON.stringify(newActiveProgram));
-
-      // Сохраняем полную информацию о программе в activePrograms
-      const activePrograms = JSON.parse(localStorage.getItem('activePrograms') || '[]');
-      activePrograms.push({
-        ...newActiveProgram,
-        program: newProgram
-      });
-      localStorage.setItem('activePrograms', JSON.stringify(activePrograms));
-
+      
+      // Получаем существующие программы
+      const existingPrograms = JSON.parse(localStorage.getItem('programs') || '[]');
+      
+      // Добавляем новую программу
+      localStorage.setItem('programs', JSON.stringify([...existingPrograms, program]));
+      
+      // Устанавливаем активную программу
+      localStorage.setItem('activeProgram', JSON.stringify(program));
+      
       // Перенаправляем на страницу активной программы
       router.push('/active-program');
     } catch (error) {
       console.error('Ошибка при сохранении программы:', error);
-      alert('Произошла ошибка при сохранении программы. Попробуйте еще раз.');
+      alert('Произошла ошибка при сохранении программы');
     }
   };
-
+  
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
-      <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold text-blue-800 mb-8 text-center">
-            Создание программы тренировок
-          </h1>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Основная информация */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold text-blue-800 mb-4">
-                Основная информация
-              </h2>
-
-              <div className="grid grid-cols-1 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Название программы
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    required
-                    className="w-full p-2 border border-gray-300 rounded"
-                    value={form.name}
-                    onChange={handleInputChange}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Описание
-                  </label>
-                  <textarea
-                    name="description"
-                    className="w-full p-2 border border-gray-300 rounded"
-                    value={form.description}
-                    onChange={handleInputChange}
-                    rows={3}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Время отдыха между подходами (сек)
-                    </label>
-                    <input
-                      type="number"
-                      name="restBetweenSets"
-                      min="0"
-                      required
-                      className="w-full p-2 border border-gray-300 rounded"
-                      value={form.restBetweenSets}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Время отдыха между упражнениями (сек)
-                    </label>
-                    <input
-                      type="number"
-                      name="restBetweenExercises"
-                      min="0"
-                      required
-                      className="w-full p-2 border border-gray-300 rounded"
-                      value={form.restBetweenExercises}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                </div>
+    <Layout title="Создание тренировочной программы">
+      <div className="container mx-auto px-4 py-6">
+        <h1 className="text-2xl font-bold mb-6">Создание новой программы тренировок</h1>
+        
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Основная информация */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-xl font-semibold mb-4">Основная информация</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block mb-1">Название программы *</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={form.name}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border rounded focus:ring focus:ring-blue-300"
+                  required
+                />
               </div>
-            </div>
-
-            {/* Добавление упражнений */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold text-blue-800 mb-4">
-                Добавление упражнений
-              </h2>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Упражнение
-                  </label>
-                  <select
-                    value={selectedExercise}
-                    onChange={(e) => {
-                      setSelectedExercise(e.target.value);
-                      const exercise = availableExercises.find(ex => ex.id === e.target.value);
-                      if (exercise) {
-                        setExerciseDetails(prev => ({
-                          ...prev,
-                          exerciseId: e.target.value,
-                          ...(exercise.type === 'timed' ? { duration: exercise.duration || 60 } : {})
-                        }));
-                      }
-                    }}
-                    className="w-full p-2 border border-gray-300 rounded"
-                  >
-                    <option value="">Выберите упражнение</option>
-                    {availableExercises.map(exercise => (
-                      <option key={exercise.id} value={exercise.id}>
-                        {exercise.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {selectedExercise && (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Количество подходов
-                      </label>
-                      <input
-                        type="number"
-                        name="sets"
-                        min="1"
-                        required
-                        className="w-full p-2 border border-gray-300 rounded"
-                        value={exerciseDetails.sets}
-                        onChange={handleExerciseDetailsChange}
-                      />
-                    </div>
-
-                    {availableExercises.find(e => e.id === selectedExercise)?.type === 'reps' ? (
-                      <>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Повторений
-                          </label>
-                          <input
-                            type="number"
-                            name="reps"
-                            min="1"
-                            required
-                            className="w-full p-2 border border-gray-300 rounded"
-                            value={exerciseDetails.reps}
-                            onChange={handleExerciseDetailsChange}
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Вес (кг, опционально)
-                          </label>
-                          <input
-                            type="number"
-                            name="weight"
-                            min="0"
-                            className="w-full p-2 border border-gray-300 rounded"
-                            value={exerciseDetails.weight || ''}
-                            onChange={handleExerciseDetailsChange}
-                          />
-                        </div>
-                      </>
-                    ) : (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Продолжительность (сек)
-                        </label>
-                        <input
-                          type="number"
-                          name="duration"
-                          min="1"
-                          required
-                          className="w-full p-2 border border-gray-300 rounded"
-                          value={exerciseDetails.duration}
-                          onChange={handleExerciseDetailsChange}
-                        />
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                <button
-                  type="button"
-                  onClick={addExercise}
-                  disabled={!selectedExercise}
-                  className={`px-4 py-2 rounded ${
-                    !selectedExercise ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'
-                  }`}
+              
+              <div>
+                <label className="block mb-1">Уровень сложности</label>
+                <select
+                  name="level"
+                  value={form.level}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border rounded focus:ring focus:ring-blue-300"
                 >
-                  Добавить упражнение
-                </button>
+                  <option value="beginner">Начинающий</option>
+                  <option value="intermediate">Средний</option>
+                  <option value="advanced">Продвинутый</option>
+                </select>
               </div>
-
-              {/* Список добавленных упражнений */}
-              {form.exercises.length > 0 && (
-                <div className="mt-8">
-                  <h3 className="text-lg font-medium text-gray-800 mb-3">
-                    Добавленные упражнения
-                  </h3>
-                  <div className="space-y-3">
-                    {form.exercises.map((exercise, index) => {
-                      const exerciseData = availableExercises.find(e => e.id === exercise.exerciseId);
-                      return (
-                        <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                          <div>
-                            <span className="font-medium">{exerciseData?.name}</span>
-                            <div className="text-sm text-gray-600">
-                              {exercise.sets} подходов × {' '}
-                              {exerciseData?.type === 'reps' 
-                                ? `${exercise.reps} повторений`
-                                : `${exercise.duration} секунд`
-                              }
-                              {exercise.weight ? ` × ${exercise.weight} кг` : ''}
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => removeExercise(index)}
-                            className="text-red-600 hover:text-red-800"
-                          >
-                            Удалить
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+              
+              <div>
+                <label className="block mb-1">Продолжительность (недель)</label>
+                <input
+                  type="number"
+                  name="durationWeeks"
+                  value={form.durationWeeks}
+                  onChange={handleInputChange}
+                  min="1"
+                  max="52"
+                  className="w-full p-2 border rounded focus:ring focus:ring-blue-300"
+                />
+              </div>
+              
+              <div>
+                <label className="block mb-1">Тренировок в неделю</label>
+                <input
+                  type="number"
+                  name="workoutsPerWeek"
+                  value={form.workoutsPerWeek}
+                  onChange={handleInputChange}
+                  min="1"
+                  max="7"
+                  className="w-full p-2 border rounded focus:ring focus:ring-blue-300"
+                />
+              </div>
+              
+              <div className="md:col-span-2">
+                <label className="block mb-1">Описание программы *</label>
+                <textarea
+                  name="description"
+                  value={form.description}
+                  onChange={handleInputChange}
+                  rows={3}
+                  className="w-full p-2 border rounded focus:ring focus:ring-blue-300"
+                  required
+                />
+              </div>
             </div>
-
-            {/* Кнопка сохранения */}
-            <div className="flex justify-center">
+          </div>
+          
+          {/* Список упражнений в программе */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-xl font-semibold mb-4">Упражнения программы</h2>
+            
+            {form.exercises.length > 0 ? (
+              <div className="space-y-3">
+                {form.exercises.map((ex, index) => (
+                  <div key={ex.id} className="flex items-center p-3 border rounded bg-gray-50 relative">
+                    <div className="flex-grow">
+                      <div className="font-medium">{ex.exerciseData.name}</div>
+                      <div className="text-sm text-gray-600">
+                        {ex.sets} подходов × {ex.exerciseData.type === 'reps' ? `${ex.reps} повторений` : `${ex.duration} сек`}
+                        {ex.weight && ex.weight > 0 && ` • ${ex.weight} кг`}
+                        {` • ${ex.rest} сек отдыха`}
+                      </div>
+                    </div>
+                    <div className="flex space-x-2">
+                      <button
+                        type="button"
+                        onClick={() => handleMoveExercise(ex.id, 'up')}
+                        disabled={index === 0}
+                        className={`p-1 rounded-full ${index === 0 ? 'text-gray-300' : 'text-gray-600 hover:bg-gray-200'}`}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleMoveExercise(ex.id, 'down')}
+                        disabled={index === form.exercises.length - 1}
+                        className={`p-1 rounded-full ${index === form.exercises.length - 1 ? 'text-gray-300' : 'text-gray-600 hover:bg-gray-200'}`}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveExercise(ex.id)}
+                        className="p-1 rounded-full text-red-600 hover:bg-red-100"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center p-4 border rounded bg-gray-50">
+                <p className="text-gray-500">Нет добавленных упражнений. Добавьте упражнения ниже.</p>
+              </div>
+            )}
+          </div>
+          
+          {/* Выбор упражнений */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-xl font-semibold mb-4">Добавить упражнения</h2>
+            
+            <div className="flex mb-4">
               <button
-                type="submit"
-                disabled={form.exercises.length === 0}
-                className={`px-8 py-3 text-lg rounded-lg font-semibold ${
-                  form.exercises.length === 0 
-                    ? 'bg-gray-300 cursor-not-allowed' 
-                    : 'bg-blue-600 hover:bg-blue-700 text-white'
-                }`}
+                type="button"
+                onClick={toggleSelectionMode}
+                className="flex-1 p-2 border-b-2 text-center font-medium transition-colors"
+                style={{ borderColor: selectionMode === 'list' ? '#4f46e5' : 'transparent', color: selectionMode === 'list' ? '#4f46e5' : '#6b7280' }}
               >
-                Создать программу
+                Список
+              </button>
+              <button
+                type="button"
+                onClick={toggleSelectionMode}
+                className="flex-1 p-2 border-b-2 text-center font-medium transition-colors"
+                style={{ borderColor: selectionMode === 'tree' ? '#4f46e5' : 'transparent', color: selectionMode === 'tree' ? '#4f46e5' : '#6b7280' }}
+              >
+                По группам
               </button>
             </div>
-          </form>
-        </div>
+            
+            {selectionMode === 'list' ? (
+              <div>
+                <div className="mb-4">
+                  <input
+                    type="text"
+                    placeholder="Поиск упражнений..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full p-2 border rounded focus:ring focus:ring-blue-300"
+                  />
+                </div>
+                
+                <div className="max-h-60 overflow-y-auto border rounded">
+                  {filteredExercises.length > 0 ? (
+                    filteredExercises.map(exercise => (
+                      <div
+                        key={exercise.id}
+                        onClick={() => handleSelectExercise(exercise)}
+                        className={`p-3 border-b cursor-pointer hover:bg-gray-50 ${selectedExercise?.id === exercise.id ? 'bg-blue-50 border-blue-300' : ''}`}
+                      >
+                        <div className="font-medium">{exercise.name}</div>
+                        <div className="text-sm text-gray-600">{exercise.muscleGroups.map(m => translateMuscleGroup(m)).join(', ')}</div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-4 text-center text-gray-500">Не найдено упражнений по вашему запросу</div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h3 className="font-medium mb-2">Группы мышц</h3>
+                  <div className="max-h-60 overflow-y-auto border rounded">
+                    {muscleGroups.map(group => (
+                      <div
+                        key={group}
+                        onClick={() => handleSelectMuscleGroup(group)}
+                        className={`p-3 border-b cursor-pointer hover:bg-gray-50 ${selectedMuscleGroup === group ? 'bg-blue-50 border-blue-300' : ''}`}
+                      >
+                        {translateMuscleGroup(group)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div>
+                  <h3 className="font-medium mb-2">Оборудование</h3>
+                  <div className="max-h-60 overflow-y-auto border rounded">
+                    {equipmentTypes.map(equipment => (
+                      <div
+                        key={equipment}
+                        onClick={() => handleSelectEquipment(equipment)}
+                        className={`p-3 border-b cursor-pointer hover:bg-gray-50 ${selectedEquipment === equipment ? 'bg-blue-50 border-blue-300' : ''}`}
+                      >
+                        {translateEquipment(equipment)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="md:col-span-2 mt-4">
+                  <h3 className="font-medium mb-2">Найдено упражнений: {filteredExercises.length}</h3>
+                  <div className="max-h-60 overflow-y-auto border rounded">
+                    {filteredExercises.length > 0 ? (
+                      filteredExercises.map(exercise => (
+                        <div
+                          key={exercise.id}
+                          onClick={() => handleSelectExercise(exercise)}
+                          className={`p-3 border-b cursor-pointer hover:bg-gray-50 ${selectedExercise?.id === exercise.id ? 'bg-blue-50 border-blue-300' : ''}`}
+                        >
+                          <div className="font-medium">{exercise.name}</div>
+                          <div className="text-sm text-gray-600">{exercise.muscleGroups.map(m => translateMuscleGroup(m)).join(', ')}</div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-4 text-center text-gray-500">Не найдено упражнений по вашему запросу</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {selectedExercise && exerciseDetails && (
+              <div className="mt-6 border rounded p-4 bg-gray-50">
+                <h3 className="font-medium mb-3">Настройка упражнения: {selectedExercise.name}</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block mb-1">Количество подходов</label>
+                    <input
+                      type="number"
+                      name="sets"
+                      value={exerciseDetails.sets}
+                      onChange={handleExerciseDetailChange}
+                      min="1"
+                      max="10"
+                      className="w-full p-2 border rounded focus:ring focus:ring-blue-300"
+                    />
+                  </div>
+                  
+                  {selectedExercise.type === 'reps' ? (
+                    <div>
+                      <label className="block mb-1">Количество повторений</label>
+                      <input
+                        type="number"
+                        name="reps"
+                        value={exerciseDetails.reps}
+                        onChange={handleExerciseDetailChange}
+                        min="1"
+                        max="100"
+                        className="w-full p-2 border rounded focus:ring focus:ring-blue-300"
+                      />
+                    </div>
+                  ) : (
+                    <div>
+                      <label className="block mb-1">Длительность (секунд)</label>
+                      <input
+                        type="number"
+                        name="duration"
+                        value={exerciseDetails.duration}
+                        onChange={handleExerciseDetailChange}
+                        min="5"
+                        max="300"
+                        step="5"
+                        className="w-full p-2 border rounded focus:ring focus:ring-blue-300"
+                      />
+                    </div>
+                  )}
+                  
+                  <div>
+                    <label className="block mb-1">Вес (кг, 0 если без веса)</label>
+                    <input
+                      type="number"
+                      name="weight"
+                      value={exerciseDetails.weight}
+                      onChange={handleExerciseDetailChange}
+                      min="0"
+                      max="500"
+                      className="w-full p-2 border rounded focus:ring focus:ring-blue-300"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block mb-1">Отдых между подходами (секунд)</label>
+                    <input
+                      type="number"
+                      name="rest"
+                      value={exerciseDetails.rest}
+                      onChange={handleExerciseDetailChange}
+                      min="0"
+                      max="300"
+                      step="5"
+                      className="w-full p-2 border rounded focus:ring focus:ring-blue-300"
+                    />
+                  </div>
+                </div>
+                
+                <div className="mt-4 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={resetSelection}
+                    className="px-4 py-2 border rounded text-gray-700 hover:bg-gray-100 mr-2"
+                  >
+                    Отмена
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleAddExercise}
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  >
+                    Добавить
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* Кнопки формы */}
+          <div className="flex justify-between">
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="px-6 py-2 border rounded text-gray-700 hover:bg-gray-100"
+            >
+              Отмена
+            </button>
+            <button
+              type="submit"
+              className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Создать программу
+            </button>
+          </div>
+        </form>
       </div>
-    </div>
+    </Layout>
   );
-} 
+};
+
+export default CreateProgram; 

@@ -59,7 +59,9 @@ export default function ManageExercises() {
     { id: 'glutes', name: 'Ягодицы' },
     { id: 'calves', name: 'Икры' },
     { id: 'traps', name: 'Трапеции' },
-    { id: 'lats', name: 'Широчайшие' }
+    { id: 'lats', name: 'Широчайшие' },
+    { id: 'lower_back', name: 'Нижняя часть спины' },
+    { id: 'legs', name: 'Ноги' }
   ];
 
   // Список доступного оборудования

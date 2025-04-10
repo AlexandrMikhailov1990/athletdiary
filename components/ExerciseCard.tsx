@@ -1,5 +1,6 @@
 import { Exercise } from '../models/Exercise';
 import { useState } from 'react';
+import { translateMuscleGroup, translateDifficulty } from '../models/Exercise';
 
 interface ExerciseCardProps {
   exercise: Exercise;
@@ -7,14 +8,8 @@ interface ExerciseCardProps {
 }
 
 export default function ExerciseCard({ exercise, onSelect }: ExerciseCardProps) {
-  const [imageError, setImageError] = useState(false);
-
   const getExerciseTypeLabel = (type: 'reps' | 'timed'): string => {
     return type === 'reps' ? 'Повторения' : 'Время';
-  };
-
-  const handleImageError = () => {
-    setImageError(true);
   };
 
   return (
@@ -24,43 +19,24 @@ export default function ExerciseCard({ exercise, onSelect }: ExerciseCardProps) 
       aria-label={`Карточка упражнения: ${exercise.name}`}
       onClick={onSelect}
     >
-      <div className="aspect-video bg-gray-100 relative">
-        {exercise.image && !imageError ? (
-          <img 
-            src={exercise.image} 
-            alt={exercise.name} 
-            className="w-full h-full object-cover"
-            onError={handleImageError}
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-400">
-            <svg 
-              className="w-16 h-16"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-              aria-hidden="true"
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" 
-              />
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" 
-              />
-            </svg>
-          </div>
-        )}
-      </div>
-      
       <div className="p-6 flex flex-col flex-grow">
-        <h3 className="text-xl font-semibold text-blue-800 mb-4 line-clamp-1">{exercise.name}</h3>
+        <h3 className="text-xl font-semibold text-blue-800 mb-3 line-clamp-1">{exercise.name}</h3>
+        
+        <p className="text-sm text-gray-600 mb-4 line-clamp-2">{exercise.description}</p>
+        
+        <div className="mb-4">
+          <div className="flex flex-wrap gap-1 mb-3">
+            {exercise.muscleGroups.map((muscle, idx) => (
+              <span key={idx} className="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
+                {translateMuscleGroup(muscle)}
+              </span>
+            ))}
+          </div>
+          
+          <div className="bg-blue-50 text-blue-800 text-xs px-2 py-1 rounded inline-block mb-3">
+            {translateDifficulty(exercise.difficulty)}
+          </div>
+        </div>
         
         <div className="mb-4 flex-grow">
           <div className="grid grid-cols-2 gap-y-3 gap-x-4">

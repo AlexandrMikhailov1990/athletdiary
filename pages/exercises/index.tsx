@@ -1,8 +1,10 @@
-import { Exercise, NORMALIZED_SAMPLE_EXERCISES } from '../../models/Exercise';
-import { useState, useEffect, useMemo } from 'react';
+import { Exercise, NORMALIZED_SAMPLE_EXERCISES, translateMuscleGroup } from '../../models/Exercise';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import ExerciseCard from '../../components/ExerciseCard';
 import ExerciseDetails from '../../components/ExerciseDetails';
 import { useRouter } from 'next/router';
+import { addHomeExercisesToUserExercises } from '../../models/HomeExercises';
+import { addExtendedHomeExercises } from '../../models/HomeExercisesExtended';
 
 const ITEMS_PER_PAGE = 9;
 
@@ -16,26 +18,22 @@ export default function Exercises() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Загрузка упражнений из localStorage
-  useEffect(() => {
-    const loadExercises = () => {
-      setIsLoading(true);
-      try {
-        const savedExercises = localStorage.getItem('userExercises');
-        const parsedExercises = savedExercises 
-          ? JSON.parse(savedExercises) 
-          : NORMALIZED_SAMPLE_EXERCISES;
-        
-        setExercises(parsedExercises);
-      } catch (error) {
-        console.error('Ошибка при загрузке упражнений:', error);
-        setExercises(NORMALIZED_SAMPLE_EXERCISES);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    loadExercises();
+  // Загрузка упражнений из localStorage - выносим как переиспользуемую функцию
+  const loadExercises = useCallback(() => {
+    setIsLoading(true);
+    try {
+      const savedExercises = localStorage.getItem('userExercises');
+      const parsedExercises = savedExercises 
+        ? JSON.parse(savedExercises) 
+        : NORMALIZED_SAMPLE_EXERCISES;
+      
+      setExercises(parsedExercises);
+    } catch (error) {
+      console.error('Ошибка при загрузке упражнений:', error);
+      setExercises(NORMALIZED_SAMPLE_EXERCISES);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   // Загрузка сохраненных фильтров при монтировании компонента
@@ -127,6 +125,11 @@ export default function Exercises() {
     }
   };
 
+  // Загрузка упражнений при монтировании компонента
+  useEffect(() => {
+    loadExercises();
+  }, [loadExercises]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -143,12 +146,34 @@ export default function Exercises() {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-blue-800">Упражнения</h1>
-          <button
-            onClick={handleCreateExercise}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
-          >
-            + Добавить упражнение
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => {
+                addHomeExercisesToUserExercises();
+                loadExercises();
+                alert('Домашние упражнения с гантелями добавлены');
+              }}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+            >
+              + Домашние упражнения
+            </button>
+            <button
+              onClick={() => {
+                addExtendedHomeExercises();
+                loadExercises();
+                alert('Расширенный набор домашних упражнений добавлен');
+              }}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+            >
+              + Расширенный набор
+            </button>
+            <button
+              onClick={handleCreateExercise}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+            >
+              + Добавить упражнение
+            </button>
+          </div>
         </div>
         
         {/* Фильтры */}
@@ -181,7 +206,7 @@ export default function Exercises() {
                 <option value="">Все группы мышц</option>
                 {muscleGroups.map(group => (
                   <option key={group} value={group}>
-                    {group}
+                    {translateMuscleGroup(group)}
                   </option>
                 ))}
               </select>
