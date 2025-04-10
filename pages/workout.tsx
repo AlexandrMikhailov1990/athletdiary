@@ -96,7 +96,7 @@ export default function Workout() {
           sets: ex.setDetails.map(set => ({
             reps: set.reps || 0,  // Убедимся, что значения не undefined
             weight: set.weight || 0,  // Убедимся, что значения не undefined
-            completed: set.completed
+            completed: set.completed || false
           }))
         }))
       };
@@ -104,9 +104,10 @@ export default function Workout() {
       // Сохраняем запись в формате WorkoutRecord (для совместимости со старым кодом)
       const workoutRecord = {
         id: Date.now().toString(),
-        workoutId: program.workouts[activeProgram.currentDay - 1].id,
+        workoutId: program.workouts[activeProgram.currentDay - 1]?.id || 'workout_' + Date.now(),
         programId: program.id, // Добавляем ID программы для связи
-        workoutName: program.workouts[activeProgram.currentDay - 1].name || 'Тренировка',
+        programName: program.name || 'Программа тренировок',
+        workoutName: program.workouts[activeProgram.currentDay - 1]?.name || 'Тренировка',
         date: new Date().toISOString(),
         duration: Math.round((Date.now() - new Date(startTime).getTime()) / 60000),
         exercises: exercises.map(ex => ({
@@ -116,7 +117,7 @@ export default function Workout() {
             weight: set.weight || 0,
             reps: set.reps || 0,
             duration: set.duration || 0,
-            completed: set.completed
+            completed: set.completed || false
           }))
         })),
         notes: '',
@@ -125,7 +126,8 @@ export default function Workout() {
       };
       
       // Добавляем обе записи в историю и сохраняем
-      workoutHistory.push(workoutHistoryRecord, workoutRecord);
+      workoutHistory.push(workoutHistoryRecord);
+      workoutHistory.push(workoutRecord);
       localStorage.setItem('workoutHistory', JSON.stringify(workoutHistory));
 
       console.log('Сохранена история тренировки:', workoutHistoryRecord);
@@ -261,21 +263,42 @@ export default function Workout() {
   // Функция для загрузки истории упражнения
   const loadExerciseHistory = useCallback((exerciseId: string) => {
     const workoutHistory = JSON.parse(localStorage.getItem('workoutHistory') || '[]');
+    console.log('Загрузка истории для упражнения:', exerciseId);
+    
+    // Фильтруем записи, содержащие данное упражнение
     const exerciseHistoryData = workoutHistory
-      .filter((workout: any) => 
-        workout.exercises.some((ex: any) => ex.exerciseId === exerciseId)
-      )
-      .map((workout: any) => ({
-        date: workout.date,
-        programName: workout.programName,
-        sets: workout.exercises
-          .find((ex: any) => ex.exerciseId === exerciseId)
-          .sets
-          .filter((set: any) => set.completed) // Фильтруем только завершенные сеты
-      }))
-      .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 5);
+      .filter((workout: any) => {
+        // Проверяем разные форматы хранения упражнений
+        const hasExercise = 
+          // Проверка для WorkoutRecord формата
+          (workout.exercises && workout.exercises.some((ex: any) => 
+            (ex.exerciseId === exerciseId) || (ex.exercise && ex.exercise.id === exerciseId)
+          )) ||
+          // Проверка для WorkoutHistory формата 
+          (workout.exercises && workout.exercises.some((ex: any) => ex.exerciseId === exerciseId));
+        
+        return hasExercise;
+      })
+      .map((workout: any) => {
+        // Найдем упражнение в тренировке
+        const foundExercise = workout.exercises.find((ex: any) => 
+          (ex.exerciseId === exerciseId) || (ex.exercise && ex.exercise.id === exerciseId)
+        );
+        
+        return {
+          date: workout.date,
+          programName: workout.programName || workout.workoutName || 'Тренировка',
+          sets: foundExercise ? (
+            // Фильтруем только завершенные подходы
+            (foundExercise.sets || []).filter((set: any) => set.completed)
+          ) : []
+        };
+      })
+      .filter((history: any) => history.sets.length > 0) // Только записи с завершенными подходами
+      .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime()) // Сортируем по дате
+      .slice(0, 5); // Показываем только 5 последних
 
+    console.log('Найдено записей истории:', exerciseHistoryData.length);
     setExerciseHistory(exerciseHistoryData);
   }, []);
 
@@ -607,9 +630,9 @@ export default function Workout() {
                       <div key={setIndex} className="flex justify-between items-center py-1 border-b border-gray-100">
                         <span className="text-sm">Подход {setIndex + 1}:</span>
                         <div className="flex gap-4">
-                          {set.weight && <span className="text-sm">{set.weight} кг</span>}
-                          {set.reps && <span className="text-sm">{set.reps} повт.</span>}
-                          {set.duration && <span className="text-sm">{set.duration} сек</span>}
+                          {(set.weight || 0) > 0 && <span className="text-sm">{set.weight} кг</span>}
+                          {(set.reps || 0) > 0 && <span className="text-sm">{set.reps} повт.</span>}
+                          {(set.duration || 0) > 0 && <span className="text-sm">{set.duration} сек</span>}
                         </div>
                       </div>
                     ))}

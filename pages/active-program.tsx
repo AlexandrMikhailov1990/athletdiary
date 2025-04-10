@@ -58,21 +58,30 @@ export default function ActiveProgram() {
     const loadWorkoutHistory = (programId: string, program: Program) => {
       // Загружаем полную историю тренировок
       const allHistory = JSON.parse(localStorage.getItem('workoutHistory') || '[]');
+      console.log('Загружена история тренировок:', allHistory.length, 'записей');
       
       // Фильтруем историю по текущей программе
-      // Проверяем совпадение по programId
       const programHistory = allHistory.filter((h: any) => {
         // Прямое совпадение по programId
-        if (h.programId === programId) return true;
+        const matchByProgramId = h.programId === programId;
+        if (matchByProgramId) {
+          console.log('Найдено совпадение по programId:', h.programId);
+          return true;
+        }
         
-        // Проверка на workoutId, если они совпадают с ID тренировок в программе (для WorkoutRecord)
+        // Проверка на workoutId, если они совпадают с ID тренировок в программе
         if (program.workouts && h.workoutId) {
-          return program.workouts.some(w => w.id === h.workoutId);
+          const matchByWorkoutId = program.workouts.some(w => w.id === h.workoutId);
+          if (matchByWorkoutId) {
+            console.log('Найдено совпадение по workoutId:', h.workoutId);
+            return true;
+          }
         }
         
         return false;
       });
       
+      console.log('Отфильтрованная история для программы:', programHistory.length, 'записей');
       setWorkoutHistory(programHistory);
     };
     
@@ -238,26 +247,39 @@ export default function ActiveProgram() {
                     </div>
                     
                     {(() => {
+                      // Ищем тренировку в истории по дате
                       const foundWorkout = workoutHistory?.find(h => 
                         new Date(h.date).toDateString() === new Date(workout.date).toDateString()
                       );
+                      
+                      console.log('Тренировка в истории для даты', new Date(workout.date).toLocaleDateString(), 
+                                 foundWorkout ? 'найдена' : 'не найдена');
+                      
+                      // Если нет данных истории или нет упражнений, показываем сообщение
+                      if (!foundWorkout || !foundWorkout.exercises || foundWorkout.exercises.length === 0) {
+                        return (
+                          <p className="text-sm text-gray-500 italic">Нет подробных данных о тренировке</p>
+                        );
+                      }
 
-                      return foundWorkout && foundWorkout.exercises && foundWorkout.exercises.length > 0 ? (
+                      // Найдена история тренировки, показываем детальную информацию
+                      return (
                         <div className="mt-2 space-y-2">
                           <h4 className="text-sm font-medium text-gray-700">Выполненные упражнения:</h4>
                           {foundWorkout.exercises.map((ex, exIdx) => (
                             <div key={exIdx} className="text-sm pl-4 border-l-2 border-blue-200">
-                              <div className="font-medium">{ex.name}</div>
+                              <div className="font-medium">{ex.name || (ex as any).exercise?.name}</div>
                               <div className="text-gray-600">
                                 {ex.sets?.filter(s => s.completed).length || 0} из {ex.sets?.length || 0} подходов
                                 {ex.sets && ex.sets.length > 0 ? (
                                   <div className="text-gray-600 mt-1">
-                                    {ex.sets.filter(s => s.completed && (s.reps || s.weight)).map((set, setIdx) => (
+                                    {ex.sets.filter(s => s.completed && (s.reps > 0 || s.weight > 0)).map((set, setIdx) => (
                                       <div key={setIdx} className="text-xs">
                                         Подход {setIdx + 1}: 
-                                        {set.weight ? `${set.weight} кг` : ''} 
-                                        {set.weight && set.reps ? ' × ' : ''}
-                                        {set.reps ? `${set.reps} повт.` : ''}
+                                        {set.weight > 0 ? `${set.weight} кг` : ''} 
+                                        {set.weight > 0 && set.reps > 0 ? ' × ' : ''}
+                                        {set.reps > 0 ? `${set.reps} повт.` : ''}
+                                        {(set as any).duration > 0 ? `${(set as any).duration} сек` : ''}
                                       </div>
                                     ))}
                                   </div>
@@ -266,8 +288,6 @@ export default function ActiveProgram() {
                             </div>
                           ))}
                         </div>
-                      ) : (
-                        <p className="text-sm text-gray-500 italic">Нет подробных данных о тренировке</p>
                       );
                     })()}
                   </div>
