@@ -227,16 +227,174 @@ export function normalizeExerciseImageUrls(exercise: Exercise): Exercise {
 // Применяем нормализацию к примерам упражнений
 export const NORMALIZED_SAMPLE_EXERCISES = SAMPLE_EXERCISES.map(normalizeExerciseImageUrls);
 
-// Функция для загрузки всех упражнений (как пользовательских, так и предопределенных)
+// Упражнения с резиновыми лентами
+export const RESISTANCE_BAND_EXERCISES: Exercise[] = [
+  {
+    id: 'rb-1',
+    name: 'Тяга резиновой ленты к груди',
+    type: 'reps',
+    sets: 3,
+    reps: 15,
+    restTime: 60,
+    difficulty: 'beginner',
+    muscleGroups: ['back', 'shoulders', 'biceps'],
+    description: 'Упражнение для развития мышц спины и рук с использованием резиновой ленты',
+    equipment: ['resistance bands'],
+    recommendations: [
+      'Встаньте прямо, ноги на ширине плеч',
+      'Удерживайте ленту перед собой на уровне груди',
+      'Отведите локти назад, сведя лопатки вместе',
+      'Медленно вернитесь в исходное положение'
+    ],
+    isPublic: true
+  },
+  {
+    id: 'rb-2',
+    name: 'Боковые подъемы рук с резиновой лентой',
+    type: 'reps',
+    sets: 3,
+    reps: 12,
+    restTime: 45,
+    difficulty: 'beginner',
+    muscleGroups: ['shoulders', 'deltoids'],
+    description: 'Упражнение для развития плечевых и дельтовидных мышц с использованием резиновой ленты',
+    equipment: ['resistance bands'],
+    recommendations: [
+      'Встаньте на середину ленты обеими ногами',
+      'Держите концы ленты в руках по бокам',
+      'Поднимите руки в стороны до уровня плеч',
+      'Контролируйте движение при опускании'
+    ],
+    isPublic: true
+  },
+  {
+    id: 'rb-3',
+    name: 'Приседания с резиновой лентой',
+    type: 'reps',
+    sets: 3,
+    reps: 15,
+    restTime: 60,
+    difficulty: 'beginner',
+    muscleGroups: ['quads', 'glutes', 'hamstrings'],
+    description: 'Приседания с дополнительным сопротивлением резиновой ленты для более эффективной тренировки ног',
+    equipment: ['resistance bands'],
+    recommendations: [
+      'Поместите ленту под ступни и держите её концы на плечах',
+      'Держите спину прямо, грудь вперед',
+      'Приседайте до параллели бедер с полом или ниже',
+      'Выпрямляйтесь, активно работая ягодицами'
+    ],
+    isPublic: true
+  },
+  {
+    id: 'rb-4',
+    name: 'Сгибание рук на бицепс с резиновой лентой',
+    type: 'reps',
+    sets: 3,
+    reps: 12,
+    restTime: 45,
+    difficulty: 'beginner',
+    muscleGroups: ['biceps', 'forearms'],
+    description: 'Упражнение для развития бицепсов с использованием резиновой ленты',
+    equipment: ['resistance bands'],
+    recommendations: [
+      'Встаньте на середину ленты ногами',
+      'Держите концы ленты в руках, ладони вперед',
+      'Сгибайте руки, не двигая локтями',
+      'Медленно опускайте руки в исходное положение'
+    ],
+    isPublic: true
+  },
+  {
+    id: 'rb-5',
+    name: 'Разгибание рук с резиновой лентой',
+    type: 'reps',
+    sets: 3,
+    reps: 12,
+    restTime: 45,
+    difficulty: 'beginner',
+    muscleGroups: ['triceps'],
+    description: 'Упражнение для развития трицепсов с использованием резиновой ленты',
+    equipment: ['resistance bands'],
+    recommendations: [
+      'Закрепите ленту на высоте над головой',
+      'Возьмите концы ленты обеими руками',
+      'Локти держите близко к голове',
+      'Разгибайте руки вниз до полного выпрямления'
+    ],
+    isPublic: true
+  },
+  {
+    id: 'rb-6',
+    name: 'Разведение рук с резиновой лентой',
+    type: 'reps',
+    sets: 3,
+    reps: 15,
+    restTime: 45,
+    difficulty: 'beginner',
+    muscleGroups: ['chest', 'shoulders'],
+    description: 'Упражнение для развития грудных мышц с использованием резиновой ленты',
+    equipment: ['resistance bands'],
+    recommendations: [
+      'Оберните ленту вокруг верхней части спины',
+      'Держите руки перед собой на уровне груди',
+      'Разводите руки в стороны, растягивая ленту',
+      'Медленно возвращайтесь в исходное положение'
+    ],
+    isPublic: true
+  },
+  {
+    id: 'rb-7',
+    name: 'Подъемы ног в сторону с резиновой лентой',
+    type: 'reps',
+    sets: 3,
+    reps: 12,
+    restTime: 45,
+    difficulty: 'intermediate',
+    muscleGroups: ['glutes', 'quads'],
+    description: 'Упражнение для укрепления боковых мышц бедра и ягодиц',
+    equipment: ['resistance bands'],
+    recommendations: [
+      'Поместите ленту чуть выше колен',
+      'Встаньте прямо, ноги на ширине плеч',
+      'Поднимайте ногу в сторону, сохраняя напряжение в ленте',
+      'Вернитесь в исходное положение и повторите с другой ногой'
+    ],
+    isPublic: true
+  },
+  {
+    id: 'rb-8',
+    name: 'Тяга резиновой ленты к поясу',
+    type: 'reps',
+    sets: 3,
+    reps: 12,
+    restTime: 60,
+    difficulty: 'intermediate',
+    muscleGroups: ['back', 'lats'],
+    description: 'Упражнение для развития широчайших мышц спины с использованием резиновой ленты',
+    equipment: ['resistance bands'],
+    recommendations: [
+      'Закрепите ленту на уровне груди',
+      'Сядьте с прямой спиной, ноги вытянуты вперед',
+      'Тяните ленту к поясу, сводя лопатки',
+      'Медленно возвращайтесь в исходное положение'
+    ],
+    isPublic: true
+  }
+];
+
+// Добавляем упражнения с резиновыми лентами в функцию getAllExercises
 export function getAllExercises(): Exercise[] {
   if (typeof window === 'undefined') return [];
   
   try {
     const savedExercises = localStorage.getItem('userExercises');
     if (savedExercises) {
-      // Объединяем пользовательские упражнения с примерами
+      // Объединяем пользовательские упражнения с примерами и упражнениями с резиновыми лентами
       const parsedExercises = JSON.parse(savedExercises);
-      return [...parsedExercises, ...NORMALIZED_SAMPLE_EXERCISES.filter(ex => 
+      const predefinedExercises = [...NORMALIZED_SAMPLE_EXERCISES, ...RESISTANCE_BAND_EXERCISES];
+      
+      return [...parsedExercises, ...predefinedExercises.filter(ex => 
         !parsedExercises.some((savedEx: Exercise) => savedEx.id === ex.id)
       )];
     }
@@ -244,8 +402,8 @@ export function getAllExercises(): Exercise[] {
     console.error('Ошибка при загрузке упражнений:', error);
   }
   
-  // Если не удалось загрузить пользовательские упражнения, возвращаем только примеры
-  return NORMALIZED_SAMPLE_EXERCISES;
+  // Если не удалось загрузить пользовательские упражнения, возвращаем только примеры и упражнения с резиновыми лентами
+  return [...NORMALIZED_SAMPLE_EXERCISES, ...RESISTANCE_BAND_EXERCISES];
 }
 
 // Функция для получения упражнения по ID

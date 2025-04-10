@@ -1,5 +1,6 @@
 import { Exercise } from './Exercise';
 import { v4 as uuidv4 } from 'uuid';
+import { WorkoutExercise } from './Program';
 
 // Домашние упражнения с гантелями
 export const HOME_EXERCISES: Exercise[] = [
@@ -181,5 +182,176 @@ export function addHomeExercisesToUserExercises(): void {
     }
   } catch (error) {
     console.error('Ошибка при добавлении домашних упражнений:', error);
+  }
+}
+
+// Функция для создания объекта упражнения в тренировке
+function createWorkoutExercise(
+  exercise: Exercise, 
+  sets: number, 
+  rest: number, 
+  options?: { reps?: number; weight?: number; duration?: number }
+) {
+  return {
+    id: uuidv4(),
+    exerciseId: exercise.id,
+    exercise: exercise,
+    sets: sets,
+    reps: options?.reps,
+    weight: options?.weight,
+    duration: options?.duration,
+    rest: rest,
+  };
+}
+
+// Функция для поиска упражнения по названию
+function getExerciseByName(name: string): Exercise | undefined {
+  // Ищем в домашних упражнениях
+  let exercise = HOME_EXERCISES.find(ex => ex.name === name);
+  
+  // Если не найдено, ищем в упражнениях с резиновыми лентами
+  if (!exercise) {
+    try {
+      // Импортируем упражнения с резиновыми лентами
+      const { RESISTANCE_BAND_EXERCISES } = require('./Exercise');
+      exercise = RESISTANCE_BAND_EXERCISES.find((ex: Exercise) => ex.name === name);
+    } catch (error) {
+      console.error('Ошибка при поиске упражнения с резиновыми лентами:', error);
+    }
+  }
+  
+  return exercise;
+}
+
+// Программа тренировок с резиновыми лентами
+export const RESISTANCE_BAND_PROGRAM = {
+  id: uuidv4(),
+  name: 'Программа тренировок с резиновыми лентами',
+  description: 'Эффективная программа тренировок с использованием резиновых лент для всех групп мышц',
+  level: 'beginner',
+  durationWeeks: 4,
+  workoutsPerWeek: 3,
+  restBetweenExercises: 60,
+  workouts: [
+    // День 1: Верхняя часть тела
+    {
+      id: uuidv4(),
+      programId: uuidv4(),
+      name: 'День 1: Верхняя часть тела',
+      exercises: [
+        createWorkoutExercise(
+          getExerciseByName('Тяга резиновой ленты к груди') || { id: 'rb-1', name: 'Тяга резиновой ленты к груди' } as Exercise,
+          3,
+          60,
+          { reps: 15 }
+        ),
+        createWorkoutExercise(
+          getExerciseByName('Боковые подъемы рук с резиновой лентой') || { id: 'rb-2', name: 'Боковые подъемы рук с резиновой лентой' } as Exercise,
+          3,
+          45,
+          { reps: 12 }
+        ),
+        createWorkoutExercise(
+          getExerciseByName('Разгибание рук с резиновой лентой') || { id: 'rb-5', name: 'Разгибание рук с резиновой лентой' } as Exercise,
+          3,
+          45,
+          { reps: 12 }
+        ),
+        createWorkoutExercise(
+          getExerciseByName('Сгибание рук на бицепс с резиновой лентой') || { id: 'rb-4', name: 'Сгибание рук на бицепс с резиновой лентой' } as Exercise,
+          3,
+          45,
+          { reps: 12 }
+        )
+      ]
+    },
+    // День 2: Нижняя часть тела
+    {
+      id: uuidv4(),
+      programId: uuidv4(),
+      name: 'День 2: Нижняя часть тела',
+      exercises: [
+        createWorkoutExercise(
+          getExerciseByName('Приседания с резиновой лентой') || { id: 'rb-3', name: 'Приседания с резиновой лентой' } as Exercise,
+          3,
+          60,
+          { reps: 15 }
+        ),
+        createWorkoutExercise(
+          getExerciseByName('Подъемы ног в сторону с резиновой лентой') || { id: 'rb-7', name: 'Подъемы ног в сторону с резиновой лентой' } as Exercise,
+          3,
+          45,
+          { reps: 12 }
+        ),
+        createWorkoutExercise(
+          getExerciseByName('Гиперэкстензия на полу') || HOME_EXERCISES[9],
+          3,
+          60,
+          { reps: 15 }
+        )
+      ]
+    },
+    // День 3: Полное тело
+    {
+      id: uuidv4(),
+      programId: uuidv4(),
+      name: 'День 3: Полное тело',
+      exercises: [
+        createWorkoutExercise(
+          getExerciseByName('Тяга резиновой ленты к поясу') || { id: 'rb-8', name: 'Тяга резиновой ленты к поясу' } as Exercise,
+          3,
+          60,
+          { reps: 12 }
+        ),
+        createWorkoutExercise(
+          getExerciseByName('Разведение рук с резиновой лентой') || { id: 'rb-6', name: 'Разведение рук с резиновой лентой' } as Exercise,
+          3,
+          45,
+          { reps: 15 }
+        ),
+        createWorkoutExercise(
+          getExerciseByName('Приседания с резиновой лентой') || { id: 'rb-3', name: 'Приседания с резиновой лентой' } as Exercise,
+          3,
+          60,
+          { reps: 15 }
+        ),
+        createWorkoutExercise(
+          getExerciseByName('Планка с подъемом руки') || HOME_EXERCISES[7],
+          3,
+          60,
+          { duration: 40 }
+        )
+      ]
+    }
+  ],
+  exercises: [] as WorkoutExercise[]
+};
+
+// Функция для добавления программы с резиновыми лентами в локальное хранилище
+export function addResistanceBandProgramToUserPrograms(): void {
+  try {
+    const savedPrograms = localStorage.getItem('programs');
+    let userPrograms = savedPrograms ? JSON.parse(savedPrograms) : [];
+    
+    // Убедимся, что exercises не пустой - копируем из workouts
+    const programCopy = {...RESISTANCE_BAND_PROGRAM};
+    // Заполняем exercises из первой тренировки, если они отсутствуют
+    if (!programCopy.exercises || programCopy.exercises.length === 0) {
+      programCopy.exercises = programCopy.workouts[0].exercises;
+    }
+    
+    // Проверяем, есть ли уже программа с таким именем
+    const existingProgram = userPrograms.find((p: any) => p.name === programCopy.name);
+    
+    if (!existingProgram) {
+      // Добавляем программу в список пользовательских программ
+      userPrograms.push(programCopy);
+      localStorage.setItem('programs', JSON.stringify(userPrograms));
+      console.log('Программа тренировок с резиновыми лентами добавлена');
+    } else {
+      console.log('Программа с таким названием уже существует');
+    }
+  } catch (error) {
+    console.error('Ошибка при добавлении программы тренировок с резиновыми лентами:', error);
   }
 } 

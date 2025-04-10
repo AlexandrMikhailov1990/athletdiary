@@ -5,6 +5,7 @@ import { SAMPLE_ACTIVE_PROGRAM, ActiveProgram } from '../models/ActiveProgram';
 import { Exercise, translateMuscleGroup } from '../models/Exercise';
 import { addHomeProgramToUserPrograms } from '../models/HomeProgram';
 import { addExtendedHomeProgramToUserPrograms } from '../models/ExtendedHomeProgram';
+import { addResistanceBandProgramToUserPrograms } from '../models/HomeExercises';
 
 export default function Programs() {
   const router = useRouter();
@@ -284,6 +285,16 @@ export default function Programs() {
               }}
             >
               + Домашняя программа
+            </button>
+            <button
+              className="bg-indigo-600 hover:bg-indigo-700 text-white h-11 px-6 rounded-lg transition-colors duration-200 font-medium"
+              onClick={() => {
+                addResistanceBandProgramToUserPrograms();
+                loadPrograms();
+                alert('Программа тренировок с резиновыми лентами добавлена');
+              }}
+            >
+              + Программа с лентами
             </button>
             <button
               className="bg-green-600 hover:bg-green-700 text-white h-11 px-6 rounded-lg transition-colors duration-200 font-medium"
