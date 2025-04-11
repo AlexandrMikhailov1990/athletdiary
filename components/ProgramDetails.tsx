@@ -218,14 +218,14 @@ export default function ProgramDetails({ program, onClose, onStart, darkMode = f
   return (
     <AnimatePresence>
       <motion.div 
-        className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center p-2 md:p-4 z-50"
+        className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center p-2 md:p-4 z-50 overflow-hidden"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
       >
         <motion.div 
-          className={`${bgColor} rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-auto ${borderColor} border`}
+          className={`${bgColor} rounded-xl shadow-2xl w-full max-w-4xl max-h-[95vh] overflow-auto ${borderColor} border`}
           initial={{ scale: 0.9, y: 20, opacity: 0 }}
           animate={{ scale: 1, y: 0, opacity: 1 }}
           exit={{ scale: 0.9, y: 20, opacity: 0 }}
@@ -233,11 +233,11 @@ export default function ProgramDetails({ program, onClose, onStart, darkMode = f
           onClick={(e: React.MouseEvent) => e.stopPropagation()}
           ref={programRef}
         >
-          <div className={`sticky top-0 ${headerBgColor} text-white p-4 flex justify-between items-center z-10`}>
-            <h2 className="text-xl font-bold">{program.name}</h2>
-            <div className="flex space-x-2">
+          <div className={`sticky top-0 ${headerBgColor} text-white p-3 sm:p-4 flex justify-between items-center z-10`}>
+            <h2 className="text-lg sm:text-xl font-bold truncate pr-2">{program.name}</h2>
+            <div className="flex space-x-1 sm:space-x-2 flex-shrink-0">
               <motion.button
-                className="p-2 hover:bg-black hover:bg-opacity-10 rounded-full transition-colors"
+                className="p-1 sm:p-2 hover:bg-black hover:bg-opacity-10 rounded-full transition-colors"
                 onClick={handleShare}
                 title="Поделиться программой"
                 whileHover={{ scale: 1.1 }}
@@ -248,7 +248,7 @@ export default function ProgramDetails({ program, onClose, onStart, darkMode = f
                 </svg>
               </motion.button>
               <motion.button
-                className="p-2 hover:bg-black hover:bg-opacity-10 rounded-full transition-colors"
+                className="p-1 sm:p-2 hover:bg-black hover:bg-opacity-10 rounded-full transition-colors"
                 onClick={handleDownload}
                 title="Скачать программу"
                 disabled={isExporting}
@@ -260,13 +260,13 @@ export default function ProgramDetails({ program, onClose, onStart, darkMode = f
                 </svg>
               </motion.button>
               <motion.button
-                className="p-2 hover:bg-black hover:bg-opacity-10 rounded-full transition-colors"
+                className="p-1 sm:p-2 hover:bg-black hover:bg-opacity-10 rounded-full transition-colors"
                 onClick={onClose}
                 title="Закрыть"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </motion.button>
@@ -274,9 +274,9 @@ export default function ProgramDetails({ program, onClose, onStart, darkMode = f
           </div>
 
           {/* Tabs */}
-          <div className={`flex border-b ${borderColor} sticky top-16 ${bgColor} z-10`}>
+          <div className={`flex border-b ${borderColor} sticky top-[52px] sm:top-16 ${bgColor} z-10`}>
             <motion.button
-              className={`flex-1 py-4 font-medium border-b-2 ${
+              className={`flex-1 py-3 sm:py-4 font-medium border-b-2 text-sm sm:text-base ${
                 activeTab === 'overview' ? `${tabActiveBorder} ${tabActiveText}` : `border-transparent ${tabInactiveText}`
               } transition-colors relative`}
               onClick={() => setActiveTab('overview')}
@@ -291,7 +291,7 @@ export default function ProgramDetails({ program, onClose, onStart, darkMode = f
               )}
             </motion.button>
             <motion.button
-              className={`flex-1 py-4 font-medium border-b-2 ${
+              className={`flex-1 py-3 sm:py-4 font-medium border-b-2 text-sm sm:text-base ${
                 activeTab === 'schedule' ? `${tabActiveBorder} ${tabActiveText}` : `border-transparent ${tabInactiveText}`
               } transition-colors relative`}
               onClick={() => setActiveTab('schedule')}
@@ -308,7 +308,7 @@ export default function ProgramDetails({ program, onClose, onStart, darkMode = f
           </div>
 
           {/* Content */}
-          <div className={`p-5 ${textColor}`}>
+          <div className={`p-3 sm:p-5 ${textColor}`}>
             {/* Overview tab */}
             {activeTab === 'overview' && (
               <motion.div 
@@ -316,89 +316,90 @@ export default function ProgramDetails({ program, onClose, onStart, darkMode = f
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
+                className="space-y-4 sm:space-y-6"
               >
-                <p className="mb-6 text-base leading-relaxed">{program.description}</p>
+                <p className="mb-4 sm:mb-6 text-sm sm:text-base leading-relaxed">{program.description}</p>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-8">
                   <motion.div 
-                    className={`${infoBlockBg} rounded-lg p-4 shadow-md flex flex-col hover:shadow-lg transition-shadow transform`}
+                    className={`${infoBlockBg} rounded-lg p-3 sm:p-4 shadow-md flex flex-col hover:shadow-lg transition-shadow transform`}
                     whileHover={{ y: -5, scale: 1.02 }}
                     transition={{ type: 'spring', stiffness: 300 }}
                   >
-                    <span className="text-sm text-gray-500 mb-1">Сложность</span>
+                    <span className="text-xs sm:text-sm text-gray-500 mb-1">Сложность</span>
                     <div className="flex items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-blue-500 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 mr-1 sm:mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                       </svg>
-                      <span className="font-medium">{getLevelLabel(program.level)}</span>
+                      <span className="font-medium text-sm sm:text-base truncate">{getLevelLabel(program.level)}</span>
                     </div>
                   </motion.div>
                   
                   <motion.div 
-                    className={`${infoBlockBg} rounded-lg p-4 shadow-md flex flex-col hover:shadow-lg transition-shadow transform`}
+                    className={`${infoBlockBg} rounded-lg p-3 sm:p-4 shadow-md flex flex-col hover:shadow-lg transition-shadow transform`}
                     whileHover={{ y: -5, scale: 1.02 }}
                     transition={{ type: 'spring', stiffness: 300 }}
                   >
-                    <span className="text-sm text-gray-500 mb-1">Продолжительность</span>
+                    <span className="text-xs sm:text-sm text-gray-500 mb-1">Недели</span>
                     <div className="flex items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-green-500 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mr-1 sm:mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
-                      <span className="font-medium">{program.durationWeeks} {program.durationWeeks === 1 ? 'неделя' : program.durationWeeks >= 2 && program.durationWeeks <= 4 ? 'недели' : 'недель'}</span>
+                      <span className="font-medium text-sm sm:text-base truncate">{program.durationWeeks} {program.durationWeeks === 1 ? 'нед.' : program.durationWeeks >= 2 && program.durationWeeks <= 4 ? 'нед.' : 'нед.'}</span>
                     </div>
                   </motion.div>
                   
                   <motion.div 
-                    className={`${infoBlockBg} rounded-lg p-4 shadow-md flex flex-col hover:shadow-lg transition-shadow transform`}
+                    className={`${infoBlockBg} rounded-lg p-3 sm:p-4 shadow-md flex flex-col hover:shadow-lg transition-shadow transform`}
                     whileHover={{ y: -5, scale: 1.02 }}
                     transition={{ type: 'spring', stiffness: 300 }}
                   >
-                    <span className="text-sm text-gray-500 mb-1">Тренировок в неделю</span>
+                    <span className="text-xs sm:text-sm text-gray-500 mb-1">Тренировок</span>
                     <div className="flex items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-red-500 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 sm:w-5 sm:h-5 text-red-500 mr-1 sm:mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 7h14M5 17h14" />
                       </svg>
-                      <span className="font-medium">{program.workoutsPerWeek}</span>
+                      <span className="font-medium text-sm sm:text-base">{program.workoutsPerWeek}/нед.</span>
                     </div>
                   </motion.div>
                   
                   <motion.div 
-                    className={`${infoBlockBg} rounded-lg p-4 shadow-md flex flex-col hover:shadow-lg transition-shadow transform`}
+                    className={`${infoBlockBg} rounded-lg p-3 sm:p-4 shadow-md flex flex-col hover:shadow-lg transition-shadow transform`}
                     whileHover={{ y: -5, scale: 1.02 }}
                     transition={{ type: 'spring', stiffness: 300 }}
                   >
-                    <span className="text-sm text-gray-500 mb-1">Отдых между подходами</span>
+                    <span className="text-xs sm:text-sm text-gray-500 mb-1">Отдых</span>
                     <div className="flex items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-purple-500 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500 mr-1 sm:mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      <span className="font-medium">{program.restBetweenSets || 90} сек</span>
+                      <span className="font-medium text-sm sm:text-base">{program.restBetweenSets || 90} сек</span>
                     </div>
                   </motion.div>
                 </div>
                 
-                <h3 className="text-xl font-semibold mb-4">Упражнения в программе</h3>
+                <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-4">Упражнения в программе</h3>
                 
                 {isLoadingExercises ? (
                   <div className="flex justify-center items-center py-8">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                    <p className="ml-4">Загрузка упражнений...</p>
+                    <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-blue-600"></div>
+                    <p className="ml-4 text-sm sm:text-base">Загрузка упражнений...</p>
                   </div>
                 ) : (
-                  <div className="space-y-3 mb-8">
+                  <div className="space-y-2 sm:space-y-3 mb-6 sm:mb-8">
                     {exercises && exercises.length > 0 ? (
                       exercises.map((exercise, index) => (
                         <motion.div 
                           key={exercise.id || index}
-                          className={`rounded-lg p-4 border ${borderColor} hover:shadow-md transition-shadow`}
+                          className={`rounded-lg p-3 sm:p-4 border ${borderColor} hover:shadow-md transition-shadow`}
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: index * 0.05, duration: 0.3 }}
                         >
                           <div className="flex items-start">
                             {exercise.exercise?.imageUrl && (
-                              <div className="w-16 h-16 mr-4 rounded-md overflow-hidden flex-shrink-0">
+                              <div className="w-12 h-12 sm:w-16 sm:h-16 mr-3 sm:mr-4 rounded-md overflow-hidden flex-shrink-0">
                                 <img 
                                   src={exercise.exercise.imageUrl} 
                                   alt={exercise.exercise.name} 
@@ -410,21 +411,21 @@ export default function ProgramDetails({ program, onClose, onStart, darkMode = f
                               </div>
                             )}
                             
-                            <div className="flex-1">
-                              <h4 className="font-medium text-lg">{exercise.exercise?.name || exercise.name}</h4>
-                              <p className="text-sm text-gray-500 mb-2">
-                                {exercise.sets} {exercise.sets === 1 ? 'подход' : exercise.sets > 1 && exercise.sets < 5 ? 'подхода' : 'подходов'} × {exercise.reps || '-'} {exercise.reps === 1 ? 'повторение' : exercise.reps && exercise.reps > 1 && exercise.reps < 5 ? 'повторения' : 'повторений'}
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-medium text-base sm:text-lg truncate">{exercise.exercise?.name || exercise.name}</h4>
+                              <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">
+                                {exercise.sets} {exercise.sets === 1 ? 'подход' : exercise.sets > 1 && exercise.sets < 5 ? 'подх.' : 'подх.'} × {exercise.reps || '-'} {exercise.reps === 1 ? 'повт.' : exercise.reps && exercise.reps > 1 && exercise.reps < 5 ? 'повт.' : 'повт.'}
                                 {exercise.weight ? ` • ${exercise.weight} кг` : ''}
                               </p>
                               
-                              <p className="text-sm">
+                              <p className="text-xs sm:text-sm line-clamp-2">
                                 {exercise.exercise?.description || exercise.description || 'Нет описания'}
                               </p>
                               
-                              <div className="flex flex-wrap gap-2 mt-2">
+                              <div className="flex flex-wrap gap-1 sm:gap-2 mt-1 sm:mt-2">
                                 {(exercise.exercise?.muscleGroups || exercise.muscleGroups) && 
                                   (exercise.exercise?.muscleGroups || exercise.muscleGroups).map((group: string) => (
-                                    <span key={group} className={`${darkMode ? 'bg-blue-900 text-blue-100' : 'bg-blue-100 text-blue-800'} text-xs px-2 py-1 rounded-full`}>
+                                    <span key={group} className={`${darkMode ? 'bg-blue-900 text-blue-100' : 'bg-blue-100 text-blue-800'} text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full`}>
                                       {group}
                                     </span>
                                   ))
@@ -435,23 +436,23 @@ export default function ProgramDetails({ program, onClose, onStart, darkMode = f
                         </motion.div>
                       ))
                     ) : (
-                      <p className="p-4 text-center bg-gray-50 rounded-lg border border-gray-200">Нет упражнений в программе</p>
+                      <p className="p-4 text-center bg-gray-50 rounded-lg border border-gray-200 text-sm sm:text-base">Нет упражнений в программе</p>
                     )}
                   </div>
                 )}
                 
-                <div className="flex justify-center mt-8">
-                  {onStart && (
+                {onStart && (
+                  <div className="flex justify-center mt-6 sm:mt-8 pb-4">
                     <motion.button 
-                      className={`${btnPrimaryBg} text-white px-6 py-3 rounded-lg font-medium shadow-lg transition`}
+                      className={`${btnPrimaryBg} text-white px-6 py-3 rounded-lg font-medium shadow-lg transition w-full sm:w-auto`}
                       onClick={onStart}
-                      whileHover={{ scale: 1.05, y: -3 }}
-                      whileTap={{ scale: 0.95 }}
+                      whileHover={{ scale: 1.03, y: -2 }}
+                      whileTap={{ scale: 0.97 }}
                     >
                       Начать программу
                     </motion.button>
-                  )}
-                </div>
+                  </div>
+                )}
               </motion.div>
             )}
             
@@ -463,14 +464,14 @@ export default function ProgramDetails({ program, onClose, onStart, darkMode = f
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <div className="mb-6">
-                  <label className="block text-sm font-medium mb-3">Выберите неделю</label>
+                <div className="mb-4 sm:mb-6">
+                  <label className="block text-xs sm:text-sm font-medium mb-2 sm:mb-3">Выберите неделю</label>
                   
                   <div className="flex flex-wrap gap-2">
                     {weeks.map((week) => (
                       <motion.button
                         key={week.value}
-                        className={`px-4 py-2 rounded-md ${
+                        className={`px-2 sm:px-4 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm ${
                           selectedWeek === week.value 
                             ? 'bg-blue-600 text-white' 
                             : `${btnSecondaryBg} ${btnSecondaryText}`
@@ -485,42 +486,42 @@ export default function ProgramDetails({ program, onClose, onStart, darkMode = f
                   </div>
                 </div>
                 
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {selectedWeek && workoutsByWeek[selectedWeek]?.length > 0 ? (
                     workoutsByWeek[selectedWeek].map((workout, index) => (
                       <motion.div 
                         key={`${workout.id || index}`} 
-                        className={`rounded-lg p-5 border ${borderColor} hover:shadow-md transition-shadow`}
+                        className={`rounded-lg p-3 sm:p-5 border ${borderColor} hover:shadow-md transition-shadow`}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, delay: index * 0.1 }}
                       >
-                        <h4 className="font-medium text-lg mb-2">День {index + 1}: {workout.name || `Тренировка ${index + 1}`}</h4>
-                        <p className="text-sm mb-4">{workout.notes || 'Нет дополнительных заметок'}</p>
+                        <h4 className="font-medium text-base sm:text-lg mb-1 sm:mb-2">День {index + 1}: {workout.name || `Тренировка ${index + 1}`}</h4>
+                        <p className="text-xs sm:text-sm mb-3 sm:mb-4">{workout.notes || 'Нет дополнительных заметок'}</p>
                         
-                        <div className="space-y-3">
+                        <div className="space-y-2 sm:space-y-3">
                           {workout.exercises.map((exercise, exIndex) => (
                             <motion.div 
                               key={exercise.id}
-                              className={`p-3 ${infoBlockBg} rounded-md border border-gray-200 hover:shadow-sm transition-shadow`}
+                              className={`p-2 sm:p-3 ${infoBlockBg} rounded-md border border-gray-200 hover:shadow-sm transition-shadow`}
                               initial={{ opacity: 0, x: -20 }}
                               animate={{ opacity: 1, x: 0 }}
                               transition={{ duration: 0.2, delay: 0.2 + exIndex * 0.05 }}
                             >
                               <div className="flex items-center">
-                                <div className="flex-1">
-                                  <h5 className="font-medium">{exercise.exercise?.name}</h5>
-                                  <p className="text-sm text-gray-500">
-                                    {exercise.sets} {exercise.sets === 1 ? 'подход' : exercise.sets > 1 && exercise.sets < 5 ? 'подхода' : 'подходов'} x {exercise.reps || '-'} {exercise.reps === 1 ? 'повторение' : exercise.reps && exercise.reps > 1 && exercise.reps < 5 ? 'повторения' : 'повторений'}
+                                <div className="flex-1 min-w-0">
+                                  <h5 className="font-medium text-sm sm:text-base truncate">{exercise.exercise?.name}</h5>
+                                  <p className="text-xs text-gray-500">
+                                    {exercise.sets} {exercise.sets === 1 ? 'подх.' : exercise.sets > 1 && exercise.sets < 5 ? 'подх.' : 'подх.'} x {exercise.reps || '-'} {exercise.reps === 1 ? 'повт.' : exercise.reps && exercise.reps > 1 && exercise.reps < 5 ? 'повт.' : 'повт.'}
                                     {exercise.weight && ` • ${exercise.weight} кг`}
                                   </p>
                                 </div>
                                 {exercise.rest && (
-                                  <div className="flex items-center text-sm text-gray-500">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <div className="flex items-center text-xs sm:text-sm text-gray-500 flex-shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 sm:w-4 sm:h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
-                                    <span>{exercise.rest} сек отдыха</span>
+                                    <span>{exercise.rest}с</span>
                                   </div>
                                 )}
                               </div>
@@ -537,8 +538,8 @@ export default function ProgramDetails({ program, onClose, onStart, darkMode = f
                       transition={{ duration: 0.3 }}
                     >
                       {selectedWeek ? 
-                        <p>На эту неделю нет запланированных тренировок</p> :
-                        <p>Выберите неделю, чтобы увидеть тренировки</p>
+                        <p className="text-sm sm:text-base">На эту неделю нет запланированных тренировок</p> :
+                        <p className="text-sm sm:text-base">Выберите неделю, чтобы увидеть тренировки</p>
                       }
                     </motion.div>
                   )}

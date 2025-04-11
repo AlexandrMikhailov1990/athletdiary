@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
@@ -11,9 +11,35 @@ export default function Navbar() {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+  };
+
+  // Закрывать меню при переходе на другую страницу
+  useEffect(() => {
+    const handleRouteChange = () => {
+      closeMenu();
+    };
+
+    router.events.on('routeChangeStart', handleRouteChange);
+    
+    return () => {
+      router.events.off('routeChangeStart', handleRouteChange);
+    };
+  }, [router.events]);
+
   const handleLogout = () => {
     setIsLoggedIn(false);
     router.push('/');
+  };
+
+  // Компонент обертка для ссылок в мобильном меню
+  const MobileMenuLink = ({ href, className, children }: { href: string, className: string, children: React.ReactNode }) => {
+    return (
+      <Link href={href} className={className} onClick={closeMenu}>
+        {children}
+      </Link>
+    );
   };
 
   return (
@@ -63,7 +89,7 @@ export default function Navbar() {
                 
                 {isMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 z-10">
-                    <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={closeMenu}>
                       Настройки профиля
                     </Link>
                     <button
@@ -122,23 +148,23 @@ export default function Navbar() {
           <div className="px-2 pt-2 pb-3 space-y-1">
             <Link href="/exercises" className={`block nav-link ${
               router.pathname === '/exercises' ? 'nav-link-active' : 'nav-link-default'
-            }`}>
+            }`} onClick={closeMenu}>
               Упражнения
             </Link>
             <Link href="/programs" className={`block nav-link ${
               router.pathname === '/programs' ? 'nav-link-active' : 'nav-link-default'
-            }`}>
+            }`} onClick={closeMenu}>
               Программы
             </Link>
             <Link href="/history" className={`block nav-link ${
               router.pathname === '/history' ? 'nav-link-active' : 'nav-link-default'
-            }`}>
+            }`} onClick={closeMenu}>
               История
             </Link>
             
             {isLoggedIn ? (
               <>
-                <Link href="/profile" className="block nav-link nav-link-default">
+                <Link href="/profile" className="block nav-link nav-link-default" onClick={closeMenu}>
                   Настройки профиля
                 </Link>
                 <button
@@ -150,10 +176,10 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <Link href="/login" className="block nav-link nav-link-default">
+                <Link href="/login" className="block nav-link nav-link-default" onClick={closeMenu}>
                   Войти
                 </Link>
-                <Link href="/register" className="block btn btn-primary w-full">
+                <Link href="/register" className="block btn btn-primary w-full" onClick={closeMenu}>
                   Регистрация
                 </Link>
               </>

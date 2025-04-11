@@ -197,9 +197,9 @@ export default function Exercises() {
   return (
     <div className="min-h-screen bg-gray-100 py-8">
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
           <h1 className="text-3xl font-bold text-blue-800">Упражнения</h1>
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
             <button
               onClick={() => {
                 addAllExerciseSets().then(() => {
@@ -207,13 +207,13 @@ export default function Exercises() {
                   alert('Все наборы упражнений успешно добавлены');
                 });
               }}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-3 text-sm sm:text-base rounded-lg transition-colors duration-200 text-center"
             >
               Обновить все упражнения
             </button>
             <button
               onClick={handleCreateExercise}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 text-sm sm:text-base rounded-lg transition-colors duration-200 text-center"
             >
               Создать упражнение
             </button>
@@ -295,7 +295,7 @@ export default function Exercises() {
             </p>
             <button
               onClick={handleCreateExercise}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 text-sm sm:text-base rounded-lg transition-colors duration-200"
             >
               Создать упражнение
             </button>
