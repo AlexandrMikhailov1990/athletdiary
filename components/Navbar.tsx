@@ -144,46 +144,71 @@ export default function Navbar() {
 
       {/* Мобильное меню */}
       {isMenuOpen && (
-        <div className="mobile-menu">
-          <div className="px-2 pt-2 pb-3 space-y-1">
-            <Link href="/exercises" className={`block nav-link ${
-              router.pathname === '/exercises' ? 'nav-link-active' : 'nav-link-default'
-            }`} onClick={closeMenu}>
-              Упражнения
-            </Link>
-            <Link href="/programs" className={`block nav-link ${
-              router.pathname === '/programs' ? 'nav-link-active' : 'nav-link-default'
-            }`} onClick={closeMenu}>
-              Программы
-            </Link>
-            <Link href="/history" className={`block nav-link ${
-              router.pathname === '/history' ? 'nav-link-active' : 'nav-link-default'
-            }`} onClick={closeMenu}>
-              История
-            </Link>
-            
-            {isLoggedIn ? (
-              <>
-                <Link href="/profile" className="block nav-link nav-link-default" onClick={closeMenu}>
-                  Настройки профиля
-                </Link>
+        <div className="fixed inset-0 z-50 md:hidden">
+          {/* Затемнение фона */}
+          <div 
+            className="absolute inset-0 bg-black bg-opacity-50 transition-opacity"
+            onClick={closeMenu}
+          />
+          
+          {/* Меню */}
+          <div className="absolute right-0 top-0 h-full w-64 transform transition-transform duration-300 ease-in-out bg-white shadow-xl">
+            <div className="flex flex-col h-full">
+              {/* Заголовок меню */}
+              <div className="flex items-center justify-between p-4 border-b">
+                <span className="text-lg font-semibold">Меню</span>
                 <button
-                  className="block w-full text-left nav-link nav-link-default"
-                  onClick={handleLogout}
+                  onClick={closeMenu}
+                  className="p-2 rounded-full hover:bg-gray-100"
                 >
-                  Выйти
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </button>
-              </>
-            ) : (
-              <>
-                <Link href="/login" className="block nav-link nav-link-default" onClick={closeMenu}>
-                  Войти
+              </div>
+
+              {/* Содержимое меню */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                <Link href="/exercises" className={`block p-2 rounded-md hover:bg-gray-100 ${
+                  router.pathname === '/exercises' ? 'font-semibold text-blue-600' : 'text-gray-700'
+                }`} onClick={closeMenu}>
+                  Упражнения
                 </Link>
-                <Link href="/register" className="block btn btn-primary w-full" onClick={closeMenu}>
-                  Регистрация
+                <Link href="/programs" className={`block p-2 rounded-md hover:bg-gray-100 ${
+                  router.pathname === '/programs' ? 'font-semibold text-blue-600' : 'text-gray-700'
+                }`} onClick={closeMenu}>
+                  Программы
                 </Link>
-              </>
-            )}
+                <Link href="/history" className={`block p-2 rounded-md hover:bg-gray-100 ${
+                  router.pathname === '/history' ? 'font-semibold text-blue-600' : 'text-gray-700'
+                }`} onClick={closeMenu}>
+                  История
+                </Link>
+                
+                {isLoggedIn ? (
+                  <>
+                    <Link href="/profile" className="block p-2 rounded-md hover:bg-gray-100 text-gray-700" onClick={closeMenu}>
+                      Настройки профиля
+                    </Link>
+                    <button
+                      className="block w-full text-left p-2 rounded-md hover:bg-gray-100 text-gray-700"
+                      onClick={handleLogout}
+                    >
+                      Выйти
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/login" className="block p-2 rounded-md hover:bg-gray-100 text-gray-700" onClick={closeMenu}>
+                      Войти
+                    </Link>
+                    <Link href="/register" className="block w-full p-2 rounded-md text-center font-medium bg-blue-600 text-white hover:bg-blue-700" onClick={closeMenu}>
+                      Регистрация
+                    </Link>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
