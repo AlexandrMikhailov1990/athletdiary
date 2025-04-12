@@ -120,27 +120,7 @@ export function initializePrograms(): void {
   const programs = localStorage.getItem('programs');
   if (programs && JSON.parse(programs).length > 0) return;
   
-  const demoPrograms: Program[] = [
-    {
-      id: uuidv4(),
-      name: 'Программа для новичков',
-      description: 'Идеальная программа для тех, кто только начинает заниматься',
-      level: 'beginner',
-      durationWeeks: 4,
-      workoutsPerWeek: 3,
-      workouts: [
-        {
-          id: uuidv4(),
-          programId: '1',
-          name: 'День 1: Верхняя часть тела',
-          exercises: [],
-          notes: 'Фокус на грудные мышцы и руки'
-        }
-      ],
-      isPublic: true,
-      createdBy: 'system'
-    }
-  ];
+  const demoPrograms: Program[] = [];
   
   localStorage.setItem('programs', JSON.stringify(demoPrograms));
 }
@@ -178,27 +158,4 @@ export function migratePrograms(): void {
 }
 
 // Обновим и демо-программы
-export const SAMPLE_PROGRAMS: Program[] = [
-  {
-    id: '1',
-    name: 'Программа на массу для начинающих',
-    description: 'Базовая программа для набора мышечной массы с акцентом на основные упражнения',
-    level: 'beginner',
-    durationWeeks: 8,
-    workoutsPerWeek: 3,
-    workouts: [],
-    isPublic: true,
-    createdBy: 'admin'
-  },
-  {
-    id: '2',
-    name: 'Программа для похудения',
-    description: 'Интенсивная программа с акцентом на жиросжигание и поддержание мышечной массы',
-    level: 'intermediate',
-    durationWeeks: 6,
-    workoutsPerWeek: 4,
-    workouts: [],
-    isPublic: true,
-    createdBy: 'admin'
-  }
-]; 
+export const SAMPLE_PROGRAMS: Program[] = []; 
