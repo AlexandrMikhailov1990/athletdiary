@@ -15,7 +15,7 @@ function createWorkoutExercise(exerciseName: string): WorkoutExercise {
     exercise: exercise,
     sets: exercise.sets || 1,
     duration: exercise.duration || 45,
-    rest: exercise.restTime || 10
+    rest: 20
   };
 }
 
@@ -29,6 +29,7 @@ export const YOGA_BACK_PROGRAM: Program = {
   workoutsPerWeek: 3,
   createdBy: 'system',
   isPublic: true,
+  restBetweenExercises: 20,
   workouts: [
     {
       id: uuidv4(),
@@ -67,7 +68,11 @@ export function addYogaBackProgram(): void {
       localStorage.setItem('programs', JSON.stringify(userPrograms));
       console.log('Программа йоги для спины добавлена');
     } else {
-      console.log('Программа йоги для спины уже существует');
+      // Обновляем существующую программу, чтобы применить новое время отдыха
+      const index = userPrograms.findIndex((p: Program) => p.name === YOGA_BACK_PROGRAM.name);
+      userPrograms[index] = YOGA_BACK_PROGRAM;
+      localStorage.setItem('programs', JSON.stringify(userPrograms));
+      console.log('Программа йоги для спины обновлена');
     }
   } catch (error) {
     console.error('Ошибка при добавлении программы йоги:', error);

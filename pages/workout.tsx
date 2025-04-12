@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/router';
 import type { ActiveProgram } from '../models/ActiveProgram';
 import { SAMPLE_PROGRAMS, Program } from '../models/Program';
@@ -681,7 +681,9 @@ export default function Workout() {
                     <div 
                       className={`absolute top-0 left-0 h-full ${isCountdown ? 'bg-red-500' : 'bg-blue-500'} transition-all duration-1000 ease-linear`}
                       style={{ 
-                        width: `${(restTimer / (currentWorkoutExercise.rest || 60)) * 100}%`,
+                        width: `${(restTimer / (currentWorkoutExercise.completedSets < (currentWorkoutExercise.exercise.sets || 1) ?
+                          currentWorkoutExercise.rest || currentWorkoutExercise.exercise.restTime || 60 :
+                          program?.restBetweenExercises || 90)) * 100}%`,
                       }}
                     ></div>
                   </div>

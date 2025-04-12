@@ -9,7 +9,7 @@ export const YOGA_BACK_EXERCISES: Exercise[] = [
     type: 'timed',
     sets: 1,
     duration: 45,
-    restTime: 10,
+    restTime: 20,
     difficulty: 'beginner',
     muscleGroups: ['shoulders', 'upper_back'],
     description: 'Стоя прямо, руки согнуты в локтях на уровне плеч. Выполняйте круговые движения локтями назад, разминая плечевой пояс.',
@@ -22,7 +22,7 @@ export const YOGA_BACK_EXERCISES: Exercise[] = [
     type: 'timed',
     sets: 1,
     duration: 45,
-    restTime: 10,
+    restTime: 20,
     difficulty: 'beginner',
     muscleGroups: ['shoulders', 'upper_back'],
     description: 'Стоя прямо, поочередно касайтесь противоположного плеча рукой, выполняя перекрестные движения.',
@@ -35,7 +35,7 @@ export const YOGA_BACK_EXERCISES: Exercise[] = [
     type: 'timed',
     sets: 1,
     duration: 45,
-    restTime: 10,
+    restTime: 20,
     difficulty: 'beginner',
     muscleGroups: ['back', 'shoulders'],
     description: 'Выполняйте движения руками, образуя треугольник сверху вниз, растягивая мышцы спины и плеч.',
@@ -48,7 +48,7 @@ export const YOGA_BACK_EXERCISES: Exercise[] = [
     type: 'timed',
     sets: 1,
     duration: 45,
-    restTime: 10,
+    restTime: 20,
     difficulty: 'beginner',
     muscleGroups: ['back', 'shoulders'],
     description: 'Сцепите руки в замок за спиной и выполняйте растягивающие движения, раскрывая грудную клетку.',
@@ -61,7 +61,7 @@ export const YOGA_BACK_EXERCISES: Exercise[] = [
     type: 'timed',
     sets: 1,
     duration: 45,
-    restTime: 10,
+    restTime: 20,
     difficulty: 'beginner',
     muscleGroups: ['lower_back', 'upper_back'],
     description: 'На четвереньках чередуйте прогиб спины вниз (поза коровы) и выгибание спины вверх (поза кошки).',
@@ -74,7 +74,7 @@ export const YOGA_BACK_EXERCISES: Exercise[] = [
     type: 'timed',
     sets: 1,
     duration: 45,
-    restTime: 10,
+    restTime: 20,
     difficulty: 'beginner',
     muscleGroups: ['lower_back', 'core'],
     description: 'Лежа на животе, плавно поднимайте верхнюю часть тела, опираясь на руки, переходя в позу кобры.',
@@ -87,7 +87,7 @@ export const YOGA_BACK_EXERCISES: Exercise[] = [
     type: 'timed',
     sets: 1,
     duration: 45,
-    restTime: 10,
+    restTime: 20,
     difficulty: 'beginner',
     muscleGroups: ['back', 'shoulders'],
     description: 'Выполняйте притягивающие движения руками, работая мышцами спины и плечевого пояса.',
@@ -100,7 +100,7 @@ export const YOGA_BACK_EXERCISES: Exercise[] = [
     type: 'timed',
     sets: 1,
     duration: 45,
-    restTime: 10,
+    restTime: 20,
     difficulty: 'beginner',
     muscleGroups: ['upper_back', 'shoulders'],
     description: 'Разведите руки в стороны как крылья и выполняйте пульсирующие движения назад, работая мышцами спины.',
@@ -113,7 +113,7 @@ export const YOGA_BACK_EXERCISES: Exercise[] = [
     type: 'timed',
     sets: 1,
     duration: 45,
-    restTime: 10,
+    restTime: 20,
     difficulty: 'beginner',
     muscleGroups: ['back', 'shoulders'],
     description: 'Выполняйте круговые движения руками, описывая полукруг и растягивая мышцы спины.',
@@ -126,7 +126,7 @@ export const YOGA_BACK_EXERCISES: Exercise[] = [
     type: 'timed',
     sets: 1,
     duration: 45,
-    restTime: 10,
+    restTime: 20,
     difficulty: 'beginner',
     muscleGroups: ['back', 'shoulders'],
     description: 'Выполняйте тянущие движения руками к груди, имитируя тягу, работая мышцами спины.',
@@ -139,7 +139,7 @@ export const YOGA_BACK_EXERCISES: Exercise[] = [
     type: 'timed',
     sets: 1,
     duration: 45,
-    restTime: 10,
+    restTime: 20,
     difficulty: 'beginner',
     muscleGroups: ['back', 'shoulders', 'hamstrings'],
     description: 'Из положения на четвереньках поднимите таз вверх, выпрямляя руки и ноги, формируя перевернутую букву V.',
@@ -152,7 +152,7 @@ export const YOGA_BACK_EXERCISES: Exercise[] = [
     type: 'timed',
     sets: 1,
     duration: 45,
-    restTime: 10,
+    restTime: 20,
     difficulty: 'beginner',
     muscleGroups: ['back', 'shoulders'],
     description: 'Сядьте на пятки, наклонитесь вперед, вытянув руки перед собой, расслабляя спину и плечи.',
@@ -172,11 +172,15 @@ export function addYogaBackExercises(): void {
       const existingExercise = userExercises.find((e: Exercise) => e.name === exercise.name);
       if (!existingExercise) {
         userExercises.push(exercise);
+      } else {
+        // Обновляем существующее упражнение, чтобы применить новое время отдыха
+        const index = userExercises.findIndex((e: Exercise) => e.name === exercise.name);
+        userExercises[index] = exercise;
       }
     });
     
     localStorage.setItem('exercises', JSON.stringify(userExercises));
-    console.log('Упражнения йоги для спины добавлены');
+    console.log('Упражнения йоги для спины добавлены/обновлены');
   } catch (error) {
     console.error('Ошибка при добавлении упражнений йоги:', error);
   }
