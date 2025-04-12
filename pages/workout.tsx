@@ -506,42 +506,50 @@ export default function Workout() {
   // Таймер отдыха
   useEffect(() => {
     if (isResting && restTimer !== null && restTimer > 0) {
-      const timer = setTimeout(() => {
-        // Активируем обратный отсчет только точно за 5 секунд до конца
-        if (restTimer === 5) {
+      // Очищаем предыдущий флаг звука
+      setFinalSoundPlayed(false);
+      
+      // Установка таймера отдыха с использованием setInterval для более точного отсчета
+      const startValue = restTimer;
+      const startTime = Date.now();
+      
+      const restIntervalId = setInterval(() => {
+        const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+        const remaining = startValue - elapsedTime;
+        
+        // Активируем обратный отсчет и звук за 5 секунд до конца
+        if (remaining === 5 && !isCountdown) {
           setIsCountdown(true);
-          // Воспроизводим предупреждающий звук один раз в режиме завершения
-          // чтобы гарантировать полное воспроизведение
+          
+          // Воспроизводим звук только один раз в режиме завершения
           if (!finalSoundPlayed) {
             soundManager.playTimerBeep(true);
             setFinalSoundPlayed(true);
           }
         }
         
-        // Проверяем, является ли это последней секундой таймера
-        if (restTimer === 1) {
-          // Обрабатываем последнюю секунду, переход к нулю
+        if (remaining <= 0) {
+          // Очищаем интервал
+          clearInterval(restIntervalId);
+          
+          // Устанавливаем значение в 0 для визуального обновления
+          setRestTimer(0);
+          
+          // Обработка завершения с задержкой для полного воспроизведения звука
           setTimeout(() => {
-            // НЕ воспроизводим повторный звук завершения, т.к. он уже играет
-            // от обратного отсчета с playTimerBeep(true)
-            
-            // Обновляем состояние с задержкой
-            setTimeout(() => {
-              setIsResting(false);
-              setRestTimer(null);
-              setIsCountdown(false);
-              setFinalSoundPlayed(false); // Сбрасываем флаг для следующего упражнения
-            }, 1500); // Достаточная задержка для звука
-          }, 1000);
-        }
-        
-        // Уменьшаем счетчик отдыха
-        if (restTimer > 0) {
-          setRestTimer(restTimer - 1);
+            setIsResting(false);
+            setIsCountdown(false);
+            setRestTimer(null);
+          }, 1500);
+        } else {
+          // Обновляем значение таймера
+          setRestTimer(remaining);
         }
       }, 1000);
       
-      return () => clearTimeout(timer);
+      return () => {
+        clearInterval(restIntervalId);
+      };
     }
   }, [isResting, restTimer, finalSoundPlayed]);
 
