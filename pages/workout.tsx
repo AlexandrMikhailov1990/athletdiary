@@ -52,6 +52,7 @@ export default function Workout() {
   const [isCountdown, setIsCountdown] = useState(false);
   const [timerCompleted, setTimerCompleted] = useState(false);
   const [finalSoundPlayed, setFinalSoundPlayed] = useState<boolean>(false);
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 
   // Инициализируем звук только при первом клике пользователя
   useEffect(() => {
@@ -564,6 +565,11 @@ export default function Workout() {
     }
   };
 
+  // Функция для навигации к меню программ
+  const goToPrograms = () => {
+    router.push('/programs');
+  };
+
   if (!activeProgram || !program) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -807,6 +813,42 @@ export default function Workout() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+          
+          {/* Кнопка завершения программы */}
+          <div className="mt-8 text-center">
+            <button
+              onClick={() => setShowConfirmationModal(true)}
+              className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-colors duration-200"
+            >
+              Завершить программу
+            </button>
+          </div>
+          
+          {/* Модальное окно подтверждения */}
+          {showConfirmationModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg p-6 max-w-sm mx-auto">
+                <h3 className="text-xl font-semibold mb-4">Завершить тренировку?</h3>
+                <p className="text-gray-600 mb-6">
+                  Вы уверены, что хотите завершить текущую тренировку и вернуться в меню программ? Прогресс может быть потерян.
+                </p>
+                <div className="flex justify-end gap-4">
+                  <button
+                    onClick={() => setShowConfirmationModal(false)}
+                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
+                  >
+                    Отмена
+                  </button>
+                  <button
+                    onClick={goToPrograms}
+                    className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                  >
+                    Завершить
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </>
