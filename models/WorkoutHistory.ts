@@ -4,12 +4,15 @@ import { Workout } from './Program';
 export interface ExerciseSet {
   weight: number;
   reps: number;
+  duration?: number;
   completed: boolean;
   notes?: string;
 }
 
 export interface WorkoutExerciseRecord {
   exercise: Exercise;
+  exerciseId?: string;
+  name?: string;
   sets: ExerciseSet[];
   notes?: string;
 }

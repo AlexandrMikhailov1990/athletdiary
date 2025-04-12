@@ -116,38 +116,20 @@ export default function Workout() {
       // Сохраняем историю тренировок для WorkoutHistory
       const workoutHistory = JSON.parse(localStorage.getItem('workoutHistory') || '[]');
       
-      // Создаем запись о тренировке в формате WorkoutHistory
-      const workoutHistoryRecord = {
-        programId: program.id,
-        date: new Date().toISOString(),
-        week: activeProgram.currentWeek,
-        day: activeProgram.currentDay,
-        exercises: exercises.map(ex => ({
-          exerciseId: ex.exercise.id,
-          name: ex.exercise.name,
-          sets: ex.setDetails.map(set => ({
-            reps: set.reps || 0,  // Убедимся, что значения не undefined
-            weight: set.weight || 0,  // Убедимся, что значения не undefined
-            completed: set.completed || false
-          }))
-        })),
-        notes: '',
-        rating: 0,
-        userId: 'user'
-      };
-      
-      // Сохраняем запись в формате WorkoutRecord (для совместимости со старым кодом)
+      // Создаем запись о тренировке в едином формате
+      const workoutId = program.workouts[activeProgram.currentDay - 1]?.id || 'workout_' + Date.now();
       const workoutRecord = {
         id: Date.now().toString(),
-        workoutId: program.workouts[activeProgram.currentDay - 1]?.id || 'workout_' + Date.now(),
-        programId: program.id, // Добавляем ID программы для связи
+        workoutId: workoutId,
+        programId: program.id,
         programName: program.name || 'Программа тренировок',
         workoutName: program.workouts[activeProgram.currentDay - 1]?.name || 'Тренировка',
         date: new Date().toISOString(),
         duration: Math.round((Date.now() - new Date(startTime).getTime()) / 60000),
         exercises: exercises.map(ex => ({
+          exerciseId: ex.exercise.id,
           exercise: ex.exercise,
-          exerciseId: ex.exercise.id, // Добавляем ID упражнения для связи
+          name: ex.exercise.name,
           sets: ex.setDetails.map(set => ({
             weight: set.weight || 0,
             reps: set.reps || 0,
@@ -157,15 +139,16 @@ export default function Workout() {
         })),
         notes: '',
         rating: 0,
-        userId: 'user'
+        userId: 'user',
+        week: activeProgram.currentWeek,
+        day: activeProgram.currentDay
       };
       
-      // Добавляем обе записи в историю и сохраняем
-      workoutHistory.push(workoutHistoryRecord);
+      // Добавляем запись в историю и сохраняем
       workoutHistory.push(workoutRecord);
       localStorage.setItem('workoutHistory', JSON.stringify(workoutHistory));
 
-      console.log('Сохранена история тренировки:', workoutHistoryRecord);
+      console.log('Сохранена история тренировки:', workoutRecord);
 
       // Перенаправляем на страницу активной программы
       router.push('/active-program');
@@ -779,8 +762,12 @@ export default function Workout() {
                   <span className="font-medium">Подход {index + 1}</span>
                   <span className="text-gray-600">
                     {exercises[currentExerciseIndex].exercise.type === 'reps' 
-                      ? `${set.reps || 0} повт. × ${set.weight || 0} кг`
-                      : `${set.duration || 0} сек`
+                      ? ((set.reps || 0) > 0 || (set.weight || 0) > 0) 
+                        ? `${(set.reps || 0) > 0 ? `${set.reps} повт.` : ''} ${(set.weight || 0) > 0 ? `${(set.reps || 0) > 0 ? '× ' : ''}${set.weight} кг` : ''}`
+                        : 'Не выполнен'
+                      : (set.duration || 0) > 0 
+                        ? `${set.duration} сек`
+                        : 'Не выполнен'
                     }
                   </span>
                 </div>
@@ -808,6 +795,8 @@ export default function Workout() {
                           {(set.weight || 0) > 0 && <span className="text-sm">{set.weight} кг</span>}
                           {(set.reps || 0) > 0 && <span className="text-sm">{set.reps} повт.</span>}
                           {(set.duration || 0) > 0 && <span className="text-sm">{set.duration} сек</span>}
+                          {!set.weight && (!set.reps || set.reps === 0) && (!set.duration || set.duration === 0) && 
+                            <span className="text-sm text-gray-500">Выполнено</span>}
                         </div>
                       </div>
                     ))}

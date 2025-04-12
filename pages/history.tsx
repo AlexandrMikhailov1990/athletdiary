@@ -147,16 +147,19 @@ export default function WorkoutHistory() {
                 <div className="space-y-4">
                   {record.exercises?.map((exercise, index) => (
                     <div key={index} className="bg-gray-50 p-4 rounded-lg">
-                      <h5 className="font-medium text-gray-800 mb-3">{exercise?.exercise?.name || 'Без названия'}</h5>
+                      <h5 className="font-medium text-gray-800 mb-3">
+                        {exercise?.name || exercise?.exercise?.name || 'Без названия'}
+                      </h5>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                         {exercise?.sets?.map((set, setIndex) => (
                           <div key={setIndex} className="bg-white p-3 rounded border border-gray-200">
                             <div className="text-sm text-gray-600">Подход {setIndex + 1}:</div>
                             <div className="font-medium">
-                              {set?.weight && `${set.weight} кг`}
-                              {set?.weight && set?.reps && ' × '}
-                              {set?.reps && `${set.reps} повт`}
-                              {exercise?.exercise?.type === 'timed' && exercise?.exercise?.duration && `${exercise.exercise.duration} сек`}
+                              {set?.weight && set.weight > 0 && `${set.weight} кг`}
+                              {set?.weight && set.weight > 0 && set?.reps && set.reps > 0 && ' × '}
+                              {set?.reps && set.reps > 0 && `${set.reps} повторений`}
+                              {set?.duration && set.duration > 0 && `${set.duration} сек`}
+                              {!set?.weight && (!set?.reps || set.reps === 0) && (!set?.duration || set.duration === 0) && 'Выполнено'}
                             </div>
                           </div>
                         ))}
