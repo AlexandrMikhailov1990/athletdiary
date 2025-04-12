@@ -86,17 +86,16 @@ export default function Workout() {
       const updatedProgram = {
         ...activeProgram,
         completedWorkouts: [
-          ...activeProgram.completedWorkouts,
+          ...(activeProgram.completedWorkouts || []),
           {
-            week: activeProgram.currentWeek,
-            day: activeProgram.currentDay,
+            id: Date.now().toString(),
             date: new Date().toISOString(),
             exercises: exercises.map(ex => ({
-              exerciseId: ex.exercise.id,
+              id: ex.exercise.id,
               name: ex.exercise.name,
               sets: ex.setDetails.map(set => ({
-                reps: set.reps,
                 weight: set.weight,
+                reps: set.reps,
                 duration: set.duration,
                 completed: set.completed
               }))
@@ -106,7 +105,7 @@ export default function Workout() {
         currentDay: activeProgram.currentDay + 1
       };
 
-      if (updatedProgram.currentDay > program.workoutsPerWeek) {
+      if (updatedProgram.currentDay > (program.workouts.length || 1)) {
         updatedProgram.currentWeek += 1;
         updatedProgram.currentDay = 1;
       }

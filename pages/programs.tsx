@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { SAMPLE_PROGRAMS, Program } from '../models/Program';
+import Link from 'next/link';
+import { Program, getPrograms, SAMPLE_PROGRAMS } from '../models/Program';
 import { SAMPLE_ACTIVE_PROGRAM, ActiveProgram } from '../models/ActiveProgram';
 import { Exercise, translateMuscleGroup } from '../models/Exercise';
 
@@ -8,63 +9,57 @@ export default function Programs() {
   const router = useRouter();
   const [programs, setPrograms] = useState<Program[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedLevel, setSelectedLevel] = useState<string>('');
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Функция для загрузки программ из localStorage
+  // Загрузка программ
   const loadPrograms = () => {
-    // Получаем пользовательские программы
-    const savedPrograms = JSON.parse(localStorage.getItem('programs') || '[]');
-    console.log('Загруженные пользовательские программы:', savedPrograms);
-    
-    // Получаем ID удаленных стандартных программ
-    const deletedSampleProgramIds = JSON.parse(localStorage.getItem('deletedSamplePrograms') || '[]');
-    console.log('ID удаленных стандартных программ:', deletedSampleProgramIds);
-    
-    // Фильтруем стандартные программы, исключая удаленные
-    const filteredSamplePrograms = SAMPLE_PROGRAMS.filter(
-      program => !deletedSampleProgramIds.includes(program.id)
-    );
-    console.log('Отфильтрованные стандартные программы:', filteredSamplePrograms);
-    
-    // Объединяем отфильтрованные стандартные программы с пользовательскими
-    const allPrograms = [...filteredSamplePrograms, ...savedPrograms];
-    console.log('Все программы для отображения:', allPrograms);
-    
-    setPrograms(allPrograms);
-    setIsLoaded(true);
+    try {
+      // Получаем программы из localStorage
+      const savedPrograms = getPrograms();
+      
+      // Получаем ID удаленных стандартных программ
+      const deletedSampleProgramIds = JSON.parse(localStorage.getItem('deletedSamplePrograms') || '[]');
+      
+      // Фильтруем стандартные программы, исключая удаленные
+      const filteredSamplePrograms = SAMPLE_PROGRAMS.filter(
+        program => !deletedSampleProgramIds.includes(program.id)
+      );
+      
+      // Объединяем пользовательские и доступные стандартные программы
+      setPrograms([...filteredSamplePrograms, ...savedPrograms]);
+      setIsLoaded(true);
+    } catch (error) {
+      console.error('Ошибка при загрузке программ:', error);
+      setIsLoaded(true);
+    }
   };
 
   // Загрузка программ при монтировании компонента
   useEffect(() => {
     loadPrograms();
-  }, []);
 
-  // Обновление списка программ при фокусе на окне
-  useEffect(() => {
+    // Обновление при фокусе на окне (если пользователь вернулся с другой вкладки)
     const handleFocus = () => {
-      console.log('Окно получило фокус, обновляем список программ');
       loadPrograms();
     };
 
     window.addEventListener('focus', handleFocus);
-    
+
     return () => {
       window.removeEventListener('focus', handleFocus);
     };
   }, []);
 
-  // Обновление списка программ при возвращении на страницу
+  // Добавляем обработчик изменения маршрута для обновления программ
   useEffect(() => {
     const handleRouteChange = (url: string) => {
       if (url === '/programs' && isLoaded) {
-        console.log('Вернулись на страницу программ, обновляем список');
         loadPrograms();
       }
     };
 
     router.events.on('routeChangeComplete', handleRouteChange);
-    
+
     return () => {
       router.events.off('routeChangeComplete', handleRouteChange);
     };
@@ -75,9 +70,7 @@ export default function Programs() {
     const matchesSearch = program.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          program.description.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesLevel = selectedLevel === '' || program.level === selectedLevel;
-    
-    return matchesSearch && matchesLevel;
+    return matchesSearch;
   });
 
   // Функция для запуска программы
@@ -224,37 +217,18 @@ export default function Programs() {
         
         {/* Фильтры */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="flex flex-col">
-              <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
-                Поиск программ
-              </label>
-              <input
-                type="text"
-                id="search"
-                className="w-full h-11 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
-                placeholder="Название или описание..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            
-            <div className="flex flex-col">
-              <label htmlFor="level" className="block text-sm font-medium text-gray-700 mb-2">
-                Уровень подготовки
-              </label>
-              <select
-                id="level"
-                className="w-full h-11 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 bg-white"
-                value={selectedLevel}
-                onChange={(e) => setSelectedLevel(e.target.value)}
-              >
-                <option value="">Все уровни</option>
-                <option value="beginner">Новичок</option>
-                <option value="intermediate">Средний</option>
-                <option value="advanced">Продвинутый</option>
-              </select>
-            </div>
+          <div className="flex flex-col">
+            <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
+              Поиск программ
+            </label>
+            <input
+              type="text"
+              id="search"
+              className="w-full h-11 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+              placeholder="Название или описание..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
         </div>
         
