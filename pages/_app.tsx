@@ -1,13 +1,10 @@
-import type { AppProps } from 'next/app';
 import '../styles/globals.css';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
+import type { AppProps } from 'next/app';
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import { migratePrograms } from '../models/Program';
 import { initializeExercises } from '../models/Exercise';
-import { initializePrograms } from '../models/Program';
+import { initializePrograms, migratePrograms } from '../models/Program';
 import { addHomeExercisesToUserExercises } from '../models/HomeExercises';
 import { addExtendedHomeExercises } from '../models/HomeExercisesExtended';
 import { addYogaBackExercises } from '../models/YogaExercises';
@@ -26,6 +23,9 @@ function MyApp({ Component, pageProps }: AppProps) {
       }
     }
     
+    // Убираем инициализацию звука отсюда - звук должен инициализироваться только при необходимости
+    // soundManager.initialize();
+
     // Мигрируем старые данные программ
     migratePrograms();
 
@@ -45,13 +45,12 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
       <Head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>AthletDiary</title>
+        <meta name="description" content="Трекер тренировок и фитнеса" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+        <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Navbar />
-      <main className="min-h-screen">
-        <Component {...pageProps} />
-      </main>
-      <Footer />
+      <Component {...pageProps} />
     </>
   );
 }

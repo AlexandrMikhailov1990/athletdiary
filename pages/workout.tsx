@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import type { ActiveProgram } from '../models/ActiveProgram';
 import { SAMPLE_PROGRAMS, Program } from '../models/Program';
 import { Exercise, NORMALIZED_SAMPLE_EXERCISES } from '../models/Exercise';
+import soundManager from '../utils/SoundManager';
 
 interface WorkoutSet {
   reps?: number;
@@ -47,6 +48,37 @@ export default function Workout() {
     duration?: number;
     date: string;
   }>>([]);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isCountdown, setIsCountdown] = useState(false);
+  const [timerCompleted, setTimerCompleted] = useState(false);
+  const [finalSoundPlayed, setFinalSoundPlayed] = useState<boolean>(false);
+
+  // Инициализируем звук только при первом клике пользователя
+  useEffect(() => {
+    // Проверяем текущее состояние звука для обновления UI
+    setIsMuted(soundManager.isSoundMuted());
+    
+    // Звуковой менеджер сам инициализируется в конструкторе, 
+    // а обработчики событий добавляются автоматически
+    console.log('[Workout] Звуковой менеджер уже инициализирован');
+    
+    // Слушаем только первое взаимодействие пользователя для активации звука
+    const handleUserInteraction = () => {
+      console.log('[Workout] User interaction detected');
+      // Звуковой менеджер автоматически подготовит аудио при взаимодействии
+    };
+    
+    // Добавляем обработчики один раз
+    window.addEventListener('click', handleUserInteraction, { once: true });
+    window.addEventListener('touchstart', handleUserInteraction, { once: true });
+    window.addEventListener('keydown', handleUserInteraction, { once: true });
+    
+    return () => {
+      window.removeEventListener('click', handleUserInteraction);
+      window.removeEventListener('touchstart', handleUserInteraction);
+      window.removeEventListener('keydown', handleUserInteraction);
+    };
+  }, []);
 
   const completeWorkout = useCallback(() => {
     if (activeProgram && program) {
@@ -98,7 +130,10 @@ export default function Workout() {
             weight: set.weight || 0,  // Убедимся, что значения не undefined
             completed: set.completed || false
           }))
-        }))
+        })),
+        notes: '',
+        rating: 0,
+        userId: 'user'
       };
       
       // Сохраняем запись в формате WorkoutRecord (для совместимости со старым кодом)
@@ -223,6 +258,11 @@ export default function Workout() {
     const duration = exercise.duration || 60;
     setTimeLeft(duration);
     setIsTimerRunning(true);
+    setIsCountdown(false);
+    setTimerCompleted(false); // Сбрасываем флаг завершения при запуске таймера
+    
+    // Сбрасываем флаг финального звука при старте таймера
+    setFinalSoundPlayed(false);
     
     // Запускаем новый таймер
     const startTime = Date.now();
@@ -230,18 +270,49 @@ export default function Workout() {
       const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
       const remaining = duration - elapsedTime;
       
+      // Устанавливаем режим обратного отсчета за 5 секунд до конца
+      if (remaining === 5 && !isCountdown) {
+        // Активируем режим обратного отсчета и сразу же воспроизводим звук
+        setIsCountdown(true);
+        
+        // Воспроизводим звук за 5 секунд до конца в режиме ЗАВЕРШЕНИЯ
+        // Используем сигнал завершения для полного проигрывания без прерывания
+        if (!finalSoundPlayed) {
+          soundManager.playTimerBeep(true);
+          setFinalSoundPlayed(true);
+        }
+      }
+      
       if (remaining <= 0) {
-        clearInterval(timer);
-        setIsTimerRunning(false);
-        setTimeLeft(0);
-        handleSetComplete(duration); // Передаем полное время, так как упражнение выполнено полностью
+        // Предотвращаем повторное срабатывание таймера
+        if (!timerCompleted) {
+          // Очищаем таймер перед воспроизведением финального звука
+          clearInterval(timer);
+          setTimerId(null);
+          
+          // Устанавливаем флаг завершения
+          setTimerCompleted(true);
+          
+          // Установим таймер в 0 для визуального отображения
+          setTimeLeft(0);
+          
+          // НЕ воспроизводим повторный звук, т.к. уже играет звук от обратного отсчета
+          // который был запущен в режиме завершения с playTimerBeep(true)
+          
+          // Обновляем UI с задержкой
+          setTimeout(() => {
+            setIsTimerRunning(false);
+            setIsCountdown(false);
+            handleSetComplete(duration);
+          }, 1500); // Достаточная задержка для звука
+        }
       } else {
         setTimeLeft(remaining);
       }
     }, 1000);
     
     setTimerId(timer);
-  }, [currentExerciseIndex, exercises, handleSetComplete, timerId]);
+  }, [currentExerciseIndex, exercises, handleSetComplete, timerId, isCountdown, timerCompleted, finalSoundPlayed]);
 
   // Функция для остановки таймера упражнения
   const stopExerciseTimer = useCallback(() => {
@@ -250,6 +321,7 @@ export default function Workout() {
       setTimerId(null);
     }
     setIsTimerRunning(false);
+    setTimerCompleted(true); // Устанавливаем флаг завершения при ручной остановке
     // При остановке таймера передаем оставшееся время
     handleSetComplete(timeLeft);
   }, [timerId, timeLeft, handleSetComplete]);
@@ -435,14 +507,54 @@ export default function Workout() {
   useEffect(() => {
     if (isResting && restTimer !== null && restTimer > 0) {
       const timer = setTimeout(() => {
-        setRestTimer(restTimer - 1);
+        // Активируем обратный отсчет только точно за 5 секунд до конца
+        if (restTimer === 5) {
+          setIsCountdown(true);
+          // Воспроизводим предупреждающий звук один раз в режиме завершения
+          // чтобы гарантировать полное воспроизведение
+          if (!finalSoundPlayed) {
+            soundManager.playTimerBeep(true);
+            setFinalSoundPlayed(true);
+          }
+        }
+        
+        // Проверяем, является ли это последней секундой таймера
+        if (restTimer === 1) {
+          // Обрабатываем последнюю секунду, переход к нулю
+          setTimeout(() => {
+            // НЕ воспроизводим повторный звук завершения, т.к. он уже играет
+            // от обратного отсчета с playTimerBeep(true)
+            
+            // Обновляем состояние с задержкой
+            setTimeout(() => {
+              setIsResting(false);
+              setRestTimer(null);
+              setIsCountdown(false);
+              setFinalSoundPlayed(false); // Сбрасываем флаг для следующего упражнения
+            }, 1500); // Достаточная задержка для звука
+          }, 1000);
+        }
+        
+        // Уменьшаем счетчик отдыха
+        if (restTimer > 0) {
+          setRestTimer(restTimer - 1);
+        }
       }, 1000);
+      
       return () => clearTimeout(timer);
-    } else if (restTimer === 0) {
-      setIsResting(false);
-      setRestTimer(null);
     }
-  }, [isResting, restTimer]);
+  }, [isResting, restTimer, finalSoundPlayed]);
+
+  // Функция для переключения звука
+  const toggleSound = () => {
+    if (soundManager.isSoundMuted()) {
+      soundManager.unmuteSound();
+      setIsMuted(false);
+    } else {
+      soundManager.muteSound();
+      setIsMuted(true);
+    }
+  };
 
   if (!activeProgram || !program) {
     return (
@@ -502,7 +614,25 @@ export default function Workout() {
         </div>
       ) : (
         <>
-          <h1 className="text-2xl font-bold mb-6">Тренировка</h1>
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold">Тренировка</h1>
+            <button 
+              onClick={toggleSound}
+              className="p-2 rounded-full hover:bg-gray-100"
+              aria-label={isMuted ? "Включить звук" : "Выключить звук"}
+            >
+              {isMuted ? (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                </svg>
+              )}
+            </button>
+          </div>
           
           {/* Информация о текущем упражнении */}
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -527,7 +657,22 @@ export default function Workout() {
             {/* Контролы для упражнения */}
             {isResting ? (
               <div className="text-center">
-                <p className="text-xl mb-4">Отдых: {restTimer} сек</p>
+                <p className={`text-xl mb-4 ${isCountdown ? 'text-red-500 font-bold animate-pulse' : ''}`}>
+                  Отдых: {restTimer} сек
+                </p>
+                
+                {/* Таймлайн для визуализации времени отдыха */}
+                {restTimer !== null && (
+                  <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden mb-4">
+                    <div 
+                      className={`absolute top-0 left-0 h-full ${isCountdown ? 'bg-red-500' : 'bg-blue-500'} transition-all duration-1000 ease-linear`}
+                      style={{ 
+                        width: `${(restTimer / (currentWorkoutExercise.rest || 60)) * 100}%`,
+                      }}
+                    ></div>
+                  </div>
+                )}
+                
                 <button
                   onClick={skipRest}
                   className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600"
@@ -564,7 +709,22 @@ export default function Workout() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <p className="text-xl">Время: {timeLeft} сек</p>
+                    <p className={`text-xl ${isCountdown ? 'text-red-500 font-bold animate-pulse' : ''}`}>
+                      Время: {timeLeft} сек
+                    </p>
+                    
+                    {/* Таймлайн для визуализации оставшегося времени */}
+                    {isTimerRunning && currentExercise.duration && (
+                      <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div 
+                          className={`absolute top-0 left-0 h-full ${isCountdown ? 'bg-red-500' : 'bg-green-500'} transition-all duration-1000 ease-linear`}
+                          style={{ 
+                            width: `${(timeLeft / currentExercise.duration) * 100}%`,
+                          }}
+                        ></div>
+                      </div>
+                    )}
+                    
                     <button
                       onClick={isTimerRunning ? stopExerciseTimer : startExerciseTimer}
                       disabled={false}
