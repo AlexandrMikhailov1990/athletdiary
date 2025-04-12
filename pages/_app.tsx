@@ -9,6 +9,8 @@ import { addHomeExercisesToUserExercises } from '../models/HomeExercises';
 import { addExtendedHomeExercises } from '../models/HomeExercisesExtended';
 import { addYogaBackExercises } from '../models/YogaExercises';
 import { addYogaBackProgram } from '../models/YogaProgram';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 
 function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
@@ -50,7 +52,13 @@ function MyApp({ Component, pageProps }: AppProps) {
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Component {...pageProps} />
+      <div className="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900">
+        <Header />
+        <main className="flex-grow">
+          <Component {...pageProps} />
+        </main>
+        <Footer />
+      </div>
     </>
   );
 }
