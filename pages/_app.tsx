@@ -6,6 +6,12 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { migratePrograms } from '../models/Program';
+import { initializeExercises } from '../models/Exercise';
+import { initializePrograms } from '../models/Program';
+import { addHomeExercisesToUserExercises } from '../models/HomeExercises';
+import { addExtendedHomeExercises } from '../models/HomeExercisesExtended';
+import { addYogaBackExercises } from '../models/YogaExercises';
+import { addYogaBackProgram } from '../models/YogaProgram';
 
 function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
@@ -22,6 +28,18 @@ function MyApp({ Component, pageProps }: AppProps) {
     
     // Мигрируем старые данные программ
     migratePrograms();
+
+    // Инициализация базовых упражнений и программ
+    initializeExercises();
+    initializePrograms();
+    
+    // Добавление домашних упражнений
+    addHomeExercisesToUserExercises();
+    addExtendedHomeExercises();
+    
+    // Добавление упражнений и программы йоги
+    addYogaBackExercises();
+    addYogaBackProgram();
   }, [router]);
 
   return (
