@@ -42,9 +42,6 @@ export interface Program {
   id: string;
   name: string;
   description: string;
-  level: 'beginner' | 'intermediate' | 'advanced';
-  durationWeeks: number;
-  workoutsPerWeek: number;
   workouts: Workout[];
   exercises?: WorkoutExercise[];
   isPublic?: boolean;
@@ -137,20 +134,26 @@ export function migratePrograms(): void {
     let needsUpdate = false;
     
     const updatedPrograms = programs.map((program: any) => {
-      // Проверяем, есть ли у программы свойство duration, но нет durationWeeks
+      // Создаем новый объект без удаленных полей
+      const { 
+        level, 
+        durationWeeks, 
+        workoutsPerWeek, 
+        ...updatedProgram 
+      } = program;
+      
+      // Если было свойство duration, но нет durationWeeks, обрабатываем это отдельно
       if (program.duration !== undefined && program.durationWeeks === undefined) {
         needsUpdate = true;
-        return {
-          ...program,
-          durationWeeks: program.duration
-        };
       }
-      return program;
+      
+      needsUpdate = true; // Всегда помечаем, что есть обновления
+      return updatedProgram;
     });
     
     if (needsUpdate) {
       localStorage.setItem('programs', JSON.stringify(updatedPrograms));
-      console.log('Программы обновлены: duration → durationWeeks');
+      console.log('Программы обновлены: удалены неиспользуемые поля');
     }
   } catch (error) {
     console.error('Ошибка при миграции программ:', error);

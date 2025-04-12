@@ -12,9 +12,6 @@ interface ProgramExerciseEdit extends WorkoutExercise {
 interface CreateProgramForm {
   name: string;
   description: string;
-  level: 'beginner' | 'intermediate' | 'advanced';
-  durationWeeks: number;
-  workoutsPerWeek: number;
   exercises: ProgramExerciseEdit[];
   restBetweenExercises: number;
 }
@@ -35,9 +32,6 @@ const CreateProgram: React.FC = () => {
   const [form, setForm] = useState<CreateProgramForm>({
     name: '',
     description: '',
-    level: 'beginner',
-    durationWeeks: 4,
-    workoutsPerWeek: 3,
     exercises: [],
     restBetweenExercises: 120,
   });
@@ -101,7 +95,7 @@ const CreateProgram: React.FC = () => {
     const { name, value } = e.target;
     setForm(prev => ({
       ...prev,
-      [name]: name === 'durationWeeks' || name === 'workoutsPerWeek' ? parseInt(value) : value
+      [name]: name === 'restBetweenExercises' ? parseInt(value) : value
     }));
   };
   
@@ -204,96 +198,75 @@ const CreateProgram: React.FC = () => {
     }));
   };
   
-  // Отправка формы
-  const handleSubmit = (e: React.FormEvent) => {
+  // Обработчик отправки формы
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
-    if (!form.name || !form.description || form.exercises.length === 0) {
-      alert('Пожалуйста, заполните все обязательные поля и добавьте хотя бы одно упражнение');
+    if (form.exercises.length === 0) {
+      alert('Добавьте хотя бы одно упражнение в программу');
       return;
     }
     
+    // Подготовка данных программы
+    const programId = uuidv4();
+    const now = new Date();
+    
+    const workoutExercises = form.exercises.map(ex => ({
+      id: ex.id,
+      exerciseId: ex.exerciseId,
+      exercise: ex.exerciseData,
+      sets: ex.sets,
+      reps: ex.reps,
+      weight: ex.weight,
+      duration: ex.duration,
+      rest: ex.rest,
+    }));
+    
+    // Создание и сохранение программы
+    const newProgram: Program = {
+      id: programId,
+      name: form.name,
+      description: form.description,
+      workouts: [
+        {
+          id: uuidv4(),
+          programId: programId,
+          exercises: workoutExercises,
+          name: `${form.name} - Тренировка`
+        }
+      ],
+      restBetweenExercises: form.restBetweenExercises,
+      isPublic: false,
+      createdBy: 'user'
+    };
+    
     try {
-      // Создаем программу
-      const programId = uuidv4();
+      // Сохранение программы в localStorage
+      const savedPrograms = localStorage.getItem('programs');
+      const programs = savedPrograms ? JSON.parse(savedPrograms) : [];
+      localStorage.setItem('programs', JSON.stringify([...programs, newProgram]));
       
-      // Подготавливаем массив упражнений для workout
-      const workoutExercises = form.exercises.map(ex => ({
-        id: ex.id,
-        exerciseId: ex.exerciseId,
-        exercise: ex.exerciseData,
-        sets: ex.sets,
-        reps: ex.reps,
-        weight: ex.weight,
-        duration: ex.duration,
-        rest: ex.rest
-      }));
-      
-      const program: Program = {
-        id: programId,
-        name: form.name,
-        description: form.description,
-        level: form.level,
-        durationWeeks: form.durationWeeks,
-        workoutsPerWeek: form.workoutsPerWeek,
-        restBetweenExercises: form.restBetweenExercises,
-        workouts: [
-          {
-            id: uuidv4(),
-            programId: programId,
-            exercises: workoutExercises
-          }
-        ],
-        // Добавляем упражнения также на верхний уровень для отображения на странице программы
-        exercises: workoutExercises
-      };
-      
-      // Получаем существующие программы
-      const existingPrograms = JSON.parse(localStorage.getItem('programs') || '[]');
-      
-      // Добавляем новую программу
-      localStorage.setItem('programs', JSON.stringify([...existingPrograms, program]));
-      
-      // Устанавливаем активную программу
-      const newActiveProgram: ActiveProgram = {
-        programId: programId,
-        userId: 'user', // В реальном приложении здесь будет ID текущего пользователя
-        startDate: new Date().toISOString(),
-        currentWeek: 1,
-        currentDay: 1,
-        completedWorkouts: []
-      };
-      
-      // Сохраняем активную программу в localStorage
-      localStorage.setItem('activeProgram', JSON.stringify(newActiveProgram));
-      
-      // Сохраняем полную информацию о программе
-      const activePrograms = JSON.parse(localStorage.getItem('activePrograms') || '[]');
-      activePrograms.push({
-        ...newActiveProgram,
-        program: program // Сохраняем полную информацию о программе
-      });
-      localStorage.setItem('activePrograms', JSON.stringify(activePrograms));
-      
-      // Перенаправляем на страницу активной программы
-      router.push('/active-program');
+      alert('Программа успешно создана!');
+      router.push('/programs');
     } catch (error) {
       console.error('Ошибка при сохранении программы:', error);
-      alert('Произошла ошибка при сохранении программы');
+      alert('Произошла ошибка при сохранении программы. Пожалуйста, попробуйте снова.');
     }
   };
   
   return (
-    <Layout title="Создание тренировочной программы">
+    <Layout title="Создание тренировочной программы" bgColor="bg-white">
       <div className="container mx-auto px-4 py-6">
-        <h1 className="text-2xl font-bold mb-6">Создание новой программы тренировок</h1>
+        <div className="bg-blue-600 text-white rounded-lg shadow-md mb-6 p-4">
+          <h1 className="text-2xl font-bold">Создание новой программы тренировок</h1>
+        </div>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Основная информация */}
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold mb-4">Основная информация</h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-4">
               <div>
                 <label className="block mb-1">Название программы *</label>
                 <input
@@ -307,46 +280,6 @@ const CreateProgram: React.FC = () => {
               </div>
               
               <div>
-                <label className="block mb-1">Уровень сложности</label>
-                <select
-                  name="level"
-                  value={form.level}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border rounded focus:ring focus:ring-blue-300"
-                >
-                  <option value="beginner">Начинающий</option>
-                  <option value="intermediate">Средний</option>
-                  <option value="advanced">Продвинутый</option>
-                </select>
-              </div>
-              
-              <div>
-                <label className="block mb-1">Продолжительность (недель)</label>
-                <input
-                  type="number"
-                  name="durationWeeks"
-                  value={form.durationWeeks}
-                  onChange={handleInputChange}
-                  min="1"
-                  max="52"
-                  className="w-full p-2 border rounded focus:ring focus:ring-blue-300"
-                />
-              </div>
-              
-              <div>
-                <label className="block mb-1">Тренировок в неделю</label>
-                <input
-                  type="number"
-                  name="workoutsPerWeek"
-                  value={form.workoutsPerWeek}
-                  onChange={handleInputChange}
-                  min="1"
-                  max="7"
-                  className="w-full p-2 border rounded focus:ring focus:ring-blue-300"
-                />
-              </div>
-              
-              <div className="md:col-span-2">
                 <label className="block mb-1">Описание программы *</label>
                 <textarea
                   name="description"
@@ -632,17 +565,17 @@ const CreateProgram: React.FC = () => {
           </div>
           
           {/* Кнопки формы */}
-          <div className="flex justify-between">
+          <div className="flex justify-between py-4 sticky bottom-0 bg-white shadow-md rounded-lg p-4 border-t">
             <button
               type="button"
               onClick={() => router.back()}
-              className="px-6 py-2 border rounded text-gray-700 hover:bg-gray-100"
+              className="px-6 py-3 bg-gray-200 border-2 border-gray-300 rounded-lg text-gray-700 hover:bg-gray-300 font-medium shadow-md"
             >
               Отмена
             </button>
             <button
               type="submit"
-              className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium shadow-md"
             >
               Создать программу
             </button>

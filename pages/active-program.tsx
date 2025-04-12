@@ -155,7 +155,7 @@ export default function ActiveProgram() {
 
             {/* Прогресс-бар */}
             <div className="relative pt-1">
-              <div className="flex mb-2 items-center justify-between">
+              <div className="flex justify-between items-center">
                 <div>
                   <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-200">
                     Прогресс
@@ -163,7 +163,7 @@ export default function ActiveProgram() {
                 </div>
                 <div className="text-right">
                   <span className="text-xs font-semibold inline-block text-blue-600">
-                    {Math.round(((activeProgram.completedWorkouts?.length || 0) / ((program.durationWeeks || 0) * (program.workoutsPerWeek || 0))) * 100)}%
+                    {Math.round(((activeProgram.completedWorkouts?.length || 0) / (program.workouts.length || 1)) * 100)}%
                   </span>
                 </div>
               </div>
@@ -171,14 +171,14 @@ export default function ActiveProgram() {
                 <div 
                   className="bg-green-600 h-2.5 rounded-full" 
                   style={{ 
-                    width: `${((activeProgram.completedWorkouts?.length || 0) / ((program.durationWeeks || 0) * (program.workoutsPerWeek || 0))) * 100}%`
+                    width: `${((activeProgram.completedWorkouts?.length || 0) / (program.workouts.length || 1)) * 100}%`
                   }}
                 ></div>
               </div>
               
               <div className="text-xs text-gray-500">
-                Прогресс: {activeProgram.completedWorkouts?.length || 0} из {(program.durationWeeks || 0) * (program.workoutsPerWeek || 0)} тренировок &bull; 
-                {Math.round(((activeProgram.completedWorkouts?.length || 0) / ((program.durationWeeks || 0) * (program.workoutsPerWeek || 0))) * 100)}%
+                Прогресс: {activeProgram.completedWorkouts?.length || 0} из {program.workouts.length || 0} тренировок &bull; 
+                {Math.round(((activeProgram.completedWorkouts?.length || 0) / (program.workouts.length || 1)) * 100)}%
               </div>
             </div>
           </div>

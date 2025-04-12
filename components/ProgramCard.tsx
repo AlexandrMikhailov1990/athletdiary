@@ -1,67 +1,40 @@
+import React from 'react';
+import Link from 'next/link';
 import { Program } from '../models/Program';
 
 interface ProgramCardProps {
   program: Program;
-  onSelect?: () => void;
-  onStart?: () => void;
 }
 
-export default function ProgramCard({ program, onSelect, onStart }: ProgramCardProps) {
-  // Функция для отображения уровня сложности на русском языке
-  const getLevelLabel = (level: string): string => {
-    switch (level) {
-      case 'beginner':
-        return 'Новичок';
-      case 'intermediate':
-        return 'Средний';
-      case 'advanced':
-        return 'Продвинутый';
-      default:
-        return level;
-    }
-  };
+const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
+  // Получаем количество упражнений во всех тренировках
+  const exerciseCount = program.workouts.reduce((acc, workout) => {
+    return acc + (workout.exercises?.length || 0);
+  }, 0);
+  
+  // Получаем количество дней тренировок
+  const daysCount = program.workouts.length;
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-      <div className="p-6">
-        <h3 className="text-xl font-semibold text-blue-800 mb-3">{program.name}</h3>
-        
-        <div className="mb-4 flex flex-wrap">
-          <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded mr-2 mb-2">
-            {getLevelLabel(program.level)}
-          </span>
+    <Link href={`/programs/${program.id}`}>
+      <div className="border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow bg-white">
+        <div className="p-4">
+          <h2 className="text-xl font-semibold mb-2 text-blue-800">{program.name}</h2>
+          <p className="text-gray-600 mb-4 line-clamp-2">{program.description}</p>
           
-          <span className="inline-block px-2 py-1 bg-purple-100 text-purple-800 text-xs font-semibold rounded mr-2 mb-2">
-            {program.durationWeeks} недель
-          </span>
-          
-          <span className="inline-block px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded mb-2">
-            {program.workoutsPerWeek} трен./неделю
-          </span>
-        </div>
-        
-        <p className="text-gray-600 mb-6 line-clamp-2">{program.description}</p>
-        
-        <div className="flex space-x-3">
-          {onSelect && (
-            <button 
-              onClick={onSelect}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
-            >
-              Подробнее
-            </button>
-          )}
-          
-          {onStart && (
-            <button 
-              onClick={onStart}
-              className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded"
-            >
-              Начать
-            </button>
-          )}
+          <div className="flex flex-wrap gap-2 text-sm">
+            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+              {exerciseCount} упражнений
+            </span>
+            
+            <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full">
+              {daysCount} {daysCount === 1 ? 'день' : daysCount < 5 ? 'дня' : 'дней'}
+            </span>
+          </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
-} 
+};
+
+export default ProgramCard; 

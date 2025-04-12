@@ -1,4 +1,5 @@
 import { Exercise } from './Exercise';
+import { Program } from './Program';
 import { v4 as uuidv4 } from 'uuid';
 import { WorkoutExercise } from './Program';
 
@@ -354,4 +355,24 @@ export function addResistanceBandProgramToUserPrograms(): void {
   } catch (error) {
     console.error('Ошибка при добавлении программы тренировок с резиновыми лентами:', error);
   }
-} 
+}
+
+// Базовая программа домашних тренировок
+export const HOME_PROGRAM_BASIC: Program = {
+  id: uuidv4(),
+  name: 'Базовые домашние упражнения',
+  description: 'Простая программа тренировок, которую можно выполнять дома без оборудования. Подходит для начинающих.',
+  createdBy: 'system',
+  isPublic: true,
+  restBetweenExercises: 60,
+  workouts: [
+    {
+      id: uuidv4(),
+      programId: uuidv4(),
+      name: 'Базовая домашняя тренировка',
+      exercises: [
+        // ... existing exercises ...
+      ]
+    }
+  ]
+}; 

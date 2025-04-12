@@ -4,9 +4,10 @@ import Head from 'next/head';
 interface LayoutProps {
   children: ReactNode;
   title?: string;
+  bgColor?: string;
 }
 
-export default function Layout({ children, title = 'AthletDiary' }: LayoutProps) {
+export default function Layout({ children, title = 'AthletDiary', bgColor = 'bg-gray-100' }: LayoutProps) {
   return (
     <>
       <Head>
@@ -15,9 +16,9 @@ export default function Layout({ children, title = 'AthletDiary' }: LayoutProps)
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       
-      <main className="min-h-screen">
+      <div className={`flex flex-col ${bgColor}`}>
         {children}
-      </main>
+      </div>
     </>
   );
 } 

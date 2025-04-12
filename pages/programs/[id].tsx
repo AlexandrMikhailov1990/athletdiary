@@ -224,20 +224,6 @@ export default function ProgramDetails() {
             </button>
           </div>
           <p className="text-gray-600 mb-4">{program.description}</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <span className="text-gray-600">Сложность:</span>
-              <span className="ml-2 font-medium">{program.level}</span>
-            </div>
-            <div>
-              <span className="text-gray-600">Длительность:</span>
-              <span className="ml-2 font-medium">{program.durationWeeks} недель</span>
-            </div>
-            <div>
-              <span className="text-gray-600">Тренировок в неделю:</span>
-              <span className="ml-2 font-medium">{program.workoutsPerWeek}</span>
-            </div>
-          </div>
         </div>
 
         {/* Список упражнений */}
