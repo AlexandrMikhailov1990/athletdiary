@@ -1,174 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { NextPage } from 'next';
 import Head from 'next/head';
-import { v4 as uuidv4 } from 'uuid';
-import { Program } from '../models/Program';
-import { Exercise } from '../models/Exercise';
-import soundManager from '../utils/SoundManager';
+import { useRouter } from 'next/router';
+import { addKettlebellProgramToUserPrograms } from '../models/KettlebellProgram';
 import styles from '../styles/KettlebellProgram.module.css';
 
 const AddKettlebellProgram: NextPage = () => {
   const [isCreated, setIsCreated] = useState(false);
-  
-  useEffect(() => {
-    return () => {
-      soundManager.stopAll();
-    };
-  }, []);
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
-  const createKettlebellProgram = () => {
-    // Создаем упражнения для гиревой программы
-    const kettlebellExercises: Exercise[] = [
-      {
-        id: uuidv4(),
-        name: 'Махи гирей',
-        description: 'Поставьте ноги на ширине плеч, возьмите гирю обеими руками и выполняйте махи между ног и вперед до уровня плеч',
-        muscleGroups: ['Спина', 'Ягодицы', 'Плечи'],
-        sets: 3,
-        reps: 15,
-        weight: 16,
-        restTime: 60,
-        difficulty: 'beginner',
-        video: '',
-        image: '',
-        imageUrl: '',
-        equipment: ['kettlebell']
-      },
-      {
-        id: uuidv4(),
-        name: 'Рывок гири',
-        description: 'Рывковым движением поднимите гирю над головой, меняя руки после каждого подхода',
-        muscleGroups: ['Плечи', 'Спина', 'Трицепс'],
-        sets: 3,
-        reps: 10,
-        weight: 16,
-        restTime: 60,
-        difficulty: 'beginner',
-        video: '',
-        image: '',
-        imageUrl: '',
-        equipment: ['kettlebell']
-      },
-      {
-        id: uuidv4(),
-        name: 'Толчок гири',
-        description: 'Поднимите гирю до уровня груди, затем толкните вверх над головой',
-        muscleGroups: ['Плечи', 'Грудь', 'Трицепс'],
-        sets: 3,
-        reps: 10,
-        weight: 16,
-        restTime: 60,
-        difficulty: 'beginner',
-        video: '',
-        image: '',
-        imageUrl: '',
-        equipment: ['kettlebell']
-      },
-      {
-        id: uuidv4(),
-        name: 'Приседания с гирей',
-        description: 'Держите гирю у груди и выполняйте глубокие приседания',
-        muscleGroups: ['Квадрицепсы', 'Ягодицы', 'Пресс'],
-        sets: 3,
-        reps: 12,
-        weight: 16,
-        restTime: 60,
-        difficulty: 'beginner',
-        video: '',
-        image: '',
-        imageUrl: '',
-        equipment: ['kettlebell']
-      },
-      {
-        id: uuidv4(),
-        name: 'Тяга гири в наклоне',
-        description: 'Наклонитесь вперед, держа спину прямой, и тяните гирю к животу',
-        muscleGroups: ['Спина', 'Бицепс'],
-        sets: 3,
-        reps: 12,
-        weight: 16,
-        restTime: 60,
-        difficulty: 'beginner',
-        video: '',
-        image: '',
-        imageUrl: '',
-        equipment: ['kettlebell']
-      },
-      {
-        id: uuidv4(),
-        name: 'Жим гири',
-        description: 'Поднимите гирю до уровня плеча и выжимайте вверх',
-        muscleGroups: ['Плечи', 'Трицепс'],
-        sets: 3,
-        reps: 10,
-        weight: 16,
-        restTime: 60,
-        difficulty: 'beginner',
-        video: '',
-        image: '',
-        imageUrl: '',
-        equipment: ['kettlebell']
-      }
-    ];
-
-    // Создаем тренировки
-    const workouts = [
-      {
-        id: uuidv4(),
-        name: 'Тренировка гирями: День 1',
-        description: 'Фокус на силу и взрывную мощность',
-        exercises: [
-          { ...kettlebellExercises[0], restTime: 60 },
-          { ...kettlebellExercises[1], restTime: 60 },
-          { ...kettlebellExercises[3], restTime: 60 }
-        ]
-      },
-      {
-        id: uuidv4(),
-        name: 'Тренировка гирями: День 2',
-        description: 'Фокус на выносливость и баланс',
-        exercises: [
-          { ...kettlebellExercises[2], restTime: 60 },
-          { ...kettlebellExercises[4], restTime: 60 },
-          { ...kettlebellExercises[5], restTime: 60 }
-        ]
-      },
-      {
-        id: uuidv4(),
-        name: 'Тренировка гирями: День 3',
-        description: 'Полная тренировка всего тела',
-        exercises: [
-          { ...kettlebellExercises[0], restTime: 60 },
-          { ...kettlebellExercises[2], restTime: 60 },
-          { ...kettlebellExercises[3], restTime: 60 },
-          { ...kettlebellExercises[5], restTime: 60 }
-        ]
-      }
-    ];
-
-    // Создаем программу
-    const kettlebellProgram: Program = {
-      id: uuidv4(),
-      name: 'Гиревой тренинг',
-      description: 'Программа тренировок с гирями для развития силы, выносливости и функциональности',
-      imageUrl: '/images/kettlebell-program.jpg',
-      workouts: workouts,
-      createdAt: new Date().toISOString(),
-      isPublic: true
-    };
-
-    // Сохраняем в локальное хранилище
+  const handleAddProgram = () => {
+    setIsLoading(true);
+    
     try {
-      const existingPrograms = JSON.parse(localStorage.getItem('programs') || '[]');
-      const updatedPrograms = [...existingPrograms, kettlebellProgram];
-      localStorage.setItem('programs', JSON.stringify(updatedPrograms));
+      // Используем готовую функцию из KettlebellProgram модуля
+      addKettlebellProgramToUserPrograms();
       setIsCreated(true);
-      
-      // Воспроизводим звук успешного создания
-      soundManager.playSuccess();
     } catch (error) {
       console.error('Ошибка при сохранении программы:', error);
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const goToPrograms = () => {
+    router.push('/programs');
   };
 
   return (
@@ -182,7 +39,7 @@ const AddKettlebellProgram: NextPage = () => {
         <div className={styles.content}>
           <p className={styles.description}>
             Гиревые тренировки — это эффективный способ развития силы, выносливости и функциональности.
-            Данная программа включает 3 тренировочных дня с различными упражнениями с гирями.
+            Данная программа включает тренировку с гирей и подтягиваниями для ежедневных занятий.
           </p>
           <div className={styles.features}>
             <div className={styles.feature}>
@@ -196,12 +53,12 @@ const AddKettlebellProgram: NextPage = () => {
               </ul>
             </div>
             <div className={styles.feature}>
-              <h3>В программу входит:</h3>
+              <h3>Упражнения в программе:</h3>
               <ul>
-                <li>3 тренировочных дня с разным фокусом</li>
-                <li>6 базовых упражнений с гирями</li>
-                <li>Подробные описания техники выполнения</li>
-                <li>Рекомендации по весу и повторениям</li>
+                <li>Подтягивания прямым хватом - 3 подхода по 5 повторений</li>
+                <li>Круговые движения гирей - 2 подхода по 30 секунд</li>
+                <li>Махи гирей (свинг) - 3 подхода по 10 повторений</li>
+                <li>Приседания с гирей - 3 подхода по 10 повторений</li>
               </ul>
             </div>
           </div>
@@ -209,14 +66,22 @@ const AddKettlebellProgram: NextPage = () => {
           {!isCreated ? (
             <button 
               className={styles.addButton}
-              onClick={createKettlebellProgram}
+              onClick={handleAddProgram}
+              disabled={isLoading}
             >
-              Добавить программу
+              {isLoading ? 'Добавление...' : 'Добавить программу'}
             </button>
           ) : (
             <div className={styles.successMessage}>
               <p>Программа успешно добавлена!</p>
               <p>Вы можете найти ее в разделе "Программы".</p>
+              <button 
+                className={styles.addButton}
+                onClick={goToPrograms}
+                style={{ marginTop: '1rem', backgroundColor: '#38a169' }}
+              >
+                Перейти к программам
+              </button>
             </div>
           )}
         </div>
