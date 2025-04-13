@@ -26,7 +26,7 @@ export const YOGA_BACK_PROGRAM: Program = {
   description: 'Комплекс упражнений йоги, направленный на укрепление и расслабление мышц спины, улучшение осанки и снятие напряжения.',
   createdBy: 'system',
   isPublic: true,
-  restBetweenExercises: 20,
+  restBetweenExercises: 40,
   workouts: [
     {
       id: uuidv4(),

@@ -6,7 +6,7 @@ import { pullupExercises } from '../data/pullup-exercises';
 
 // Функция для получения упражнения с гирей по имени
 function getKettlebellExerciseByName(name: string): Exercise | undefined {
-  return kettlebellExercises.find(ex => ex.name === name);
+  return kettlebellExercises.find(ex => ex.name === name) || createDefaultKettlebellExercise(name);
 }
 
 // Функция для получения упражнения с подтягиваниями по имени
@@ -44,11 +44,30 @@ function createCircularKettlebellExercise(): Exercise {
     equipment: ['kettlebell'],
     difficulty: 'beginner',
     type: 'timed',
+    sets: 2,
     duration: 30,
     restTime: 10,
     isPublic: true,
   };
   return circularKettlebellExercise;
+}
+
+// Функция для создания стандартного упражнения с гирей если не найдено в списке
+function createDefaultKettlebellExercise(name: string): Exercise {
+  return {
+    id: uuidv4(),
+    name: name,
+    description: `Упражнение с гирей: ${name}`,
+    imageUrl: '/images/exercises/kettlebell-default.jpg',
+    muscleGroups: ['full_body'],
+    equipment: ['kettlebell'],
+    difficulty: 'intermediate',
+    type: 'reps',
+    sets: 3, // устанавливаем 3 подхода по умолчанию для всех упражнений с гирей
+    reps: 10,
+    restTime: 60,
+    isPublic: true,
+  };
 }
 
 // Программа тренировок с гирей на каждый день
@@ -68,26 +87,26 @@ export const KETTLEBELL_DAILY_PROGRAM: Program = {
       exercises: [
         createWorkoutExercise(
           getPullupExerciseByName('Подтягивания прямым хватом') || pullupExercises[0],
-          3,
-          60,
+          3, // 3 подхода - это значение перезаписывает sets в самом упражнении
+          60, // Отдых 60 сек
           { reps: 5 }
         ),
         createWorkoutExercise(
           createCircularKettlebellExercise(),
-          2,
-          10,
+          2, // 2 подхода - это значение перезаписывает sets в самом упражнении
+          10, // Отдых 10 сек
           { duration: 30 }
         ),
         createWorkoutExercise(
           getKettlebellExerciseByName('Махи гирей (свинг)') || kettlebellExercises[0],
-          3,
-          60,
+          3, // 3 подхода - это значение перезаписывает sets в самом упражнении
+          60, // Отдых 60 сек
           { reps: 10 }
         ),
         createWorkoutExercise(
           getKettlebellExerciseByName('Приседания с гирей') || kettlebellExercises[3],
-          3,
-          60,
+          3, // 3 подхода - это значение перезаписывает sets в самом упражнении
+          60, // Отдых 60 сек
           { reps: 10 }
         ),
       ]

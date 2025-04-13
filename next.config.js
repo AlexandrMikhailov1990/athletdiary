@@ -3,7 +3,7 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   // Добавляем настройки для экспорта статических файлов
-  output: 'export',
+  // output: 'export', // Закомментировал, так как это мешает работе API Routes
   // Отключаем изображения Next.js, так как они не работают с экспортом
   images: {
     unoptimized: true,
