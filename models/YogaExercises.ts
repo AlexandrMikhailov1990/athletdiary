@@ -158,6 +158,111 @@ export const YOGA_BACK_EXERCISES: Exercise[] = [
     description: 'Сядьте на пятки, наклонитесь вперед, вытянув руки перед собой, расслабляя спину и плечи.',
     equipment: ['bodyweight'],
     recommendations: ['Полностью расслабьте спину', 'Дышите глубоко и равномерно', 'Можно покачиваться влево-вправо для большего расслабления']
+  },
+  // Добавляем недостающие упражнения
+  {
+    id: uuidv4(),
+    name: 'Поза кошки-коровы',
+    type: 'timed',
+    sets: 1,
+    duration: 45,
+    restTime: 40,
+    difficulty: 'beginner',
+    muscleGroups: ['lower_back', 'upper_back'],
+    description: 'На четвереньках чередуйте прогиб спины вниз (поза коровы) и выгибание спины вверх (поза кошки), синхронизируя движения с дыханием.',
+    equipment: ['bodyweight'],
+    recommendations: ['Вдыхайте при прогибе вниз', 'Выдыхайте при выгибании вверх', 'Движения должны быть плавными']
+  },
+  {
+    id: uuidv4(),
+    name: 'Поза собаки мордой вниз',
+    type: 'timed',
+    sets: 1,
+    duration: 45,
+    restTime: 40,
+    difficulty: 'beginner',
+    muscleGroups: ['back', 'shoulders', 'hamstrings'],
+    description: 'Из положения на четвереньках поднимите таз вверх, выпрямляя руки и ноги, формируя перевернутую букву V. Тянитесь пятками к полу.',
+    equipment: ['bodyweight'],
+    recommendations: ['Равномерно распределите вес', 'Не блокируйте локти', 'Дышите равномерно']
+  },
+  {
+    id: uuidv4(),
+    name: 'Поза кобры',
+    type: 'timed',
+    sets: 1,
+    duration: 45,
+    restTime: 40,
+    difficulty: 'beginner',
+    muscleGroups: ['lower_back', 'core'],
+    description: 'Лежа на животе, поднимите верхнюю часть тела, опираясь на руки, раскрывая грудную клетку и растягивая переднюю часть тела.',
+    equipment: ['bodyweight'],
+    recommendations: ['Не перенапрягайте поясницу', 'Плечи опустите от ушей', 'Взгляд направлен вперед, не запрокидывайте голову']
+  },
+  {
+    id: uuidv4(),
+    name: 'Поза голубя',
+    type: 'timed',
+    sets: 1,
+    duration: 45,
+    restTime: 40,
+    difficulty: 'intermediate',
+    muscleGroups: ['hips', 'lower_back', 'glutes'],
+    description: 'Из положения на четвереньках выведите одну ногу вперед, сгибая колено и располагая голень параллельно передней части коврика. Вторую ногу вытяните назад.',
+    equipment: ['bodyweight'],
+    recommendations: ['При дискомфорте подложите подушку под бедро', 'Держите таз ровно', 'Дышите глубоко, расслабляясь в позе']
+  },
+  {
+    id: uuidv4(),
+    name: 'Скручивание лежа',
+    type: 'timed',
+    sets: 1,
+    duration: 45,
+    restTime: 40,
+    difficulty: 'beginner',
+    muscleGroups: ['spine', 'core', 'lower_back'],
+    description: 'Лежа на спине, согните колени. Опустите их вместе в одну сторону, поворачивая корпус и растягивая позвоночник в скручивании.',
+    equipment: ['bodyweight'],
+    recommendations: ['Держите оба плеча на полу', 'Дышите глубоко в скручивании', 'Выполняйте на обе стороны для баланса']
+  },
+  {
+    id: uuidv4(),
+    name: 'Поза бабочки',
+    type: 'timed',
+    sets: 1,
+    duration: 45,
+    restTime: 40,
+    difficulty: 'beginner',
+    muscleGroups: ['hips', 'inner_thighs', 'groin'],
+    description: 'Сидя, соедините подошвы стоп вместе, колени разведите в стороны. Наклоняйтесь вперед от бедер для более глубокой растяжки.',
+    equipment: ['bodyweight'],
+    recommendations: ['Не надавливайте на колени', 'Держите спину прямой', 'Дышите равномерно']
+  },
+  {
+    id: uuidv4(),
+    name: 'Поза моста',
+    type: 'timed',
+    sets: 1,
+    duration: 45,
+    restTime: 40,
+    difficulty: 'beginner',
+    muscleGroups: ['glutes', 'lower_back', 'hamstrings'],
+    description: 'Лежа на спине, согните колени, поставьте стопы на пол. Поднимите таз вверх, создавая прямую линию от плеч до колен.',
+    equipment: ['bodyweight'],
+    recommendations: ['Активно напрягайте ягодицы', 'Держите колени параллельно', 'Дышите равномерно']
+  },
+  {
+    id: uuidv4(),
+    name: 'Поза трупа',
+    type: 'timed',
+    sets: 1,
+    duration: 45,
+    restTime: 40,
+    difficulty: 'beginner',
+    muscleGroups: ['full_body'],
+    description: 'Лежа на спине, полностью расслабьте все тело. Руки слегка в стороны ладонями вверх, ноги расслаблены и слегка разведены.',
+    equipment: ['bodyweight'],
+    recommendations: ['Полностью расслабьтесь', 'Сконцентрируйтесь на дыхании', 'Отпустите все мысли и напряжение']
   }
 ];
 

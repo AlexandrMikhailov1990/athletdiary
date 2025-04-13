@@ -6,46 +6,44 @@ import { YOGA_BACK_EXERCISES } from './YogaExercises';
 function createWorkoutExercise(exerciseName: string): WorkoutExercise {
   const exercise = YOGA_BACK_EXERCISES.find(e => e.name === exerciseName);
   if (!exercise) {
-    throw new Error(`Упражнение ${exerciseName} не найдено`);
+    throw new Error(`Exercise not found: ${exerciseName}`);
   }
   
   return {
     id: uuidv4(),
     exerciseId: exercise.id,
     exercise: exercise,
-    sets: exercise.sets || 1,
-    duration: exercise.duration || 45,
-    rest: 20
+    sets: 1,
+    duration: 30,
+    rest: 0,
+    completed: false,
+    completedSets: []
   };
 }
 
 // Программа йоги для спины
 export const YOGA_BACK_PROGRAM: Program = {
   id: uuidv4(),
-  name: 'Йога для спины',
-  description: 'Комплекс упражнений йоги, направленный на укрепление и расслабление мышц спины, улучшение осанки и снятие напряжения.',
-  createdBy: 'system',
+  name: "Йога для спины",
+  description: "Программа йоги, разработанная для укрепления и расслабления мышц спины, улучшения осанки и снятия напряжения. Включает позы для растяжки позвоночника, укрепления корпуса и снятия боли в спине.",
   isPublic: true,
-  restBetweenExercises: 40,
+  createdBy: "admin",
+  restBetweenExercises: 140,
   workouts: [
     {
       id: uuidv4(),
-      programId: uuidv4(),
-      name: 'Комплекс упражнений для спины',
+      programId: '',
+      name: "Йога для спины",
       exercises: [
-        createWorkoutExercise('Вращения в локтях назад'),
-        createWorkoutExercise('Перекрестные касания'),
-        createWorkoutExercise('Треугольник верх-низ'),
-        createWorkoutExercise('Замок - зарядка'),
-        createWorkoutExercise('Кошка - корова'),
-        createWorkoutExercise('Выталкивания в кобру'),
-        createWorkoutExercise('Выталкивания в кобру'),
-        createWorkoutExercise('Притягивания'),
-        createWorkoutExercise('Пульсация «крылья»'),
-        createWorkoutExercise('Касания «полкруг»'),
-        createWorkoutExercise('Тяга к груди'),
-        createWorkoutExercise('Собака мордой вниз'),
-        createWorkoutExercise('Поза ребенка')
+        createWorkoutExercise("Поза ребенка"),
+        createWorkoutExercise("Поза кошки-коровы"),
+        createWorkoutExercise("Поза собаки мордой вниз"),
+        createWorkoutExercise("Поза кобры"),
+        createWorkoutExercise("Поза голубя"),
+        createWorkoutExercise("Скручивание лежа"),
+        createWorkoutExercise("Поза бабочки"),
+        createWorkoutExercise("Поза моста"),
+        createWorkoutExercise("Поза трупа"),
       ]
     }
   ]
