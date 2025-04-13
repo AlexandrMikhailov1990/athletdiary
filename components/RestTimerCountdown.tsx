@@ -6,19 +6,22 @@ interface RestTimerCountdownProps {
 }
 
 const RestTimerCountdown: React.FC<RestTimerCountdownProps> = ({ seconds, isCountdownActive }) => {
+  const normalizedSeconds = Math.max(0, Math.min(5, seconds)); // Ограничиваем от 0 до 5 для корректного отображения
+  const countdownActive = isCountdownActive && seconds <= 5;
+  
   return (
     <div className={`
       flex flex-col items-center justify-center 
-      ${isCountdownActive ? 'animate-pulse' : ''}
+      ${countdownActive ? 'animate-pulse' : ''}
     `}>
-      <div className="relative w-36 h-36 bg-gray-800 rounded-full flex items-center justify-center mb-4">
-        <div className="absolute w-32 h-32 bg-gray-700 rounded-full"></div>
-        <div className="z-10 text-5xl font-bold text-white tracking-wider">
+      <div className="relative w-36 h-36 bg-gray-200 rounded-full flex items-center justify-center mb-4">
+        <div className="absolute w-32 h-32 bg-white rounded-full"></div>
+        <div className="z-10 text-5xl font-bold text-gray-800 tracking-wider">
           {seconds}
         </div>
         <svg className="absolute inset-0" width="144" height="144" viewBox="0 0 144 144">
           <circle 
-            className="text-gray-700" 
+            className="text-gray-200" 
             strokeWidth="8" 
             stroke="currentColor" 
             fill="transparent" 
@@ -27,10 +30,10 @@ const RestTimerCountdown: React.FC<RestTimerCountdownProps> = ({ seconds, isCoun
             cy="72" 
           />
           <circle 
-            className="text-red-500 transition-all duration-300 ease-linear" 
+            className="text-blue-500 transition-all duration-300 ease-linear" 
             strokeWidth="8" 
             strokeDasharray={Math.PI * 2 * 64}
-            strokeDashoffset={Math.PI * 2 * 64 * (1 - seconds / 5)} 
+            strokeDashoffset={Math.PI * 2 * 64 * (1 - normalizedSeconds / 5)} 
             strokeLinecap="round" 
             stroke="currentColor" 
             fill="transparent" 
@@ -41,7 +44,7 @@ const RestTimerCountdown: React.FC<RestTimerCountdownProps> = ({ seconds, isCoun
           />
         </svg>
       </div>
-      <p className={`text-xl font-semibold ${seconds <= 2 ? 'text-red-500' : 'text-white'}`}>
+      <p className={`text-xl font-semibold ${seconds <= 2 ? 'text-blue-600' : 'text-gray-700'}`}>
         {seconds <= 2 ? 'Почти готово!' : 'Отдых...'}
       </p>
     </div>

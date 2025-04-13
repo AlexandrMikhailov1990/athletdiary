@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { YOGA_BACK_PROGRAM, addYogaBackProgram } from '../models/YogaProgram';
 import { ActiveProgram } from '../models/ActiveProgram';
 import { Program } from '../models/Program';
+import { updateKettlebellProgram } from '../utils/kettlebellProgramUtils';
 import styles from '../styles/UpdatePrograms.module.css';
 
 export default function UpdatePrograms() {
@@ -13,19 +14,36 @@ export default function UpdatePrograms() {
 
   const updateAllPrograms = async () => {
     try {
-      // Update Yoga Back Program (increase rest time)
+      // 1. Обновляем Yoga Back Program (увеличиваем время отдыха)
       YOGA_BACK_PROGRAM.restBetweenExercises = 140;
       addYogaBackProgram();
       setMessages(prev => [...prev, "Йога для спины: увеличено время отдыха до 140 секунд"]);
 
-      // Update active program if it's the yoga back program
+      // 2. Обновляем программу с гирей через утилиту (без API)
+      const kettlebellResult = await updateKettlebellProgram();
+      if (kettlebellResult.success) {
+        setMessages(prev => [...prev, "Гиревая программа обновлена успешно"]);
+      } else {
+        throw new Error("Не удалось обновить гиревую программу");
+      }
+
+      // 3. Обновляем активную программу, если необходимо
       const activeProgram = localStorage.getItem('activeProgram');
       if (activeProgram) {
         const parsedActiveProgram = JSON.parse(activeProgram);
+        
+        // Проверяем для программы йоги
         if (parsedActiveProgram.programId === YOGA_BACK_PROGRAM.id) {
           parsedActiveProgram.program = YOGA_BACK_PROGRAM;
           localStorage.setItem('activeProgram', JSON.stringify(parsedActiveProgram));
-          setMessages(prev => [...prev, "Обновлена активная программа"]);
+          setMessages(prev => [...prev, "Обновлена активная программа йоги"]);
+        }
+        
+        // Проверяем для гиревой программы
+        if (kettlebellResult.program && parsedActiveProgram.programId === kettlebellResult.program.id) {
+          parsedActiveProgram.program = kettlebellResult.program;
+          localStorage.setItem('activeProgram', JSON.stringify(parsedActiveProgram));
+          setMessages(prev => [...prev, "Обновлена активная гиревая программа"]);
         }
       }
 

@@ -2,8 +2,9 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  // Включаем статический экспорт
-  output: 'export',
+  // Отключаем статический экспорт во время разработки
+  // Раскомментируйте строку 'output: "export"' при сборке для production
+  // output: 'export',
   // Отключаем проверку ESLint при сборке
   eslint: {
     ignoreDuringBuilds: true,
