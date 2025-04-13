@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import ContinueWorkoutButton from './ContinueWorkoutButton';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -74,6 +75,9 @@ export default function Navbar() {
             }`}>
               История
             </Link>
+
+            {/* Кнопка продолжения тренировки */}
+            <ContinueWorkoutButton className="py-1 px-2 text-sm" iconOnly={true} />
 
             {isLoggedIn ? (
               <div className="relative">
@@ -194,6 +198,11 @@ export default function Navbar() {
                 }`} onClick={closeMenu}>
                   История
                 </Link>
+                
+                {/* Кнопка продолжения тренировки в мобильном меню */}
+                <div className="p-2">
+                  <ContinueWorkoutButton fullWidth={true} />
+                </div>
                 
                 {isLoggedIn ? (
                   <>

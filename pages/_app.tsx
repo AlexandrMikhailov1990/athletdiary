@@ -10,7 +10,7 @@ import { addExtendedHomeExercises } from '../models/HomeExercisesExtended';
 import { addYogaBackExercises } from '../models/YogaExercises';
 import { addYogaBackProgram } from '../models/YogaProgram';
 import { addKettlebellProgramToUserPrograms } from '../models/KettlebellProgram';
-import Header from '../components/Header';
+import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
 function MyApp({ Component, pageProps }: AppProps) {
@@ -57,7 +57,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div className="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900">
-        <Header />
+        <Navbar />
         <main className="flex-grow">
           <Component {...pageProps} />
         </main>
