@@ -358,10 +358,12 @@ export default function ProgramDetails() {
                             <div key={`${exercise.exercise.id}-${setIndex}`} className="flex items-center gap-2">
                               <span className="text-gray-500">Подход {setIndex + 1}:</span>
                               <span className="font-medium">
-                                {set.weight && `${set.weight} кг`}
-                                {set.weight && set.reps && ' × '}
-                                {set.reps && `${set.reps} повт`}
+                                {set.weight && Number(set.weight) > 0 && `${set.weight} кг`}
+                                {set.weight && Number(set.weight) > 0 && set.reps && Number(set.reps) > 0 && ' × '}
+                                {set.reps && Number(set.reps) > 0 && `${set.reps} повт`}
                                 {exercise.exercise.type === 'timed' && `${exercise.exercise.duration} сек`}
+                                {(!set.weight || Number(set.weight) <= 0) && (!set.reps || Number(set.reps) <= 0) && 
+                                 (!exercise.exercise.type || exercise.exercise.type !== 'timed') && 'Выполнено'}
                               </span>
                             </div>
                           ))}

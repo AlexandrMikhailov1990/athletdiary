@@ -148,7 +148,7 @@ export default function WorkoutHistory() {
                   {record.exercises?.map((exercise, index) => (
                     <div key={index} className="bg-gray-50 p-4 rounded-lg">
                       <h5 className="font-medium text-gray-800 mb-3">
-                        {exercise?.name || exercise?.exercise?.name || 'Без названия'}
+                        {(exercise?.name || exercise?.exercise?.name) || 'Без названия'}
                       </h5>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                         {exercise?.sets?.map((set, setIndex) => (
@@ -159,7 +159,10 @@ export default function WorkoutHistory() {
                               {set?.weight && set.weight > 0 && set?.reps && set.reps > 0 && ' × '}
                               {set?.reps && set.reps > 0 && `${set.reps} повторений`}
                               {set?.duration && set.duration > 0 && `${set.duration} сек`}
-                              {!set?.weight && (!set?.reps || set.reps === 0) && (!set?.duration || set.duration === 0) && 'Выполнено'}
+                              {(!set?.weight || set.weight === 0 || isNaN(Number(set.weight))) && 
+                               (!set?.reps || set.reps === 0 || isNaN(Number(set.reps))) && 
+                               (!set?.duration || set.duration === 0 || isNaN(Number(set.duration))) && 
+                               'Выполнено'}
                             </div>
                           </div>
                         ))}

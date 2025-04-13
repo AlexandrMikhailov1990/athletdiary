@@ -312,28 +312,50 @@ export default function Programs() {
                   )}
                 </div>
                 
-                <div className="flex gap-2 sm:gap-3 mt-auto pt-4">
+                <div className="flex gap-1 sm:gap-2 mt-auto pt-4">
                   <button 
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-3 sm:px-4 rounded-lg transition-colors duration-200 text-sm sm:text-base text-center"
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-2 sm:px-3 rounded-lg transition-colors duration-200 text-xs sm:text-sm text-center"
                     onClick={() => viewProgramDetails(program.id)}
                   >
                     Подробнее
                   </button>
                   
                   <button 
-                    className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 px-3 sm:px-4 rounded-lg transition-colors duration-200 text-sm sm:text-base text-center"
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-2 sm:px-3 rounded-lg transition-colors duration-200 text-xs sm:text-sm text-center"
                     onClick={() => startProgram(program)}
                   >
                     Начать
                   </button>
 
-                  {/* Добавляем кнопку удаления для всех программ */}
+                  {/* Кнопка редактирования программы */}
                   <button 
-                    className="bg-red-600 hover:bg-red-700 text-white py-3 px-3 sm:px-4 rounded-lg transition-colors duration-200 flex items-center justify-center"
-                    onClick={() => deleteProgram(program.id)}
+                    className="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-2 sm:px-3 rounded-lg transition-colors duration-200 flex items-center justify-center"
+                    onClick={() => router.push(`/programs/edit/${program.id}`)}
+                    title="Редактировать"
                   >
                     <svg 
-                      className="w-4 h-4 sm:w-5 sm:h-5" 
+                      className="w-4 h-4" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        strokeWidth={2} 
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" 
+                      />
+                    </svg>
+                  </button>
+                  
+                  {/* Кнопка удаления программы */}
+                  <button 
+                    className="bg-red-600 hover:bg-red-700 text-white py-2 px-2 sm:px-3 rounded-lg transition-colors duration-200 flex items-center justify-center"
+                    onClick={() => deleteProgram(program.id)}
+                    title="Удалить"
+                  >
+                    <svg 
+                      className="w-4 h-4" 
                       fill="none" 
                       stroke="currentColor" 
                       viewBox="0 0 24 24"

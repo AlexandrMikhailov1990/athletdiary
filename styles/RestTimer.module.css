@@ -1,0 +1,50 @@
+/* Rest Timer animation styles */
+.countdownContainer {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.countdownNumber {
+  font-size: 10rem;
+  color: #fff;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+}
+
+.countdownActive {
+  animation: pulse 1s infinite;
+}
+
+.countdownFinal {
+  color: #ff3b30;
+  font-size: 12rem;
+  animation: enlargePulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes enlargePulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+    text-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+  }
+  100% {
+    transform: scale(1);
+  }
+} 

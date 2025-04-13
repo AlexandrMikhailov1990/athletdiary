@@ -4,6 +4,7 @@ import type { ActiveProgram } from '../models/ActiveProgram';
 import { SAMPLE_PROGRAMS, Program } from '../models/Program';
 import { Exercise, NORMALIZED_SAMPLE_EXERCISES } from '../models/Exercise';
 import soundManager from '../utils/SoundManager';
+import RestTimerCountdown from '../components/RestTimerCountdown';
 
 interface WorkoutSet {
   reps?: number;
@@ -131,9 +132,9 @@ export default function Workout() {
           exercise: ex.exercise,
           name: ex.exercise.name,
           sets: ex.setDetails.map(set => ({
-            weight: set.weight || 0,
-            reps: set.reps || 0,
-            duration: set.duration || 0,
+            weight: set.weight && Number(set.weight) > 0 ? Number(set.weight) : null,
+            reps: set.reps && Number(set.reps) > 0 ? Number(set.reps) : null,
+            duration: set.duration && Number(set.duration) > 0 ? Number(set.duration) : null,
             completed: set.completed || false
           }))
         })),
@@ -651,34 +652,28 @@ export default function Workout() {
             </div>
 
             {/* Контролы для упражнения */}
-            {isResting ? (
-              <div className="text-center">
-                <p className={`text-xl mb-4 ${isCountdown ? 'text-red-500 font-bold animate-pulse' : ''}`}>
-                  Отдых: {restTimer} сек
-                </p>
-                
-                {/* Таймлайн для визуализации времени отдыха */}
-                {restTimer !== null && (
-                  <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden mb-4">
-                    <div 
-                      className={`absolute top-0 left-0 h-full ${isCountdown ? 'bg-red-500' : 'bg-blue-500'} transition-all duration-1000 ease-linear`}
-                      style={{ 
-                        width: `${(restTimer / (currentWorkoutExercise.completedSets < (currentWorkoutExercise.exercise.sets || 1) ?
-                          currentWorkoutExercise.rest || currentWorkoutExercise.exercise.restTime || 60 :
-                          program?.restBetweenExercises || 90)) * 100}%`,
-                      }}
-                    ></div>
-                  </div>
+            {isResting && restTimer !== null && restTimer > 0 && (
+              <div className="flex flex-col items-center justify-center p-4 bg-black bg-opacity-80 rounded-lg shadow-lg text-white">
+                <h3 className="text-xl mb-2">Отдых между подходами</h3>
+                {restTimer <= 5 ? (
+                  <RestTimerCountdown seconds={restTimer} isCountdownActive={true} />
+                ) : (
+                  <p className="text-2xl font-bold">{restTimer} сек</p>
                 )}
-                
-                <button
-                  onClick={skipRest}
-                  className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600"
-                >
-                  Пропустить отдых
-                </button>
               </div>
-            ) : (
+            )}
+            
+            <button
+              onClick={() => {
+                setRestTimer(null);
+                setIsResting(false);
+              }}
+              className="mt-2 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors duration-200"
+            >
+              Пропустить отдых
+            </button>
+
+            {!isResting && (
               <div>
                 {currentExercise.type === 'reps' ? (
                   <div className="space-y-4">
@@ -792,11 +787,13 @@ export default function Workout() {
                       <div key={setIndex} className="flex justify-between items-center py-1 border-b border-gray-100">
                         <span className="text-sm">Подход {setIndex + 1}:</span>
                         <div className="flex gap-4">
-                          {(set.weight || 0) > 0 && <span className="text-sm">{set.weight} кг</span>}
-                          {(set.reps || 0) > 0 && <span className="text-sm">{set.reps} повт.</span>}
-                          {(set.duration || 0) > 0 && <span className="text-sm">{set.duration} сек</span>}
-                          {!set.weight && (!set.reps || set.reps === 0) && (!set.duration || set.duration === 0) && 
-                            <span className="text-sm text-gray-500">Выполнено</span>}
+                          {set.weight && set.weight > 0 && <span className="text-sm">{set.weight} кг</span>}
+                          {set.reps && set.reps > 0 && <span className="text-sm">{set.reps} повт.</span>}
+                          {set.duration && set.duration > 0 && <span className="text-sm">{set.duration} сек</span>}
+                          {(!set.weight || set.weight === 0) && 
+                           (!set.reps || set.reps === 0) && 
+                           (!set.duration || set.duration === 0) && 
+                           <span className="text-sm text-gray-500">Выполнено</span>}
                         </div>
                       </div>
                     ))}

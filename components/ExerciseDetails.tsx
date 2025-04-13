@@ -96,7 +96,7 @@ export default function ExerciseDetails({ exercise, onClose, onAddToWorkout, onE
                         <li className="mb-1">Длительность: <span className="font-semibold">{exercise.duration} сек</span></li>
                       )}
                       <li className="mb-1">Отдых: <span className="font-semibold">{exercise.restTime} сек</span></li>
-                      {exercise.weight && (
+                      {exercise.weight && exercise.weight > 0 && (
                         <li className="mb-1">Вес: <span className="font-semibold">{exercise.weight} кг</span></li>
                       )}
                     </ul>

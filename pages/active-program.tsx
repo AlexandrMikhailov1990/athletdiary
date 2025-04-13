@@ -119,6 +119,37 @@ export default function ActiveProgram() {
   const startDate = new Date(activeProgram.startDate);
   const daysSinceStart = Math.floor((currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
 
+  const renderProgress = () => {
+    if (!activeProgram || !program) return null;
+    
+    // Вычисляем прогресс на основе завершенных тренировок
+    const completedWorkouts = activeProgram.completedWorkouts?.length || 0;
+    const totalWorkouts = program.workouts?.length || 0;
+    
+    // Вычисляем процент прогресса (защита от деления на ноль)
+    const progressPercentage = totalWorkouts > 0 
+      ? Math.min(Math.round((completedWorkouts / totalWorkouts) * 100), 100) 
+      : 0;
+    
+    return (
+      <div className="mb-6">
+        <div className="flex justify-between mb-2">
+          <h3 className="text-lg font-medium">Прогресс программы</h3>
+          <span className="text-lg font-medium">{progressPercentage}%</span>
+        </div>
+        <div className="bg-gray-200 dark:bg-gray-700 h-4 rounded-full overflow-hidden">
+          <div 
+            className="bg-blue-600 h-full rounded-full" 
+            style={{ width: `${progressPercentage}%` }}
+          ></div>
+        </div>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">
+          Завершено {completedWorkouts} из {totalWorkouts} тренировок
+        </p>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 py-8">
       <div className="container mx-auto px-4">
@@ -153,34 +184,7 @@ export default function ActiveProgram() {
               </div>
             </div>
 
-            {/* Прогресс-бар */}
-            <div className="relative pt-1">
-              <div className="flex justify-between items-center">
-                <div>
-                  <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-200">
-                    Прогресс
-                  </span>
-                </div>
-                <div className="text-right">
-                  <span className="text-xs font-semibold inline-block text-blue-600">
-                    {Math.round(((activeProgram.completedWorkouts?.length || 0) / (program.workouts.length || 1)) * 100)}%
-                  </span>
-                </div>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
-                <div 
-                  className="bg-green-600 h-2.5 rounded-full" 
-                  style={{ 
-                    width: `${((activeProgram.completedWorkouts?.length || 0) / (program.workouts.length || 1)) * 100}%`
-                  }}
-                ></div>
-              </div>
-              
-              <div className="text-xs text-gray-500">
-                Прогресс: {activeProgram.completedWorkouts?.length || 0} из {program.workouts.length || 0} тренировок &bull; 
-                {Math.round(((activeProgram.completedWorkouts?.length || 0) / (program.workouts.length || 1)) * 100)}%
-              </div>
-            </div>
+            {renderProgress()}
           </div>
 
           {/* Текущая тренировка */}
@@ -287,13 +291,32 @@ export default function ActiveProgram() {
                                 {ex.sets?.filter(s => s.completed).length || 0} из {ex.sets?.length || 0} подходов
                                 {ex.sets && ex.sets.length > 0 ? (
                                   <div className="text-gray-600 mt-1">
-                                    {ex.sets.filter(s => s.completed && (s.reps > 0 || s.weight > 0)).map((set, setIdx) => (
+                                    {ex.sets.filter(s => s.completed).map((set, setIdx) => (
                                       <div key={setIdx} className="text-xs">
                                         Подход {setIdx + 1}: 
-                                        {set.weight > 0 ? `${set.weight} кг` : ''} 
-                                        {set.weight > 0 && set.reps > 0 ? ' × ' : ''}
-                                        {set.reps > 0 ? `${set.reps} повт.` : ''}
-                                        {(set as any).duration > 0 ? `${(set as any).duration} сек` : ''}
+                                        {set.weight && typeof set.weight === 'number' && set.weight > 0 ? `${set.weight} кг` : 
+                                         set.weight && !isNaN(Number(set.weight)) && Number(set.weight) > 0 ? `${Number(set.weight)} кг` : ''}
+                                          
+                                        {(set.weight && ((typeof set.weight === 'number' && set.weight > 0) || 
+                                           (!isNaN(Number(set.weight)) && Number(set.weight) > 0))) && 
+                                         (set.reps && ((typeof set.reps === 'number' && set.reps > 0) || 
+                                           (!isNaN(Number(set.reps)) && Number(set.reps) > 0))) ? ' × ' : ''}
+                                          
+                                        {set.reps && typeof set.reps === 'number' && set.reps > 0 ? `${set.reps} повт.` : 
+                                         set.reps && !isNaN(Number(set.reps)) && Number(set.reps) > 0 ? `${Number(set.reps)} повт.` : ''}
+                                          
+                                        {(set as any).duration && typeof (set as any).duration === 'number' && (set as any).duration > 0 ? 
+                                           `${(set as any).duration} сек` : 
+                                         (set as any).duration && !isNaN(Number((set as any).duration)) && Number((set as any).duration) > 0 ? 
+                                           `${Number((set as any).duration)} сек` : ''}
+                                        
+                                        {((!set.weight || typeof set.weight !== 'number' || set.weight <= 0) && 
+                                          (!set.reps || typeof set.reps !== 'number' || set.reps <= 0) && 
+                                          (!(set as any).duration || typeof (set as any).duration !== 'number' || (set as any).duration <= 0)) || 
+                                         ((set.weight && !isNaN(Number(set.weight)) && Number(set.weight) <= 0) && 
+                                          (set.reps && !isNaN(Number(set.reps)) && Number(set.reps) <= 0) && 
+                                          ((set as any).duration && !isNaN(Number((set as any).duration)) && Number((set as any).duration) <= 0)) ? 
+                                         'Выполнено' : ''}
                                       </div>
                                     ))}
                                   </div>

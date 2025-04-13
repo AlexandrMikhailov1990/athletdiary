@@ -9,6 +9,7 @@ import { addHomeExercisesToUserExercises } from '../models/HomeExercises';
 import { addExtendedHomeExercises } from '../models/HomeExercisesExtended';
 import { addYogaBackExercises } from '../models/YogaExercises';
 import { addYogaBackProgram } from '../models/YogaProgram';
+import { addKettlebellProgramToUserPrograms } from '../models/KettlebellProgram';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
@@ -42,6 +43,9 @@ function MyApp({ Component, pageProps }: AppProps) {
     // Добавление упражнений и программы йоги
     addYogaBackExercises();
     addYogaBackProgram();
+    
+    // Добавление программы с гирей
+    addKettlebellProgramToUserPrograms();
   }, [router]);
 
   return (

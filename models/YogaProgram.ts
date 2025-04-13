@@ -15,7 +15,7 @@ function createWorkoutExercise(exerciseName: string): WorkoutExercise {
     exercise: exercise,
     sets: exercise.sets || 1,
     duration: exercise.duration || 45,
-    rest: 40
+    rest: 100
   };
 }
 
@@ -26,7 +26,7 @@ export const YOGA_BACK_PROGRAM: Program = {
   description: 'Комплекс упражнений йоги, направленный на укрепление и расслабление мышц спины, улучшение осанки и снятие напряжения.',
   createdBy: 'system',
   isPublic: true,
-  restBetweenExercises: 40,
+  restBetweenExercises: 100,
   workouts: [
     {
       id: uuidv4(),

@@ -64,6 +64,11 @@ export default function Navbar() {
             }`}>
               Программы
             </Link>
+            <Link href="/add-kettlebell-program" className={`nav-link ${
+              router.pathname === '/add-kettlebell-program' ? 'nav-link-active' : 'nav-link-default'
+            }`}>
+              Гиревой тренинг
+            </Link>
             <Link href="/history" className={`nav-link ${
               router.pathname === '/history' ? 'nav-link-active' : 'nav-link-default'
             }`}>
@@ -178,6 +183,11 @@ export default function Navbar() {
                   router.pathname === '/programs' ? 'font-semibold text-blue-600' : 'text-gray-700'
                 }`} onClick={closeMenu}>
                   Программы
+                </Link>
+                <Link href="/add-kettlebell-program" className={`block p-2 rounded-md hover:bg-gray-100 ${
+                  router.pathname === '/add-kettlebell-program' ? 'font-semibold text-blue-600' : 'text-gray-700'
+                }`} onClick={closeMenu}>
+                  Гиревой тренинг
                 </Link>
                 <Link href="/history" className={`block p-2 rounded-md hover:bg-gray-100 ${
                   router.pathname === '/history' ? 'font-semibold text-blue-600' : 'text-gray-700'

@@ -106,7 +106,7 @@ export default function ExerciseCard({
                 <div className="flex items-center text-xs sm:text-sm text-gray-600">
                   <span className="font-medium mr-1">Повторения:</span> {exercise.reps}
                 </div>
-                {exercise.weight && (
+                {exercise.weight && exercise.weight > 0 && (
                   <div className="flex items-center text-xs sm:text-sm text-gray-600 col-span-2">
                     <span className="font-medium mr-1">Вес:</span> {exercise.weight} кг
                   </div>
