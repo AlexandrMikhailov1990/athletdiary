@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import Head from 'next/head';
+import Link from 'next/link';
 
 export default function UpdateKettlebellStatic() {
   // Используем тот же скрипт, что и в HTML-файле
@@ -188,8 +189,12 @@ export default function UpdateKettlebellStatic() {
             </button>
             
             <div className="mt-6 flex justify-center space-x-6">
-              <a href="/programs/" className="text-blue-600 hover:text-blue-800">К программам</a>
-              <a href="/" className="text-blue-600 hover:text-blue-800">На главную</a>
+              <Link href="/programs/" className="text-blue-600 hover:text-blue-800">
+                К программам
+              </Link>
+              <Link href="/" className="text-blue-600 hover:text-blue-800">
+                На главную
+              </Link>
             </div>
           </div>
         </div>
