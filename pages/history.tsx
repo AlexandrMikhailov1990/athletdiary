@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { WorkoutRecord } from '../models/WorkoutHistory';
+import ContinueWorkoutButton from '../components/ContinueWorkoutButton';
 
 export default function WorkoutHistory() {
   const [history, setHistory] = useState<WorkoutRecord[]>([]);
@@ -65,6 +66,11 @@ export default function WorkoutHistory() {
     <div className="min-h-screen bg-gray-100 py-8">
       <div className="container mx-auto px-4">
         <h1 className="text-3xl font-bold text-blue-800 mb-8 text-center">История тренировок</h1>
+        
+        {/* Кнопка продолжения тренировки */}
+        <div className="flex justify-center mb-6">
+          <ContinueWorkoutButton />
+        </div>
         
         {/* Фильтры и сортировка */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">

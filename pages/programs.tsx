@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Program, getPrograms, SAMPLE_PROGRAMS } from '../models/Program';
 import { SAMPLE_ACTIVE_PROGRAM, ActiveProgram } from '../models/ActiveProgram';
 import { Exercise, translateMuscleGroup } from '../models/Exercise';
+import ContinueWorkoutButton from '../components/ContinueWorkoutButton';
 
 export default function Programs() {
   const router = useRouter();
@@ -234,18 +235,21 @@ export default function Programs() {
         
         {/* Кнопка создания программы */}
         <div className="mb-8 flex flex-col sm:flex-row gap-3 sm:justify-between">
-          <button
-            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white h-12 px-6 rounded-lg transition-colors duration-200 font-medium text-center"
-            onClick={() => {
-              console.log('localStorage.programs:', JSON.parse(localStorage.getItem('programs') || '[]'));
-              console.log('localStorage.activePrograms:', JSON.parse(localStorage.getItem('activePrograms') || '[]'));
-              console.log('localStorage.activeProgram:', JSON.parse(localStorage.getItem('activeProgram') || 'null'));
-              console.log('localStorage.deletedSamplePrograms:', JSON.parse(localStorage.getItem('deletedSamplePrograms') || '[]'));
-              loadPrograms();
-            }}
-          >
-            Обновить список
-          </button>
+          <div className="flex gap-3">
+            <button
+              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white h-12 px-6 rounded-lg transition-colors duration-200 font-medium text-center"
+              onClick={() => {
+                console.log('localStorage.programs:', JSON.parse(localStorage.getItem('programs') || '[]'));
+                console.log('localStorage.activePrograms:', JSON.parse(localStorage.getItem('activePrograms') || '[]'));
+                console.log('localStorage.activeProgram:', JSON.parse(localStorage.getItem('activeProgram') || 'null'));
+                console.log('localStorage.deletedSamplePrograms:', JSON.parse(localStorage.getItem('deletedSamplePrograms') || '[]'));
+                loadPrograms();
+              }}
+            >
+              Обновить список
+            </button>
+            <ContinueWorkoutButton className="h-12" />
+          </div>
           <button 
             className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white h-12 px-6 rounded-lg transition-colors duration-200 font-medium text-center"
             onClick={() => router.push('/programs/create')}

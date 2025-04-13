@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
+import ContinueWorkoutButton from '../components/ContinueWorkoutButton';
 
 export default function Home() {
   const router = useRouter();
@@ -156,11 +157,14 @@ export default function Home() {
         <div className="bg-blue-700 text-white rounded-lg p-8 text-center">
           <h2 className="text-3xl font-bold mb-4">Начните тренироваться с умом уже сегодня</h2>
           <p className="text-xl mb-6 opacity-90">Присоединяйтесь к тысячам спортсменов, которые уже улучшили свои результаты</p>
-          <Link href="/register">
-            <span className="inline-block bg-white text-blue-700 hover:bg-gray-100 font-bold py-3 px-8 rounded-lg shadow-lg">
-              Создать аккаунт бесплатно
-            </span>
-          </Link>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link href="/register">
+              <span className="inline-block bg-white text-blue-700 hover:bg-gray-100 font-bold py-3 px-8 rounded-lg shadow-lg">
+                Создать аккаунт бесплатно
+              </span>
+            </Link>
+            <ContinueWorkoutButton className="py-3 px-8 font-bold" />
+          </div>
         </div>
       </div>
     </div>

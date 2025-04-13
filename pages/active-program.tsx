@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { SAMPLE_PROGRAMS, Program } from '../models/Program';
 import type { ActiveProgram } from '../models/ActiveProgram';
 import type { WorkoutHistory } from '../models/WorkoutHistory';
+import ContinueWorkoutButton from '../components/ContinueWorkoutButton';
 
 export default function ActiveProgram() {
   const router = useRouter();
@@ -238,6 +239,8 @@ export default function ActiveProgram() {
                 >
                   Начать тренировку
                 </button>
+                
+                <ContinueWorkoutButton />
                 
                 <button
                   onClick={() => router.push('/programs')}
