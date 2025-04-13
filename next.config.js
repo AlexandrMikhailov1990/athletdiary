@@ -2,9 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  // Отключаем статический экспорт во время разработки
-  // Раскомментируйте строку 'output: "export"' при сборке для production
-  // output: 'export',
+  // Включаем статический экспорт для деплоя на Netlify
+  output: 'export',
   // Отключаем проверку ESLint при сборке
   eslint: {
     ignoreDuringBuilds: true,
@@ -13,10 +12,25 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Важно для правильного обслуживания файлов при статическом экспорте
+  // Добавляем слэш в конце для всех URL (важно для статического экспорта)
   trailingSlash: true,
-  // Настроим distDir для Netlify
-  distDir: 'out'
+  // Используем стандартную директорию .next для development и out для build
+  distDir: process.env.NODE_ENV === 'production' ? 'out' : '.next',
+  // Отключаем использование API маршрутов при экспорте
+  experimental: {
+    // Явно указываем режим рендеринга для статических сайтов
+    runtime: 'nodejs',
+    // Отключаем middleware для статического экспорта
+    skipMiddlewareUrlNormalize: true,
+    // Отключаем оптимизацию изображений
+    images: { unoptimized: true }
+  },
+  // Указываем базовый путь, если сайт размещен в подкаталоге
+  // basePath: '',
+  // Указываем домен для изображений
+  // images: {
+  //   domains: ['example.com'],
+  // },
 }
 
 module.exports = nextConfig 
