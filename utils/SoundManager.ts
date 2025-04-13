@@ -12,7 +12,14 @@ class SoundManager {
   private isPlayingContinuously = false;
   private maxSimultaneousSounds = 2; // Ограничиваем количество одновременно воспроизводимых звуков
   private soundPath: string = '/sounds/timer-beep.mp3'; // Исправленный путь к звуку
+  private alternativeSoundPaths: string[] = [
+    '/timer-beep.mp3',      // Корневая директория
+    '/static/timer-beep.mp3', // Альтернативный путь
+    '/static/sounds/timer-beep.mp3' // Еще один путь
+  ];
   private isServer: boolean;
+  private isPlayingNow = false; // Флаг текущего воспроизведения
+  private lastPlayTime = 0; // Время последнего воспроизведения
 
   constructor() {
     // Проверяем, запущен ли код на сервере или в браузере
@@ -21,6 +28,7 @@ class SoundManager {
     // Инициализируем менеджер звуков только на клиенте
     if (!this.isServer) {
       this.initialize();
+      console.log('SoundManager initialized. Sound path:', this.soundPath);
     }
   }
 
@@ -123,15 +131,33 @@ class SoundManager {
     try {
       // Создаем новый элемент аудио только в браузере
       if (typeof Audio !== 'undefined') {
+        // Проверяем доступность звукового файла
+        console.log('Attempting to load sound from:', this.soundPath);
+        
         this.timerBeepSound = new Audio(this.soundPath);
+        
+        // Обработчик для проверки ошибки загрузки и попытки использовать альтернативные пути
+        this.timerBeepSound.onerror = () => {
+          console.error(`Не удалось загрузить звук по пути: ${this.soundPath}, пробую альтернативные пути`);
+          this.tryAlternativeSoundPaths();
+        };
         
         // Настраиваем аудио для лучшей совместимости
         this.timerBeepSound.preload = 'auto';
         
         // Добавляем обработчики событий
+        this.timerBeepSound.addEventListener('canplaythrough', () => {
+          console.log('Sound loaded successfully and can play through');
+        });
+        
+        this.timerBeepSound.addEventListener('error', (e) => {
+          console.error('Error loading sound:', e);
+        });
+        
         this.timerBeepSound.addEventListener('ended', () => {
           // Удаляем элемент из активных, когда звук закончился
           this.activeAudioElements = this.activeAudioElements.filter(audio => audio !== this.timerBeepSound);
+          console.log('Sound playback ended');
         });
         
         // Подготавливаем аудио
@@ -140,6 +166,39 @@ class SoundManager {
     } catch (error) {
       console.error('Failed to load timer beep sound:', error);
       this.timerBeepSound = null;
+      // Пробуем альтернативные пути
+      this.tryAlternativeSoundPaths();
+    }
+  }
+  
+  /**
+   * Пробует загрузить звук из альтернативных источников
+   */
+  private tryAlternativeSoundPaths() {
+    if (this.isServer || !this.isBrowserEnv()) return;
+    
+    for (const path of this.alternativeSoundPaths) {
+      try {
+        console.log(`Attempting to load sound from alternative path: ${path}`);
+        const audio = new Audio(path);
+        
+        // Настраиваем обработчик успешной загрузки
+        audio.oncanplaythrough = () => {
+          console.log(`Sound successfully loaded from alternative path: ${path}`);
+          this.timerBeepSound = audio;
+          this.soundPath = path; // Обновляем основной путь на рабочий
+        };
+        
+        // Обработчик ошибки для продолжения перебора
+        audio.onerror = () => {
+          console.error(`Failed to load sound from alternative path: ${path}`);
+        };
+        
+        // Пытаемся загрузить
+        audio.load();
+      } catch (error) {
+        console.error(`Error trying alternative sound path ${path}:`, error);
+      }
     }
   }
 
@@ -150,13 +209,46 @@ class SoundManager {
     // Не воспроизводим звуки на сервере
     if (this.isServer || !this.isBrowserEnv()) return;
     
+    // Проверяем, не воспроизводится ли уже звук
+    const currentTime = Date.now();
+    if (this.isPlayingNow && currentTime - this.lastPlayTime < 1000) {
+      console.log(`Skip playing timer beep. Already playing: ${this.isPlayingNow}, last play: ${currentTime - this.lastPlayTime}ms ago`);
+      return;
+    }
+    
+    // Устанавливаем флаг воспроизведения и обновляем время последнего воспроизведения
+    this.isPlayingNow = true;
+    this.lastPlayTime = currentTime;
+    
+    console.log(`Playing timer beep. isCompletion: ${isCompletion}, isMuted: ${this.isMuted}`);
+    
+    // Принудительное воспроизведение через прямой вызов Audio API
+    // Это более надежный способ для мобильных устройств
+    try {
+      // Небольшая задержка перед воспроизведением для стабильности
+      setTimeout(() => {
+        const directAudio = new Audio(this.soundPath);
+        directAudio.volume = 1.0;
+        directAudio.play().catch(e => console.error('Ошибка прямого воспроизведения:', e));
+      }, 50);
+    } catch (e) {
+      console.error('Ошибка создания прямого аудио:', e);
+    }
+    
+    // Сбрасываем флаг воспроизведения через некоторое время
+    setTimeout(() => {
+      this.isPlayingNow = false;
+    }, 1000);
+    
     // Если звук отключен, воспроизводим только вибрацию (если возможно)
     if (this.isMuted) {
       if (isCompletion && this.canVibrate && typeof navigator !== 'undefined') {
         // Более длительная вибрация при завершении
         navigator.vibrate(1000);
+        console.log('Playing vibration pattern for completion');
       } else if (this.canVibrate && typeof navigator !== 'undefined') {
         navigator.vibrate(200);
+        console.log('Playing short vibration');
       }
       return;
     }
@@ -178,8 +270,22 @@ class SoundManager {
     // Не воспроизводим звуки на сервере
     if (this.isServer || !this.isBrowserEnv()) return;
     
+    // Проверяем, не воспроизводится ли уже звук
+    const currentTime = Date.now();
+    if (this.isPlayingNow && currentTime - this.lastPlayTime < 1000) {
+      console.log('Skipping simple beep because sound was played recently');
+      return;
+    }
+    
+    // Устанавливаем флаг воспроизведения и обновляем время
+    this.isPlayingNow = true;
+    this.lastPlayTime = currentTime;
+    
+    console.log('Playing simple beep, isPlayingContinuously:', this.isPlayingContinuously);
+    
     // Проверяем, не воспроизводится ли уже непрерывный звук
     if (this.isPlayingContinuously) {
+      console.log('Skipping simple beep because continuous sound is playing');
       return; // Пропускаем обычное воспроизведение, если уже идет непрерывное
     }
 
@@ -192,36 +298,55 @@ class SoundManager {
         if (oldestAudio) {
           oldestAudio.pause();
           oldestAudio.currentTime = 0;
+          console.log('Stopped oldest audio to make room for new sound');
         }
       }
 
       try {
         // Создаем новый экземпляр звука для надежного воспроизведения
         if (typeof Audio !== 'undefined') {
+          console.log('Creating new Audio instance for simple beep');
           const newAudio = new Audio(this.soundPath);
           newAudio.volume = 1.0;
+          
+          // Добавляем обработчик ошибок
+          newAudio.onerror = (e) => {
+            console.error('Error with simple beep playback:', e);
+          };
           
           // Добавляем обработчик завершения
           newAudio.onended = () => {
             this.activeAudioElements = this.activeAudioElements.filter(audio => audio !== newAudio);
+            console.log('Simple beep playback ended');
+            this.isPlayingNow = false; // Сбрасываем флаг по завершении
           };
           
           // Добавляем звук в список активных
           this.activeAudioElements.push(newAudio);
           
           // Воспроизводим звук
-          newAudio.play().catch(err => {
-            console.error('Error playing beep:', err);
-            this.activeAudioElements = this.activeAudioElements.filter(audio => audio !== newAudio);
-          });
+          const playPromise = newAudio.play();
+          if (playPromise !== undefined) {
+            playPromise
+              .then(() => {
+                console.log('Simple beep playback started successfully');
+              })
+              .catch(err => {
+                console.error('Error playing simple beep:', err);
+                this.activeAudioElements = this.activeAudioElements.filter(audio => audio !== newAudio);
+                this.isPlayingNow = false; // Сбрасываем флаг при ошибке
+              });
+          }
           
           // Вибрация для тактильной обратной связи (если доступно)
           if (this.canVibrate && typeof navigator !== 'undefined') {
             navigator.vibrate(200);
+            console.log('Vibration triggered for simple beep');
           }
         }
       } catch (error) {
         console.error('Failed to play simple beep:', error);
+        this.isPlayingNow = false; // Сбрасываем флаг при ошибке
       }
     });
   }
@@ -233,6 +358,8 @@ class SoundManager {
     // Не воспроизводим звуки на сервере
     if (this.isServer || !this.isBrowserEnv()) return;
     
+    console.log('Starting alarm beep playback');
+    
     // Всегда останавливаем все предыдущие звуки перед новым воспроизведением
     this.stopAllSounds();
 
@@ -241,32 +368,47 @@ class SoundManager {
       try {
         // Создаем новый экземпляр звука для каждого воспроизведения
         if (typeof Audio !== 'undefined') {
+          console.log('Creating new Audio instance for alarm beep');
           const alarmAudio = new Audio(this.soundPath);
           alarmAudio.volume = 1.0; // Полная громкость для будильника
+          
+          // Добавляем обработчик ошибок
+          alarmAudio.onerror = (e) => {
+            console.error('Error with alarm beep playback:', e);
+          };
           
           // Добавляем обработчик завершения
           alarmAudio.onended = () => {
             this.activeAudioElements = this.activeAudioElements.filter(audio => audio !== alarmAudio);
+            console.log('Alarm beep playback ended');
           };
           
           // Добавляем звук в список активных
           this.activeAudioElements.push(alarmAudio);
           
           // Воспроизводим звук
-          alarmAudio.play().catch(err => {
-            console.error('Error playing alarm beep:', err);
-            this.activeAudioElements = this.activeAudioElements.filter(audio => audio !== alarmAudio);
-          });
+          const playPromise = alarmAudio.play();
+          if (playPromise !== undefined) {
+            playPromise
+              .then(() => {
+                console.log('Alarm beep playback started successfully');
+              })
+              .catch(err => {
+                console.error('Error playing alarm beep:', err);
+                this.activeAudioElements = this.activeAudioElements.filter(audio => audio !== alarmAudio);
+              });
+          }
           
           // Вибрация для тактильной обратной связи (если доступно)
           if (this.canVibrate && typeof navigator !== 'undefined') {
             navigator.vibrate(500); // Более длительная вибрация для будильника
+            console.log('Vibration triggered for alarm beep');
           }
         }
       } catch (error) {
         console.error('Failed to play alarm beep:', error);
       }
-    }, 100); // Небольшая задержка для гарантии остановки предыдущих звуков
+    }, 200); // Увеличенная задержка для гарантии остановки предыдущих звуков
   }
 
   /**
@@ -275,6 +417,17 @@ class SoundManager {
   private startAlarmMode() {
     // Не запускаем режим будильника на сервере
     if (this.isServer || !this.isBrowserEnv()) return;
+    
+    // Проверяем, не воспроизводится ли уже звук
+    const currentTime = Date.now();
+    if (this.isPlayingNow && currentTime - this.lastPlayTime < 1000) {
+      console.log('Skipping alarm mode because sound was played recently');
+      return;
+    }
+    
+    // Устанавливаем флаг воспроизведения и обновляем время
+    this.isPlayingNow = true;
+    this.lastPlayTime = currentTime;
     
     // Если режим уже запущен, ничего не делаем
     if (this.isPlayingContinuously) {
@@ -291,6 +444,7 @@ class SoundManager {
     // полное воспроизведение звука без наложений
     setTimeout(() => {
       this.isPlayingContinuously = false;
+      this.isPlayingNow = false; // Также сбрасываем флаг воспроизведения
     }, 3000);
   }
 

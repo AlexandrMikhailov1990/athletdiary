@@ -5,6 +5,7 @@ import { SAMPLE_PROGRAMS, Program } from '../models/Program';
 import { Exercise, NORMALIZED_SAMPLE_EXERCISES } from '../models/Exercise';
 import soundManager from '../utils/SoundManager';
 import RestTimerCountdown from '../components/RestTimerCountdown';
+import AudioPlayer from '../components/AudioPlayer';
 import { 
   getCurrentWorkoutProgress, 
   saveWorkoutProgress, 
@@ -299,12 +300,74 @@ export default function Workout() {
     }
   }, [currentExerciseIndex, exercises, setRestTimer, setIsResting, setCurrentExerciseIndex, completeWorkout, currentWeight, currentReps, resetExerciseTimer, program, saveCurrentProgress]);
 
+  // Таймер отдыха
+  useEffect(() => {
+    if (isResting && restTimer !== null && restTimer > 0) {
+      console.log('Starting rest timer:', restTimer);
+      // Очищаем предыдущий флаг звука
+      setFinalSoundPlayed(false);
+      
+      // Установка таймера отдыха с использованием setInterval для более точного отсчета
+      const startValue = restTimer;
+      const startTime = Date.now();
+      
+      const restIntervalId = setInterval(() => {
+        const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+        const remaining = startValue - elapsedTime;
+        
+        // Активируем обратный отсчет и звук за 5 секунд до конца
+        if (remaining === 5 && !isCountdown) {
+          setIsCountdown(true);
+          
+          console.log('Rest timer 5 seconds remaining, relying on AudioPlayer');
+          // Звук будет воспроизведен через компонент AudioPlayer
+          // В JSX мы используем условие {isCountdown && !timerCompleted} для запуска плеера
+        }
+        
+        if (remaining <= 0) {
+          // Очищаем интервал
+          clearInterval(restIntervalId);
+          
+          // Устанавливаем значение в 0 для визуального обновления
+          setRestTimer(0);
+          
+          // Только если таймер не был завершен ранее, воспроизводим звук 
+          if (!timerCompleted) {
+            // Устанавливаем флаг завершения для воспроизведения звука через компонент AudioPlayer
+            console.log('Таймер отдыха завершен, запускаем воспроизведение звука через AudioPlayer');
+            setTimerCompleted(true);
+          }
+          
+          // Отключаем дублирование воспроизведения звука
+          // и полагаемся только на компонент AudioPlayer
+          
+          // Обработка завершения с задержкой для полного воспроизведения звука
+          setTimeout(() => {
+            setIsResting(false);
+            setIsCountdown(false);
+            setRestTimer(null);
+            setTimerCompleted(false); // Сбрасываем флаг после обработки
+          }, 1500);
+        } else {
+          // Обновляем значение таймера
+          setRestTimer(remaining);
+        }
+      }, 1000);
+      
+      return () => {
+        clearInterval(restIntervalId);
+      };
+    }
+  }, [isResting, restTimer, isCountdown]);
+
   // Функция для запуска таймера упражнения
   const startExerciseTimer = useCallback(() => {
     if (!exercises[currentExerciseIndex] || !exercises[currentExerciseIndex].exercise) return;
     
     const exercise = exercises[currentExerciseIndex].exercise;
     if (exercise.type !== 'timed') return;
+    
+    console.log('Starting exercise timer');
     
     // Очищаем предыдущий таймер, если он существует
     if (timerId) {
@@ -330,15 +393,12 @@ export default function Workout() {
       
       // Устанавливаем режим обратного отсчета за 5 секунд до конца
       if (remaining === 5 && !isCountdown) {
-        // Активируем режим обратного отсчета и сразу же воспроизводим звук
+        // Активируем режим обратного отсчета
         setIsCountdown(true);
         
-        // Воспроизводим звук за 5 секунд до конца в режиме ЗАВЕРШЕНИЯ
-        // Используем сигнал завершения для полного проигрывания без прерывания
-        if (!finalSoundPlayed) {
-          soundManager.playTimerBeep(true);
-          setFinalSoundPlayed(true);
-        }
+        console.log('Exercise timer 5 seconds remaining, relying on AudioPlayer');
+        // Звук будет воспроизведен через компонент AudioPlayer
+        // В JSX мы используем условие {isCountdown && !timerCompleted} для запуска плеера
       }
       
       if (remaining <= 0) {
@@ -354,14 +414,18 @@ export default function Workout() {
           // Установим таймер в 0 для визуального отображения
           setTimeLeft(0);
           
-          // НЕ воспроизводим повторный звук, т.к. уже играет звук от обратного отсчета
-          // который был запущен в режиме завершения с playTimerBeep(true)
+          // Устанавливаем флаг завершения для воспроизведения звука через компонент AudioPlayer
+          console.log('Таймер упражнения завершен, запускаем воспроизведение звука через AudioPlayer');
           
-          // Обновляем UI с задержкой
+          // Обновляем UI с задержкой для полного воспроизведения звука
           setTimeout(() => {
-            setIsTimerRunning(false);
-            setIsCountdown(false);
-            handleSetComplete(duration);
+            // Предотвращаем повторные манипуляции с состоянием
+            if (isTimerRunning) {
+              setIsTimerRunning(false);
+              setIsCountdown(false);
+              handleSetComplete(duration);
+              setTimerCompleted(false); // Сбрасываем флаг после обработки
+            }
           }, 1500); // Достаточная задержка для звука
         }
       } else {
@@ -370,7 +434,7 @@ export default function Workout() {
     }, 1000);
     
     setTimerId(timer);
-  }, [currentExerciseIndex, exercises, handleSetComplete, timerId, isCountdown, timerCompleted, finalSoundPlayed]);
+  }, [currentExerciseIndex, exercises, handleSetComplete, timerId, isCountdown, timerCompleted]);
 
   // Функция для остановки таймера упражнения
   const stopExerciseTimer = useCallback(() => {
@@ -552,56 +616,6 @@ export default function Workout() {
     }
   }, [router]);
 
-  // Таймер отдыха
-  useEffect(() => {
-    if (isResting && restTimer !== null && restTimer > 0) {
-      // Очищаем предыдущий флаг звука
-      setFinalSoundPlayed(false);
-      
-      // Установка таймера отдыха с использованием setInterval для более точного отсчета
-      const startValue = restTimer;
-      const startTime = Date.now();
-      
-      const restIntervalId = setInterval(() => {
-        const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
-        const remaining = startValue - elapsedTime;
-        
-        // Активируем обратный отсчет и звук за 5 секунд до конца
-        if (remaining === 5 && !isCountdown) {
-          setIsCountdown(true);
-          
-          // Воспроизводим звук только один раз в режиме завершения
-          if (!finalSoundPlayed) {
-            soundManager.playTimerBeep(true);
-            setFinalSoundPlayed(true);
-          }
-        }
-        
-        if (remaining <= 0) {
-          // Очищаем интервал
-          clearInterval(restIntervalId);
-          
-          // Устанавливаем значение в 0 для визуального обновления
-          setRestTimer(0);
-          
-          // Обработка завершения с задержкой для полного воспроизведения звука
-          setTimeout(() => {
-            setIsResting(false);
-            setIsCountdown(false);
-            setRestTimer(null);
-          }, 1500);
-        } else {
-          // Обновляем значение таймера
-          setRestTimer(remaining);
-        }
-      }, 1000);
-      
-      return () => {
-        clearInterval(restIntervalId);
-      };
-    }
-  }, [isResting, restTimer, finalSoundPlayed]);
-
   // Функция для переключения звука
   const toggleSound = () => {
     if (soundManager.isSoundMuted()) {
@@ -611,6 +625,18 @@ export default function Workout() {
       soundManager.muteSound();
       setIsMuted(true);
     }
+  };
+
+  // Функция для тестирования звука напрямую
+  const testSound = () => {
+    console.log('Тестирование звука...');
+    
+    // Используем SoundManager напрямую для воспроизведения звука
+    // Это самый надежный способ воспроизведения
+    soundManager.playTimerBeep(true);
+    
+    // Добавляем немного обратной связи
+    alert('Звук должен быть воспроизведен. Вы его слышите?');
   };
 
   // Функция для навигации к меню программ
@@ -634,10 +660,17 @@ export default function Workout() {
   // Проверяем, загружены ли упражнения
   if (!currentWorkoutExercise) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-800 mx-auto mb-4"></div>
-          <p className="text-gray-600">Загрузка упражнений...</p>
+      <div className="bg-gray-100 min-h-screen py-8">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="text-center bg-white rounded-lg shadow p-8">
+            <p className="text-xl mb-4">Упражнения не загружены</p>
+            <button
+              onClick={() => router.push('/active-program')}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            >
+              Вернуться к программе
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -663,283 +696,303 @@ export default function Workout() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {!exercises[currentExerciseIndex] ? (
-        <div className="text-center">
-          <p className="text-xl mb-4">Упражнения не загружены</p>
-          <button
-            onClick={() => router.push('/active-program')}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          >
-            Вернуться к программе
-          </button>
-        </div>
-      ) : (
-        <>
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">Тренировка</h1>
-            <button 
-              onClick={toggleSound}
-              className="p-2 rounded-full hover:bg-gray-100"
-              aria-label={isMuted ? "Включить звук" : "Выключить звук"}
+    <div className="bg-gray-100 min-h-screen py-8">
+      <div className="container mx-auto px-4 max-w-4xl">
+        {!exercises[currentExerciseIndex] ? (
+          <div className="text-center bg-white rounded-lg shadow p-8">
+            <p className="text-xl mb-4">Упражнения не загружены</p>
+            <button
+              onClick={() => router.push('/active-program')}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
             >
-              {isMuted ? (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
-                </svg>
-              ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                </svg>
-              )}
+              Вернуться к программе
             </button>
           </div>
-          
-          {/* Информация о текущем упражнении */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 className="text-xl font-semibold mb-2">{exercises[currentExerciseIndex].exercise.name}</h2>
-            <p className="text-gray-600 mb-4">{exercises[currentExerciseIndex].exercise.description}</p>
-            
-            {/* Прогресс упражнения */}
-            <div className="mb-4">
-              <p className="text-lg">
-                {exercises[currentExerciseIndex] && exercises[currentExerciseIndex].completedSets < (exercises[currentExerciseIndex].exercise?.sets || 1) ? 
-                  `Подход ${exercises[currentExerciseIndex].completedSets + 1} из ${exercises[currentExerciseIndex].exercise?.sets || 1}` :
-                  `Все ${exercises[currentExerciseIndex]?.exercise?.sets || 1} подходов выполнены`
-                }
-              </p>
-              <div className="w-full bg-gray-200 rounded-full h-2.5">
-                <div
-                  className="bg-blue-600 h-2.5 rounded-full"
-                  style={{
-                    width: `${(exercises[currentExerciseIndex]?.completedSets || 0) / (exercises[currentExerciseIndex]?.exercise?.sets || 1) * 100}%`
-                  }}
-                ></div>
-              </div>
-            </div>
-
-            {/* Контролы для упражнения */}
-            {isResting && restTimer !== null && restTimer > 0 && (
-              <div className="flex flex-col items-center justify-center p-4 bg-black bg-opacity-80 rounded-lg shadow-lg text-white">
-                <h3 className="text-xl mb-2">Отдых между подходами</h3>
-                {restTimer <= 5 ? (
-                  <RestTimerCountdown seconds={restTimer} isCountdownActive={true} />
-                ) : (
-                  <p className="text-2xl font-bold">{restTimer} сек</p>
-                )}
-                
-                <button
-                  onClick={() => {
-                    setRestTimer(null);
-                    setIsResting(false);
-                  }}
-                  className="mt-4 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors duration-200"
+        ) : (
+          <>
+            <div className="flex justify-between items-center mb-6 bg-white p-4 rounded-lg shadow-sm">
+              <h1 className="text-2xl font-bold">Тренировка</h1>
+              <div className="flex items-center">
+                <button 
+                  onClick={testSound}
+                  className="p-2 rounded-full hover:bg-gray-100 mr-2"
+                  aria-label="Проверить звук"
                 >
-                  Пропустить отдых
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                  </svg>
+                </button>
+                <button 
+                  onClick={toggleSound}
+                  className="p-2 rounded-full hover:bg-gray-100"
+                  aria-label={isMuted ? "Включить звук" : "Выключить звук"}
+                >
+                  {isMuted ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                    </svg>
+                  )}
                 </button>
               </div>
-            )}
+            </div>
+            
+            {/* Аудио-плеер для воспроизведения звуков */}
+            {timerCompleted && !isResting && <AudioPlayer soundPath="/sounds/timer-beep.mp3" autoPlay={true} isCompletion={true} />}
+            {isCountdown && !timerCompleted && <AudioPlayer soundPath="/sounds/timer-beep.mp3" autoPlay={true} isCompletion={false} />}
+            
+            {/* Информация о текущем упражнении */}
+            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+              <h2 className="text-xl font-semibold mb-2">{exercises[currentExerciseIndex].exercise.name}</h2>
+              <p className="text-gray-600 mb-4">{exercises[currentExerciseIndex].exercise.description}</p>
+              
+              {/* Прогресс упражнения */}
+              <div className="mb-4">
+                <p className="text-lg">
+                  {exercises[currentExerciseIndex] && exercises[currentExerciseIndex].completedSets < (exercises[currentExerciseIndex].exercise?.sets || 1) ? 
+                    `Подход ${exercises[currentExerciseIndex].completedSets + 1} из ${exercises[currentExerciseIndex].exercise?.sets || 1}` :
+                    `Все ${exercises[currentExerciseIndex]?.exercise?.sets || 1} подходов выполнены`
+                  }
+                </p>
+                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                  <div
+                    className="bg-blue-600 h-2.5 rounded-full"
+                    style={{
+                      width: `${(exercises[currentExerciseIndex]?.completedSets || 0) / (exercises[currentExerciseIndex]?.exercise?.sets || 1) * 100}%`
+                    }}
+                  ></div>
+                </div>
+              </div>
 
-            {!isResting && (
-              <div>
-                {exercises[currentExerciseIndex] && 
-                 exercises[currentExerciseIndex].exercise && 
-                 exercises[currentExerciseIndex].completedSets < (exercises[currentExerciseIndex].exercise?.sets || 1) ? (
-                  currentExercise?.type === 'reps' ? (
-                    <div className="space-y-4">
-                      <div className="flex gap-4">
-                        <input
-                          type="number"
-                          value={currentWeight}
-                          onChange={(e) => setCurrentWeight(Number(e.target.value))}
-                          placeholder="Вес (кг)"
-                          className="border rounded px-3 py-2 w-full"
-                        />
-                        <input
-                          type="number"
-                          value={currentReps}
-                          onChange={(e) => setCurrentReps(Number(e.target.value))}
-                          placeholder="Повторения"
-                          className="border rounded px-3 py-2 w-full"
-                        />
-                      </div>
-                      <button
-                        onClick={() => handleSetComplete()}
-                        className="w-full bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors duration-200"
-                      >
-                        Завершить подход
-                      </button>
-                    </div>
+              {/* Контролы для упражнения */}
+              {isResting && restTimer !== null && restTimer > 0 && (
+                <div className="flex flex-col items-center justify-center p-6 bg-gray-800 rounded-lg shadow-lg text-white mb-6">
+                  <h3 className="text-xl mb-4 font-semibold">Отдых между подходами</h3>
+                  {restTimer <= 5 ? (
+                    <RestTimerCountdown seconds={restTimer} isCountdownActive={true} />
                   ) : (
-                    <div className="space-y-4">
-                      <p className={`text-xl ${isCountdown ? 'text-red-500 font-bold animate-pulse' : ''}`}>
-                        Время: {timeLeft} сек
-                      </p>
-                      
-                      {/* Таймлайн для визуализации оставшегося времени */}
-                      {isTimerRunning && currentExercise.duration && (
-                        <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
-                          <div 
-                            className={`absolute top-0 left-0 h-full ${isCountdown ? 'bg-red-500' : 'bg-green-500'} transition-all duration-1000 ease-linear`}
-                            style={{ 
-                              width: `${(timeLeft / currentExercise.duration) * 100}%`,
-                            }}
-                          ></div>
+                    <div className="my-4">
+                      <span className="text-4xl font-bold">{restTimer}</span>
+                      <span className="text-xl ml-1">сек</span>
+                    </div>
+                  )}
+                  
+                  <button
+                    onClick={() => {
+                      setRestTimer(null);
+                      setIsResting(false);
+                    }}
+                    className="mt-6 bg-red-500 text-white px-6 py-3 rounded-md hover:bg-red-600 transition-colors duration-200 font-medium"
+                  >
+                    Пропустить отдых
+                  </button>
+                </div>
+              )}
+
+              {!isResting && (
+                <div>
+                  {exercises[currentExerciseIndex] && 
+                   exercises[currentExerciseIndex].exercise && 
+                   exercises[currentExerciseIndex].completedSets < (exercises[currentExerciseIndex].exercise?.sets || 1) ? (
+                    currentExercise?.type === 'reps' ? (
+                      <div className="space-y-4">
+                        <div className="flex gap-4">
+                          <input
+                            type="number"
+                            value={currentWeight}
+                            onChange={(e) => setCurrentWeight(Number(e.target.value))}
+                            placeholder="Вес (кг)"
+                            className="border rounded px-3 py-2 w-full"
+                          />
+                          <input
+                            type="number"
+                            value={currentReps}
+                            onChange={(e) => setCurrentReps(Number(e.target.value))}
+                            placeholder="Повторения"
+                            className="border rounded px-3 py-2 w-full"
+                          />
                         </div>
-                      )}
-                      
-                      <button
-                        onClick={isTimerRunning ? stopExerciseTimer : startExerciseTimer}
-                        disabled={false}
-                        className={`w-full px-6 py-3 rounded-lg transition-colors duration-200 ${
-                          isTimerRunning 
-                            ? 'bg-red-500 hover:bg-red-600' 
-                            : 'bg-green-500 hover:bg-green-600'
-                        } text-white`}
-                      >
-                        {isTimerRunning 
-                          ? `Остановить таймер (${timeLeft} сек)` 
-                          : timeLeft === 0 
-                            ? 'Начать таймер' 
-                            : 'Запустить таймер'
-                        }
-                      </button>
-                      {!isTimerRunning && timeLeft !== 0 && (
                         <button
                           onClick={() => handleSetComplete()}
-                          className="w-full bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors duration-200"
+                          className="w-full bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors duration-200"
                         >
-                          Завершить досрочно
+                          Завершить подход
                         </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <p className={`text-xl ${isCountdown ? 'text-red-500 font-bold animate-pulse' : ''}`}>
+                          Время: {timeLeft} сек
+                        </p>
+                        
+                        {/* Таймлайн для визуализации оставшегося времени */}
+                        {isTimerRunning && currentExercise.duration && (
+                          <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div 
+                              className={`absolute top-0 left-0 h-full ${isCountdown ? 'bg-red-500' : 'bg-green-500'} transition-all duration-1000 ease-linear`}
+                              style={{ 
+                                width: `${(timeLeft / currentExercise.duration) * 100}%`,
+                              }}
+                            ></div>
+                          </div>
+                        )}
+                        
+                        <button
+                          onClick={isTimerRunning ? stopExerciseTimer : startExerciseTimer}
+                          disabled={false}
+                          className={`w-full px-6 py-3 rounded-lg transition-colors duration-200 ${
+                            isTimerRunning 
+                              ? 'bg-red-500 hover:bg-red-600' 
+                              : 'bg-green-500 hover:bg-green-600'
+                          } text-white`}
+                        >
+                          {isTimerRunning 
+                            ? `Остановить таймер (${timeLeft} сек)` 
+                            : timeLeft === 0 
+                              ? 'Начать таймер' 
+                              : 'Запустить таймер'
+                          }
+                        </button>
+                        {!isTimerRunning && timeLeft !== 0 && (
+                          <button
+                            onClick={() => handleSetComplete()}
+                            className="w-full bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors duration-200"
+                          >
+                            Завершить досрочно
+                          </button>
+                        )}
+                      </div>
+                    )
+                  ) : (
+                    <div className="p-4 bg-gray-50 rounded-lg">
+                      <p className="text-center text-gray-600">Все подходы выполнены!</p>
+                      {currentExerciseIndex + 1 < exercises.length ? (
+                        <button
+                          onClick={() => {
+                            setCurrentExerciseIndex(prev => prev + 1);
+                            const restBetweenExercises = program && program.restBetweenExercises ? 
+                                                      program.restBetweenExercises : 90;
+                            setRestTimer(restBetweenExercises);
+                            setIsResting(true);
+                          }}
+                          className="w-full mt-4 bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors duration-200"
+                        >
+                          Перейти к следующему упражнению
+                        </button>
+                      ) : (
+                        <div className="mt-4 space-y-4">
+                          <p className="text-center font-medium text-green-600">Вы завершили все упражнения!</p>
+                          <button
+                            onClick={completeWorkout}
+                            className="w-full bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors duration-200 font-medium text-lg"
+                          >
+                            Завершить тренировку
+                          </button>
+                        </div>
                       )}
                     </div>
-                  )
-                ) : (
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <p className="text-center text-gray-600">Все подходы выполнены!</p>
-                    {currentExerciseIndex + 1 < exercises.length ? (
-                      <button
-                        onClick={() => {
-                          setCurrentExerciseIndex(prev => prev + 1);
-                          const restBetweenExercises = program && program.restBetweenExercises ? 
-                                                    program.restBetweenExercises : 90;
-                          setRestTimer(restBetweenExercises);
-                          setIsResting(true);
-                        }}
-                        className="w-full mt-4 bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors duration-200"
-                      >
-                        Перейти к следующему упражнению
-                      </button>
-                    ) : (
-                      <div className="mt-4 space-y-4">
-                        <p className="text-center font-medium text-green-600">Вы завершили все упражнения!</p>
-                        <button
-                          onClick={completeWorkout}
-                          className="w-full bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors duration-200 font-medium text-lg"
-                        >
-                          Завершить тренировку
-                        </button>
-                      </div>
-                    )}
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* История выполненных сетов */}
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h3 className="text-lg font-semibold mb-4">История подходов</h3>
+              <div className="space-y-2">
+                {exercises[currentExerciseIndex].setDetails.map((set, index) => (
+                  <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                    <span className="font-medium">Подход {index + 1}</span>
+                    <span className="text-gray-600">
+                      {exercises[currentExerciseIndex].exercise.type === 'reps' 
+                        ? ((set.reps || 0) > 0 || (set.weight || 0) > 0) 
+                          ? `${(set.reps || 0) > 0 ? `${set.reps} повт.` : ''} ${(set.weight || 0) > 0 ? `${(set.reps || 0) > 0 ? '× ' : ''}${set.weight} кг` : ''}`
+                          : 'Не выполнен'
+                        : (set.duration || 0) > 0 
+                          ? `${set.duration} сек`
+                          : 'Не выполнен'
+                      }
+                    </span>
                   </div>
-                )}
+                ))}
+              </div>
+            </div>
+
+            {/* История предыдущих тренировок */}
+            {exerciseHistory.length > 0 && (
+              <div className="bg-white rounded-lg shadow-md p-6 mt-6">
+                <h3 className="text-lg font-semibold mb-4">История упражнения</h3>
+                {exerciseHistory.map((workout, workoutIndex) => (
+                  <div key={workoutIndex} className="mb-6 last:mb-0">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-medium">
+                        {new Date(workout.date).toLocaleDateString('ru-RU')}
+                      </span>
+                      <span className="text-sm text-gray-600">{workout.programName}</span>
+                    </div>
+                    <div className="pl-4 space-y-2">
+                      {workout.sets.map((set, setIndex) => (
+                        <div key={setIndex} className="flex justify-between items-center py-1 border-b border-gray-100">
+                          <span className="text-sm">Подход {setIndex + 1}:</span>
+                          <div className="flex gap-4">
+                            {set.weight && set.weight > 0 && <span className="text-sm">{set.weight} кг</span>}
+                            {set.reps && set.reps > 0 && <span className="text-sm">{set.reps} повт.</span>}
+                            {set.duration && set.duration > 0 && <span className="text-sm">{set.duration} сек</span>}
+                            {(!set.weight || set.weight === 0) && 
+                             (!set.reps || set.reps === 0) && 
+                             (!set.duration || set.duration === 0) && 
+                             <span className="text-sm text-gray-500">Выполнено</span>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
-          </div>
-
-          {/* История выполненных сетов */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-semibold mb-4">История подходов</h3>
-            <div className="space-y-2">
-              {exercises[currentExerciseIndex].setDetails.map((set, index) => (
-                <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                  <span className="font-medium">Подход {index + 1}</span>
-                  <span className="text-gray-600">
-                    {exercises[currentExerciseIndex].exercise.type === 'reps' 
-                      ? ((set.reps || 0) > 0 || (set.weight || 0) > 0) 
-                        ? `${(set.reps || 0) > 0 ? `${set.reps} повт.` : ''} ${(set.weight || 0) > 0 ? `${(set.reps || 0) > 0 ? '× ' : ''}${set.weight} кг` : ''}`
-                        : 'Не выполнен'
-                      : (set.duration || 0) > 0 
-                        ? `${set.duration} сек`
-                        : 'Не выполнен'
-                    }
-                  </span>
-                </div>
-              ))}
+            
+            {/* Кнопка завершения программы */}
+            <div className="mt-8 text-center">
+              <button
+                onClick={() => setShowConfirmationModal(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors duration-200 shadow-md"
+              >
+                Завершить программу
+              </button>
             </div>
-          </div>
-
-          {/* История предыдущих тренировок */}
-          {exerciseHistory.length > 0 && (
-            <div className="bg-white rounded-lg shadow-md p-6 mt-6">
-              <h3 className="text-lg font-semibold mb-4">История упражнения</h3>
-              {exerciseHistory.map((workout, workoutIndex) => (
-                <div key={workoutIndex} className="mb-6 last:mb-0">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="font-medium">
-                      {new Date(workout.date).toLocaleDateString('ru-RU')}
-                    </span>
-                    <span className="text-sm text-gray-600">{workout.programName}</span>
+            
+            {/* Модальное окно подтверждения */}
+            {showConfirmationModal && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white rounded-lg p-6 max-w-sm mx-auto">
+                  <h3 className="text-xl font-semibold mb-4">Завершить тренировку?</h3>
+                  <p className="text-gray-600 mb-6">
+                    Вы уверены, что хотите завершить текущую тренировку и вернуться в меню программ? Прогресс может быть потерян.
+                  </p>
+                  <div className="flex justify-end gap-4">
+                    <button
+                      onClick={() => setShowConfirmationModal(false)}
+                      className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
+                    >
+                      Отмена
+                    </button>
+                    <button
+                      onClick={goToPrograms}
+                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                    >
+                      Завершить
+                    </button>
                   </div>
-                  <div className="pl-4 space-y-2">
-                    {workout.sets.map((set, setIndex) => (
-                      <div key={setIndex} className="flex justify-between items-center py-1 border-b border-gray-100">
-                        <span className="text-sm">Подход {setIndex + 1}:</span>
-                        <div className="flex gap-4">
-                          {set.weight && set.weight > 0 && <span className="text-sm">{set.weight} кг</span>}
-                          {set.reps && set.reps > 0 && <span className="text-sm">{set.reps} повт.</span>}
-                          {set.duration && set.duration > 0 && <span className="text-sm">{set.duration} сек</span>}
-                          {(!set.weight || set.weight === 0) && 
-                           (!set.reps || set.reps === 0) && 
-                           (!set.duration || set.duration === 0) && 
-                           <span className="text-sm text-gray-500">Выполнено</span>}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-          
-          {/* Кнопка завершения программы */}
-          <div className="mt-8 text-center">
-            <button
-              onClick={() => setShowConfirmationModal(true)}
-              className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-colors duration-200"
-            >
-              Завершить программу
-            </button>
-          </div>
-          
-          {/* Модальное окно подтверждения */}
-          {showConfirmationModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg p-6 max-w-sm mx-auto">
-                <h3 className="text-xl font-semibold mb-4">Завершить тренировку?</h3>
-                <p className="text-gray-600 mb-6">
-                  Вы уверены, что хотите завершить текущую тренировку и вернуться в меню программ? Прогресс может быть потерян.
-                </p>
-                <div className="flex justify-end gap-4">
-                  <button
-                    onClick={() => setShowConfirmationModal(false)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
-                  >
-                    Отмена
-                  </button>
-                  <button
-                    onClick={goToPrograms}
-                    className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-                  >
-                    Завершить
-                  </button>
                 </div>
               </div>
-            </div>
-          )}
-        </>
-      )}
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
-} 
+}
