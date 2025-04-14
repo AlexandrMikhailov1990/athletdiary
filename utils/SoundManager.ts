@@ -20,16 +20,42 @@ class SoundManager {
   private isServer: boolean;
   private isPlayingNow = false; // Флаг текущего воспроизведения
   private lastPlayTime = 0; // Время последнего воспроизведения
+  private isIOS: boolean;
+  private hasUserInteraction = false;
 
   constructor() {
     // Проверяем, запущен ли код на сервере или в браузере
     this.isServer = typeof window === 'undefined';
+    this.isIOS = !this.isServer && /iPad|iPhone|iPod/.test(navigator.userAgent);
     
     // Инициализируем менеджер звуков только на клиенте
     if (!this.isServer) {
       this.initialize();
+      this.setupUserInteractionHandlers();
       console.log('SoundManager initialized. Sound path:', this.soundPath);
     }
+  }
+
+  private setupUserInteractionHandlers() {
+    if (this.isServer) return;
+
+    const handleInteraction = () => {
+      this.hasUserInteraction = true;
+      if (this.timerBeepSound) {
+        // На iOS нужно воспроизвести и сразу поставить на паузу
+        this.timerBeepSound.play()
+          .then(() => {
+            this.timerBeepSound?.pause();
+            this.timerBeepSound?.load();
+          })
+          .catch(console.error);
+      }
+    };
+
+    // Добавляем обработчики для различных типов взаимодействия
+    window.addEventListener('touchstart', handleInteraction, { once: true });
+    window.addEventListener('click', handleInteraction, { once: true });
+    window.addEventListener('keydown', handleInteraction, { once: true });
   }
 
   /**
@@ -205,62 +231,30 @@ class SoundManager {
   /**
    * Воспроизведение звука таймера
    */
-  playTimerBeep(isCompletion: boolean = false) {
-    // Не воспроизводим звуки на сервере
-    if (this.isServer || !this.isBrowserEnv()) return;
-    
-    // Проверяем, не воспроизводится ли уже звук
-    const currentTime = Date.now();
-    if (this.isPlayingNow && currentTime - this.lastPlayTime < 1000) {
-      console.log(`Skip playing timer beep. Already playing: ${this.isPlayingNow}, last play: ${currentTime - this.lastPlayTime}ms ago`);
-      return;
-    }
-    
-    // Устанавливаем флаг воспроизведения и обновляем время последнего воспроизведения
-    this.isPlayingNow = true;
-    this.lastPlayTime = currentTime;
-    
-    console.log(`Playing timer beep. isCompletion: ${isCompletion}, isMuted: ${this.isMuted}`);
-    
-    // Принудительное воспроизведение через прямой вызов Audio API
-    // Это более надежный способ для мобильных устройств
+  public async playTimerBeep(isCompletion: boolean = false) {
+    if (this.isServer || this.isMuted || !this.timerBeepSound) return;
+
     try {
-      // Небольшая задержка перед воспроизведением для стабильности
-      setTimeout(() => {
-        const directAudio = new Audio(this.soundPath);
-        directAudio.volume = 1.0;
-        directAudio.play().catch(e => console.error('Ошибка прямого воспроизведения:', e));
-      }, 50);
-    } catch (e) {
-      console.error('Ошибка создания прямого аудио:', e);
-    }
-    
-    // Сбрасываем флаг воспроизведения через некоторое время
-    setTimeout(() => {
-      this.isPlayingNow = false;
-    }, 1000);
-    
-    // Если звук отключен, воспроизводим только вибрацию (если возможно)
-    if (this.isMuted) {
-      if (isCompletion && this.canVibrate && typeof navigator !== 'undefined') {
-        // Более длительная вибрация при завершении
-        navigator.vibrate(1000);
-        console.log('Playing vibration pattern for completion');
-      } else if (this.canVibrate && typeof navigator !== 'undefined') {
-        navigator.vibrate(200);
-        console.log('Playing short vibration');
+      // Для iOS требуется пользовательское взаимодействие
+      if (this.isIOS && !this.hasUserInteraction) {
+        console.log('Waiting for user interaction on iOS...');
+        return;
       }
-      return;
-    }
 
-    // Если это завершающий сигнал, запускаем режим сигнализации (непрерывное воспроизведение)
-    if (isCompletion) {
-      this.startAlarmMode();
-      return;
-    }
+      // Перезагружаем звук перед каждым воспроизведением на iOS
+      if (this.isIOS) {
+        await this.timerBeepSound.load();
+      }
 
-    // Для обычных звуков используем простое воспроизведение
-    this.playSimpleBeep();
+      await this.timerBeepSound.play();
+      
+      // Вибрация для мобильных устройств
+      if (this.canVibrate) {
+        navigator.vibrate(200);
+      }
+    } catch (error) {
+      console.error('Error playing sound:', error);
+    }
   }
 
   /**

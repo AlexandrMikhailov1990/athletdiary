@@ -14,7 +14,7 @@ import {
   WorkoutProgress 
 } from '../models/WorkoutProgress';
 import { motion } from 'framer-motion';
-import Header from '../components/Header';
+import Layout from '../components/Layout';
 
 // Добавим константу WORKOUT_PROGRESS_KEY для прямого доступа
 const WORKOUT_PROGRESS_KEY = 'workoutProgress';
@@ -739,309 +739,311 @@ export default function Workout() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-      <div className="container mx-auto max-w-md">
-        <Header />
-        
-        <div className="flex justify-between items-center mb-6 bg-white p-4 rounded-lg shadow-sm">
-          <h1 className="text-2xl font-bold text-gray-800">Тренировка</h1>
-          <div className="flex items-center">
-            <button 
-              onClick={testSound}
-              className="p-2 rounded-full hover:bg-gray-100 mr-2 text-gray-700"
-              aria-label="Проверить звук"
+    <Layout>
+      <div className="container mx-auto px-4">
+        <div className="flex flex-col items-center justify-center bg-gray-100 p-4">
+          <div className="container mx-auto max-w-md">
+            <div className="flex justify-between items-center mb-6 bg-white p-4 rounded-lg shadow-sm">
+              <h1 className="text-2xl font-bold text-gray-800">Тренировка</h1>
+              <div className="flex items-center">
+                <button 
+                  onClick={testSound}
+                  className="p-2 rounded-full hover:bg-gray-100 mr-2 text-gray-700"
+                  aria-label="Проверить звук"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                  </svg>
+                </button>
+                <button 
+                  onClick={toggleSound}
+                  className="p-2 rounded-full hover:bg-gray-100 text-gray-700"
+                  aria-label={isMuted ? "Включить звук" : "Выключить звук"}
+                >
+                  {isMuted ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+            </div>
+            
+            {/* Основное содержимое */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-lg p-6 shadow-md"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-              </svg>
-            </button>
-            <button 
-              onClick={toggleSound}
-              className="p-2 rounded-full hover:bg-gray-100 text-gray-700"
-              aria-label={isMuted ? "Включить звук" : "Выключить звук"}
-            >
-              {isMuted ? (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
-                </svg>
-              ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                </svg>
-              )}
-            </button>
-          </div>
-        </div>
-        
-        {/* Основное содержимое */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-lg p-6 shadow-md"
-        >
-          {/* Карточка с текущим упражнением */}
-          {currentExercise && (
-            <>
-              <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                <h2 className="text-xl font-semibold mb-2 text-gray-800">{exercises[currentExerciseIndex].exercise.name}</h2>
-                <p className="text-gray-600 mb-4">{exercises[currentExerciseIndex].exercise.description}</p>
-                
-                {/* Прогресс упражнения */}
-                <div className="mb-4">
-                  <p className="text-lg text-gray-800">
-                    {exercises[currentExerciseIndex] && exercises[currentExerciseIndex].completedSets < (exercises[currentExerciseIndex].exercise?.sets || 1) ? 
-                      `Подход ${exercises[currentExerciseIndex].completedSets + 1} из ${exercises[currentExerciseIndex].exercise?.sets || 1}` :
-                      `Все ${exercises[currentExerciseIndex]?.exercise?.sets || 1} подходов выполнены`
-                    }
-                  </p>
-                  <div className="w-full bg-gray-200 rounded-full h-2.5">
-                    <div
-                      className="bg-blue-600 h-2.5 rounded-full"
-                      style={{
-                        width: `${(exercises[currentExerciseIndex]?.completedSets || 0) / (exercises[currentExerciseIndex]?.exercise?.sets || 1) * 100}%`
-                      }}
-                    ></div>
-                  </div>
-                </div>
+              {/* Карточка с текущим упражнением */}
+              {currentExercise && (
+                <>
+                  <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                    <h2 className="text-xl font-semibold mb-2 text-gray-800">{exercises[currentExerciseIndex].exercise.name}</h2>
+                    <p className="text-gray-600 mb-4">{exercises[currentExerciseIndex].exercise.description}</p>
+                    
+                    {/* Прогресс упражнения */}
+                    <div className="mb-4">
+                      <p className="text-lg text-gray-800">
+                        {exercises[currentExerciseIndex] && exercises[currentExerciseIndex].completedSets < (exercises[currentExerciseIndex].exercise?.sets || 1) ? 
+                          `Подход ${exercises[currentExerciseIndex].completedSets + 1} из ${exercises[currentExerciseIndex].exercise?.sets || 1}` :
+                          `Все ${exercises[currentExerciseIndex]?.exercise?.sets || 1} подходов выполнены`
+                        }
+                      </p>
+                      <div className="w-full bg-gray-200 rounded-full h-2.5">
+                        <div
+                          className="bg-blue-600 h-2.5 rounded-full"
+                          style={{
+                            width: `${(exercises[currentExerciseIndex]?.completedSets || 0) / (exercises[currentExerciseIndex]?.exercise?.sets || 1) * 100}%`
+                          }}
+                        ></div>
+                      </div>
+                    </div>
 
-                {/* Контролы для упражнения */}
-                {isResting && restTimer !== null && restTimer > 0 && (
-                  <div className="flex flex-col items-center justify-center p-6 bg-gray-50 rounded-lg shadow-md mb-6">
-                    <h3 className="text-xl mb-4 font-semibold text-gray-800">Отдых между подходами</h3>
-                    {restTimer <= 5 ? (
-                      <RestTimerCountdown seconds={restTimer} isCountdownActive={true} />
-                    ) : (
-                      <div className="my-4">
-                        <span className="text-4xl font-bold text-gray-800">{restTimer}</span>
-                        <span className="text-xl ml-1 text-gray-700">сек</span>
+                    {/* Контролы для упражнения */}
+                    {isResting && restTimer !== null && restTimer > 0 && (
+                      <div className="flex flex-col items-center justify-center p-6 bg-gray-50 rounded-lg shadow-md mb-6">
+                        <h3 className="text-xl mb-4 font-semibold text-gray-800">Отдых между подходами</h3>
+                        {restTimer <= 5 ? (
+                          <RestTimerCountdown seconds={restTimer} isCountdownActive={true} />
+                        ) : (
+                          <div className="my-4">
+                            <span className="text-4xl font-bold text-gray-800">{restTimer}</span>
+                            <span className="text-xl ml-1 text-gray-700">сек</span>
+                          </div>
+                        )}
+                        
+                        <button
+                          onClick={skipRest}
+                          className="mt-6 bg-blue-500 text-white px-6 py-3 rounded-md hover:bg-blue-600 transition-colors duration-200 font-medium"
+                        >
+                          Пропустить отдых
+                        </button>
                       </div>
                     )}
-                    
-                    <button
-                      onClick={skipRest}
-                      className="mt-6 bg-blue-500 text-white px-6 py-3 rounded-md hover:bg-blue-600 transition-colors duration-200 font-medium"
-                    >
-                      Пропустить отдых
-                    </button>
-                  </div>
-                )}
 
-                {!isResting && currentExercise && (
-                  <>
-                    {exercises[currentExerciseIndex].completedSets < (exercises[currentExerciseIndex].exercise?.sets || 1) ? (
+                    {!isResting && currentExercise && (
                       <>
-                        {currentExercise?.type === 'reps' ? (
-                          <div className="space-y-4">
-                            <div className="flex gap-4">
-                              <input
-                                type="number"
-                                value={currentWeight}
-                                onChange={(e) => setCurrentWeight(Number(e.target.value))}
-                                placeholder="Вес (кг)"
-                                className="border rounded px-3 py-2 w-full text-gray-800"
-                              />
-                              <input
-                                type="number"
-                                value={currentReps}
-                                onChange={(e) => setCurrentReps(Number(e.target.value))}
-                                placeholder="Повторения"
-                                className="border rounded px-3 py-2 w-full text-gray-800"
-                              />
-                            </div>
-                            <button
-                              onClick={() => handleSetComplete()}
-                              className="w-full bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors duration-200"
-                            >
-                              Завершить подход
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="space-y-4">
-                            <p className={`text-xl text-gray-800 ${isCountdown ? 'text-blue-600 font-bold animate-pulse' : ''}`}>
-                              Время: {timeLeft} сек
-                            </p>
-                            
-                            {/* Таймлайн для визуализации оставшегося времени */}
-                            {isTimerRunning && currentExercise.duration && (
-                              <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
-                                <div 
-                                  className={`absolute top-0 left-0 h-full ${isCountdown ? 'bg-blue-600' : 'bg-blue-500'} transition-all duration-1000 ease-linear`}
-                                  style={{ 
-                                    width: `${(timeLeft / currentExercise.duration) * 100}%`,
-                                  }}
-                                ></div>
-                              </div>
-                            )}
-                            
-                            {timeLeft === 0 && timerCompleted ? (
-                              <div className="text-center py-3 bg-gray-50 rounded-lg">
-                                <div className="text-blue-600 font-medium mb-2">Время вышло</div>
-                                <p className="text-gray-500">Нажмите кнопку для завершения подхода</p>
+                        {exercises[currentExerciseIndex].completedSets < (exercises[currentExerciseIndex].exercise?.sets || 1) ? (
+                          <>
+                            {currentExercise?.type === 'reps' ? (
+                              <div className="space-y-4">
+                                <div className="flex gap-4">
+                                  <input
+                                    type="number"
+                                    value={currentWeight}
+                                    onChange={(e) => setCurrentWeight(Number(e.target.value))}
+                                    placeholder="Вес (кг)"
+                                    className="border rounded px-3 py-2 w-full text-gray-800"
+                                  />
+                                  <input
+                                    type="number"
+                                    value={currentReps}
+                                    onChange={(e) => setCurrentReps(Number(e.target.value))}
+                                    placeholder="Повторения"
+                                    className="border rounded px-3 py-2 w-full text-gray-800"
+                                  />
+                                </div>
                                 <button
-                                  onClick={() => handleSetComplete(exercises[currentExerciseIndex]?.exercise.duration || 60)}
-                                  className="mt-3 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-200"
+                                  onClick={() => handleSetComplete()}
+                                  className="w-full bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors duration-200"
                                 >
                                   Завершить подход
                                 </button>
                               </div>
                             ) : (
-                              <button
-                                onClick={isTimerRunning ? stopExerciseTimer : startExerciseTimer}
-                                disabled={false}
-                                className={`w-full px-6 py-3 rounded-lg transition-colors duration-200 ${
-                                  isTimerRunning 
-                                    ? 'bg-blue-600 hover:bg-blue-700' 
-                                    : 'bg-blue-500 hover:bg-blue-600'
-                                } text-white`}
-                              >
-                                {isTimerRunning 
-                                  ? `Остановить таймер (${timeLeft} сек)` 
-                                  : timeLeft === 0 || !timeLeft
-                                    ? 'Начать таймер' 
-                                    : 'Запустить таймер'
-                                }
-                              </button>
+                              <div className="space-y-4">
+                                <p className={`text-xl text-gray-800 ${isCountdown ? 'text-blue-600 font-bold animate-pulse' : ''}`}>
+                                  Время: {timeLeft} сек
+                                </p>
+                                
+                                {/* Таймлайн для визуализации оставшегося времени */}
+                                {isTimerRunning && currentExercise.duration && (
+                                  <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
+                                    <div 
+                                      className={`absolute top-0 left-0 h-full ${isCountdown ? 'bg-blue-600' : 'bg-blue-500'} transition-all duration-1000 ease-linear`}
+                                      style={{ 
+                                        width: `${(timeLeft / currentExercise.duration) * 100}%`,
+                                      }}
+                                    ></div>
+                                  </div>
+                                )}
+                                
+                                {timeLeft === 0 && timerCompleted ? (
+                                  <div className="text-center py-3 bg-gray-50 rounded-lg">
+                                    <div className="text-blue-600 font-medium mb-2">Время вышло</div>
+                                    <p className="text-gray-500">Нажмите кнопку для завершения подхода</p>
+                                    <button
+                                      onClick={() => handleSetComplete(exercises[currentExerciseIndex]?.exercise.duration || 60)}
+                                      className="mt-3 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-200"
+                                    >
+                                      Завершить подход
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button
+                                    onClick={isTimerRunning ? stopExerciseTimer : startExerciseTimer}
+                                    disabled={false}
+                                    className={`w-full px-6 py-3 rounded-lg transition-colors duration-200 ${
+                                      isTimerRunning 
+                                        ? 'bg-blue-600 hover:bg-blue-700' 
+                                        : 'bg-blue-500 hover:bg-blue-600'
+                                    } text-white`}
+                                  >
+                                    {isTimerRunning 
+                                      ? `Остановить таймер (${timeLeft} сек)` 
+                                      : timeLeft === 0 || !timeLeft
+                                        ? 'Начать таймер' 
+                                        : 'Запустить таймер'
+                                    }
+                                  </button>
+                                )}
+                                
+                                {!isTimerRunning && timeLeft !== 0 && (
+                                  <button
+                                    onClick={() => handleSetComplete()}
+                                    className="w-full bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors duration-200"
+                                  >
+                                    Завершить досрочно
+                                  </button>
+                                )}
+                              </div>
                             )}
-                            
-                            {!isTimerRunning && timeLeft !== 0 && (
+                          </>
+                        ) : (
+                          <div className="p-4 bg-gray-50 rounded-lg">
+                            <p className="text-center text-gray-600">Все подходы выполнены!</p>
+                            {currentExerciseIndex + 1 < exercises.length ? (
                               <button
-                                onClick={() => handleSetComplete()}
-                                className="w-full bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors duration-200"
+                                onClick={() => {
+                                  setCurrentExerciseIndex(prev => prev + 1);
+                                  const restBetweenExercises = program && program.restBetweenExercises ? 
+                                                            program.restBetweenExercises : 90;
+                                  setRestTimer(restBetweenExercises);
+                                  setIsResting(true);
+                                }}
+                                className="w-full mt-4 bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors duration-200"
                               >
-                                Завершить досрочно
+                                Перейти к следующему упражнению
                               </button>
+                            ) : (
+                              <div className="mt-4 space-y-4">
+                                <p className="text-center font-medium text-blue-600">Вы завершили все упражнения!</p>
+                                <button
+                                  onClick={completeWorkout}
+                                  className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors duration-200 font-medium text-lg"
+                                >
+                                  Завершить тренировку
+                                </button>
+                              </div>
                             )}
                           </div>
                         )}
                       </>
-                    ) : (
-                      <div className="p-4 bg-gray-50 rounded-lg">
-                        <p className="text-center text-gray-600">Все подходы выполнены!</p>
-                        {currentExerciseIndex + 1 < exercises.length ? (
-                          <button
-                            onClick={() => {
-                              setCurrentExerciseIndex(prev => prev + 1);
-                              const restBetweenExercises = program && program.restBetweenExercises ? 
-                                                        program.restBetweenExercises : 90;
-                              setRestTimer(restBetweenExercises);
-                              setIsResting(true);
-                            }}
-                            className="w-full mt-4 bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors duration-200"
-                          >
-                            Перейти к следующему упражнению
-                          </button>
-                        ) : (
-                          <div className="mt-4 space-y-4">
-                            <p className="text-center font-medium text-blue-600">Вы завершили все упражнения!</p>
-                            <button
-                              onClick={completeWorkout}
-                              className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors duration-200 font-medium text-lg"
-                            >
-                              Завершить тренировку
-                            </button>
-                          </div>
-                        )}
-                      </div>
                     )}
-                  </>
-                )}
-              </div>
+                  </div>
 
-              {/* История выполненных сетов */}
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-lg font-semibold mb-4 text-gray-800">История подходов</h3>
-                <div className="space-y-2">
-                  {exercises[currentExerciseIndex].setDetails.map((set, index) => (
-                    <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                      <span className="font-medium text-gray-800">Подход {index + 1}</span>
-                      <span className="text-gray-600">
-                        {exercises[currentExerciseIndex].exercise.type === 'reps' 
-                          ? ((set.reps || 0) > 0 || (set.weight || 0) > 0) 
-                            ? `${(set.reps || 0) > 0 ? `${set.reps} повт.` : ''} ${(set.weight || 0) > 0 ? `${(set.reps || 0) > 0 ? '× ' : ''}${set.weight} кг` : ''}`
-                            : 'Не выполнен'
-                          : (set.duration || 0) > 0 
-                            ? `${set.duration} сек`
-                            : 'Не выполнен'
-                        }
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* История предыдущих тренировок */}
-              {exerciseHistory.length > 0 && (
-                <div className="bg-white rounded-lg shadow-md p-6 mt-6">
-                  <h3 className="text-lg font-semibold mb-4 text-gray-800">История упражнения</h3>
-                  {exerciseHistory.map((workout, workoutIndex) => (
-                    <div key={workoutIndex} className="mb-6 last:mb-0">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="font-medium text-gray-800">
-                          {new Date(workout.date).toLocaleDateString('ru-RU')}
-                        </span>
-                        <span className="text-sm text-gray-600">{workout.programName}</span>
-                      </div>
-                      <div className="pl-4 space-y-2">
-                        {workout.sets.map((set, setIndex) => (
-                          <div key={setIndex} className="flex justify-between items-center py-1 border-b border-gray-100">
-                            <span className="text-sm text-gray-700">Подход {setIndex + 1}:</span>
-                            <div className="flex gap-4">
-                              {set.weight && set.weight > 0 && <span className="text-sm text-gray-700">{set.weight} кг</span>}
-                              {set.reps && set.reps > 0 && <span className="text-sm text-gray-700">{set.reps} повт.</span>}
-                              {set.duration && set.duration > 0 && <span className="text-sm text-gray-700">{set.duration} сек</span>}
-                              {(!set.weight || set.weight === 0) && 
-                               (!set.reps || set.reps === 0) && 
-                               (!set.duration || set.duration === 0) && 
-                               <span className="text-sm text-gray-500">Выполнено</span>}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-              
-              {/* Кнопка завершения программы */}
-              <div className="mt-8 text-center">
-                <button
-                  onClick={() => setShowConfirmationModal(true)}
-                  className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-colors duration-200 shadow-md"
-                >
-                  Завершить программу
-                </button>
-              </div>
-              
-              {/* Модальное окно подтверждения */}
-              {showConfirmationModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                  <div className="bg-white rounded-lg p-6 max-w-sm mx-auto">
-                    <h3 className="text-xl font-semibold mb-4 text-gray-800">Завершить тренировку?</h3>
-                    <p className="text-gray-600 mb-6">
-                      Вы уверены, что хотите завершить текущую тренировку и вернуться в меню программ? Прогресс может быть потерян.
-                    </p>
-                    <div className="flex justify-end gap-4">
-                      <button
-                        onClick={() => setShowConfirmationModal(false)}
-                        className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 text-gray-700"
-                      >
-                        Отмена
-                      </button>
-                      <button
-                        onClick={goToPrograms}
-                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                      >
-                        Завершить
-                      </button>
+                  {/* История выполненных сетов */}
+                  <div className="bg-white rounded-lg shadow-md p-6">
+                    <h3 className="text-lg font-semibold mb-4 text-gray-800">История подходов</h3>
+                    <div className="space-y-2">
+                      {exercises[currentExerciseIndex].setDetails.map((set, index) => (
+                        <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                          <span className="font-medium text-gray-800">Подход {index + 1}</span>
+                          <span className="text-gray-600">
+                            {exercises[currentExerciseIndex].exercise.type === 'reps' 
+                              ? ((set.reps || 0) > 0 || (set.weight || 0) > 0) 
+                                ? `${(set.reps || 0) > 0 ? `${set.reps} повт.` : ''} ${(set.weight || 0) > 0 ? `${(set.reps || 0) > 0 ? '× ' : ''}${set.weight} кг` : ''}`
+                                : 'Не выполнен'
+                              : (set.duration || 0) > 0 
+                                ? `${set.duration} сек`
+                                : 'Не выполнен'
+                            }
+                          </span>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                </div>
+
+                  {/* История предыдущих тренировок */}
+                  {exerciseHistory.length > 0 && (
+                    <div className="bg-white rounded-lg shadow-md p-6 mt-6">
+                      <h3 className="text-lg font-semibold mb-4 text-gray-800">История упражнения</h3>
+                      {exerciseHistory.map((workout, workoutIndex) => (
+                        <div key={workoutIndex} className="mb-6 last:mb-0">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="font-medium text-gray-800">
+                              {new Date(workout.date).toLocaleDateString('ru-RU')}
+                            </span>
+                            <span className="text-sm text-gray-600">{workout.programName}</span>
+                          </div>
+                          <div className="pl-4 space-y-2">
+                            {workout.sets.map((set, setIndex) => (
+                              <div key={setIndex} className="flex justify-between items-center py-1 border-b border-gray-100">
+                                <span className="text-sm text-gray-700">Подход {setIndex + 1}:</span>
+                                <div className="flex gap-4">
+                                  {set.weight && set.weight > 0 && <span className="text-sm text-gray-700">{set.weight} кг</span>}
+                                  {set.reps && set.reps > 0 && <span className="text-sm text-gray-700">{set.reps} повт.</span>}
+                                  {set.duration && set.duration > 0 && <span className="text-sm text-gray-700">{set.duration} сек</span>}
+                                  {(!set.weight || set.weight === 0) && 
+                                   (!set.reps || set.reps === 0) && 
+                                   (!set.duration || set.duration === 0) && 
+                                   <span className="text-sm text-gray-500">Выполнено</span>}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {/* Кнопка завершения программы */}
+                  <div className="mt-8 text-center">
+                    <button
+                      onClick={() => setShowConfirmationModal(true)}
+                      className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-colors duration-200 shadow-md"
+                    >
+                      Завершить программу
+                    </button>
+                  </div>
+                  
+                  {/* Модальное окно подтверждения */}
+                  {showConfirmationModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                      <div className="bg-white rounded-lg p-6 max-w-sm mx-auto">
+                        <h3 className="text-xl font-semibold mb-4 text-gray-800">Завершить тренировку?</h3>
+                        <p className="text-gray-600 mb-6">
+                          Вы уверены, что хотите завершить текущую тренировку и вернуться в меню программ? Прогресс может быть потерян.
+                        </p>
+                        <div className="flex justify-end gap-4">
+                          <button
+                            onClick={() => setShowConfirmationModal(false)}
+                            className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 text-gray-700"
+                          >
+                            Отмена
+                          </button>
+                          <button
+                            onClick={goToPrograms}
+                            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                          >
+                            Завершить
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
-            </>
-          )}
-        </motion.div>
+            </motion.div>
+          </div>
+        </div>
       </div>
-    </div>
+    </Layout>
   );
 }
