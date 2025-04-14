@@ -142,12 +142,11 @@ export function migratePrograms(): void {
         ...updatedProgram 
       } = program;
       
-      // Если было свойство duration, но нет durationWeeks, обрабатываем это отдельно
-      if (program.duration !== undefined && program.durationWeeks === undefined) {
+      // Всегда помечаем, что есть обновления при удалении полей
+      if (level !== undefined || durationWeeks !== undefined || workoutsPerWeek !== undefined) {
         needsUpdate = true;
       }
       
-      needsUpdate = true; // Всегда помечаем, что есть обновления
       return updatedProgram;
     });
     

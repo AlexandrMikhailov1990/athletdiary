@@ -16,6 +16,9 @@ import {
 import { motion } from 'framer-motion';
 import Header from '../components/Header';
 
+// Добавим константу WORKOUT_PROGRESS_KEY для прямого доступа
+const WORKOUT_PROGRESS_KEY = 'workoutProgress';
+
 interface WorkoutSet {
   reps?: number;
   weight?: number;
@@ -652,15 +655,36 @@ export default function Workout() {
 
   // Функция для навигации к меню программ
   const goToPrograms = () => {
-    // Очищаем прогресс текущей тренировки перед возвратом на страницу программ
-    clearWorkoutProgress();
-    console.log('Прогресс тренировки очищен, возврат к программам');
-    
-    // Закрываем модальное окно
-    setShowConfirmationModal(false);
-    
-    // Перенаправляем пользователя на страницу программ
-    router.push('/programs');
+    try {
+      // 1. Очищаем прогресс текущей тренировки
+      clearWorkoutProgress();
+      console.log('Прогресс тренировки очищен');
+      
+      // 2. Очищаем состояние компонента
+      setExercises([]);
+      setIsResting(false);
+      setRestTimer(null);
+      setTimerCompleted(false);
+      setIsTimerRunning(false);
+      
+      // 3. Проверяем localStorage напрямую для отладки
+      const checkProgress = localStorage.getItem(WORKOUT_PROGRESS_KEY);
+      console.log('Проверка localStorage после очистки:', checkProgress ? 'Прогресс остался' : 'Прогресс успешно удален');
+
+      // 4. Форсируем обновление hasActiveWorkout для компонента ContinueWorkoutButton
+      // Можно вынести в общий localStorage ключ для уведомления других компонентов
+      localStorage.setItem('lastWorkoutCleared', Date.now().toString());
+      
+      // 5. Закрываем модальное окно
+      setShowConfirmationModal(false);
+      
+      // 6. Перенаправляем пользователя на страницу программ
+      // Используем replace вместо push, чтобы предотвратить возврат на страницу тренировки
+      router.replace('/programs');
+    } catch (error) {
+      console.error('Ошибка при завершении тренировки:', error);
+      alert('Произошла ошибка при завершении тренировки. Пожалуйста, попробуйте еще раз.');
+    }
   };
 
   if (!activeProgram || !program) {

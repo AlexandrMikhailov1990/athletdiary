@@ -1,16 +1,47 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import { SAMPLE_PROGRAMS, Program } from '../models/Program';
-import type { ActiveProgram } from '../models/ActiveProgram';
+import type { ActiveProgram as ActiveProgramType } from '../models/ActiveProgram';
 import type { WorkoutHistory } from '../models/WorkoutHistory';
 import ContinueWorkoutButton from '../components/ContinueWorkoutButton';
 
 export default function ActiveProgram() {
   const router = useRouter();
-  const [activeProgram, setActiveProgram] = useState<ActiveProgram | null>(null);
+  
+  // Все хуки должны быть объявлены на верхнем уровне функции компонента
+  // и всегда в одном и том же порядке
+  const [activeProgram, setActiveProgram] = useState<ActiveProgramType | null>(null);
   const [program, setProgram] = useState<Program | null>(null);
   const [loading, setLoading] = useState(true);
   const [workoutHistory, setWorkoutHistory] = useState<WorkoutHistory[]>([]);
+  
+  // Безопасно вычисляем значения даже при отсутствии данных
+  const daysSinceStart = useMemo(() => {
+    if (!activeProgram) return 0;
+    const currentDate = new Date();
+    const startDate = new Date(activeProgram.startDate);
+    return Math.floor((currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+  }, [activeProgram]);
+  
+  // Вычисляем прогресс безопасно
+  const progressData = useMemo(() => {
+    if (!activeProgram || !program) {
+      return { percentage: 0, completed: 0, total: 0 };
+    }
+    
+    const completed = typeof activeProgram.completedWorkouts === 'number' ? 
+      activeProgram.completedWorkouts : 
+      activeProgram.completedWorkouts?.length || 0;
+    
+    const total = program.workouts?.length || 0;
+    const percentage = total > 0 ? Math.floor((completed / total) * 100) : 0;
+    
+    return { 
+      percentage, 
+      completed, 
+      total 
+    };
+  }, [activeProgram, program]);
 
   useEffect(() => {
     // Загрузка активной программы
@@ -22,7 +53,7 @@ export default function ActiveProgram() {
       }
       
       // Загружаем активную программу
-      const activeProgramData = JSON.parse(savedProgram) as ActiveProgram;
+      const activeProgramData = JSON.parse(savedProgram) as ActiveProgramType;
       setActiveProgram(activeProgramData);
       
       // Загружаем программу
@@ -31,7 +62,7 @@ export default function ActiveProgram() {
       
       // Если не нашли в основных программах, ищем в активных программах
       if (!foundProgram) {
-        const activePrograms = JSON.parse(localStorage.getItem('activePrograms') || '[]') as (ActiveProgram & { program: Program })[];
+        const activePrograms = JSON.parse(localStorage.getItem('activePrograms') || '[]') as (ActiveProgramType & { program: Program })[];
         const activeProgram = activePrograms.find(p => p.programId === activeProgramData.programId);
         if (activeProgram?.program) {
           foundProgram = activeProgram.program;
@@ -89,6 +120,72 @@ export default function ActiveProgram() {
     loadActiveProgram();
   }, [router]);
 
+  // Функция для рендеринга деталей истории тренировки
+  // Эта функция не использует хуки внутри, поэтому безопасна
+  const renderWorkoutHistory = (workout: any) => {
+    if (!workoutHistory) return null;
+    
+    // Ищем тренировку в истории по дате
+    const foundWorkout = workoutHistory.find(h => 
+      new Date(h.date).toDateString() === new Date(workout.date).toDateString()
+    );
+    
+    // Если нет данных истории или нет упражнений, показываем сообщение
+    if (!foundWorkout || !foundWorkout.exercises || foundWorkout.exercises.length === 0) {
+      return (
+        <p className="text-sm text-gray-500 italic">Нет подробных данных о тренировке</p>
+      );
+    }
+
+    // Найдена история тренировки, показываем детальную информацию
+    return (
+      <div className="mt-2 space-y-2">
+        <h4 className="text-sm font-medium text-gray-700">Выполненные упражнения:</h4>
+        {foundWorkout.exercises.map((ex, exIdx) => (
+          <div key={exIdx} className="text-sm pl-4 border-l-2 border-blue-200">
+            <div className="font-medium">{ex.name || (ex as any).exercise?.name}</div>
+            <div className="text-gray-600">
+              {ex.sets?.filter(s => s.completed).length || 0} из {ex.sets?.length || 0} подходов
+              {ex.sets && ex.sets.length > 0 ? (
+                <div className="text-gray-600 mt-1">
+                  {ex.sets.filter(s => s.completed).map((set, setIdx) => (
+                    <div key={setIdx} className="text-xs">
+                      Подход {setIdx + 1}: 
+                      {set.weight && typeof set.weight === 'number' && set.weight > 0 ? `${set.weight} кг` : 
+                        set.weight && !isNaN(Number(set.weight)) && Number(set.weight) > 0 ? `${Number(set.weight)} кг` : ''}
+                          
+                      {(set.weight && ((typeof set.weight === 'number' && set.weight > 0) || 
+                        (!isNaN(Number(set.weight)) && Number(set.weight) > 0))) && 
+                        (set.reps && ((typeof set.reps === 'number' && set.reps > 0) || 
+                        (!isNaN(Number(set.reps)) && Number(set.reps) > 0))) ? ' × ' : ''}
+                          
+                      {set.reps && typeof set.reps === 'number' && set.reps > 0 ? `${set.reps} повт.` : 
+                        set.reps && !isNaN(Number(set.reps)) && Number(set.reps) > 0 ? `${Number(set.reps)} повт.` : ''}
+                          
+                      {(set as any).duration && typeof (set as any).duration === 'number' && (set as any).duration > 0 ? 
+                        `${(set as any).duration} сек` : 
+                        (set as any).duration && !isNaN(Number((set as any).duration)) && Number((set as any).duration) > 0 ? 
+                        `${Number((set as any).duration)} сек` : ''}
+                      
+                      {((!set.weight || typeof set.weight !== 'number' || set.weight <= 0) && 
+                        (!set.reps || typeof set.reps !== 'number' || set.reps <= 0) && 
+                        (!(set as any).duration || typeof (set as any).duration !== 'number' || (set as any).duration <= 0)) || 
+                        ((set.weight && !isNaN(Number(set.weight)) && Number(set.weight) <= 0) && 
+                        (set.reps && !isNaN(Number(set.reps)) && Number(set.reps) <= 0) && 
+                        ((set as any).duration && !isNaN(Number((set as any).duration)) && Number((set as any).duration) <= 0)) ? 
+                        'Выполнено' : ''}
+                    </div>
+                  ))}
+                </div>
+              ) : ''}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // Загрузочный экран
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -100,6 +197,7 @@ export default function ActiveProgram() {
     );
   }
 
+  // Программа не найдена
   if (!activeProgram || !program) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -116,41 +214,7 @@ export default function ActiveProgram() {
     );
   }
 
-  const currentDate = new Date();
-  const startDate = new Date(activeProgram.startDate);
-  const daysSinceStart = Math.floor((currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-
-  const renderProgress = () => {
-    if (!activeProgram || !program) return null;
-    
-    // Вычисляем прогресс на основе завершенных тренировок
-    const completedWorkouts = activeProgram.completedWorkouts?.length || 0;
-    const totalWorkouts = program.workouts?.length || 0;
-    
-    // Вычисляем процент прогресса (защита от деления на ноль)
-    const progressPercentage = totalWorkouts > 0 
-      ? Math.min(Math.round((completedWorkouts / totalWorkouts) * 100), 100) 
-      : 0;
-    
-    return (
-      <div className="mb-6">
-        <div className="flex justify-between mb-2">
-          <h3 className="text-lg font-medium">Прогресс программы</h3>
-          <span className="text-lg font-medium">{progressPercentage}%</span>
-        </div>
-        <div className="bg-gray-200 dark:bg-gray-700 h-4 rounded-full overflow-hidden">
-          <div 
-            className="bg-blue-600 h-full rounded-full" 
-            style={{ width: `${progressPercentage}%` }}
-          ></div>
-        </div>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
-          Завершено {completedWorkouts} из {totalWorkouts} тренировок
-        </p>
-      </div>
-    );
-  };
-
+  // Основной рендеринг страницы
   return (
     <div className="min-h-screen bg-gray-100 py-8">
       <div className="container mx-auto px-4">
@@ -179,13 +243,28 @@ export default function ActiveProgram() {
               
               <div className="bg-blue-50 p-4 rounded-lg text-center">
                 <div className="text-3xl font-bold text-blue-700">
-                  {activeProgram.completedWorkouts?.length || 0}
+                  {progressData.completed}
                 </div>
                 <div className="text-gray-600">Завершено</div>
               </div>
             </div>
 
-            {renderProgress()}
+            {/* Прогресс бар */}
+            <div>
+              <div className="flex justify-between mb-1">
+                <span className="text-gray-700 dark:text-gray-300">Прогресс программы</span>
+                <span className="text-gray-700 dark:text-gray-300">{progressData.percentage}%</span>
+              </div>
+              <div className="bg-gray-200 dark:bg-gray-700 h-4 rounded-full overflow-hidden">
+                <div 
+                  className="bg-blue-600 h-full rounded-full" 
+                  style={{ width: `${progressData.percentage}%` }}
+                ></div>
+              </div>
+              <p className="text-gray-600 dark:text-gray-400 mt-2">
+                Завершено {progressData.completed} из {progressData.total} тренировок
+              </p>
+            </div>
           </div>
 
           {/* Текущая тренировка */}
@@ -258,7 +337,7 @@ export default function ActiveProgram() {
             
             {activeProgram.completedWorkouts && activeProgram.completedWorkouts.length > 0 ? (
               <div className="space-y-4">
-                {activeProgram.completedWorkouts?.map((workout, idx) => (
+                {activeProgram.completedWorkouts.map((workout, idx) => (
                   <div key={idx} className="border rounded-lg p-4 bg-gray-50">
                     <div className="flex justify-between items-center mb-2">
                       <h3 className="font-medium">Неделя {workout.week}, День {workout.day}</h3>
@@ -267,69 +346,7 @@ export default function ActiveProgram() {
                       </span>
                     </div>
                     
-                    {(() => {
-                      // Ищем тренировку в истории по дате
-                      const foundWorkout = workoutHistory?.find(h => 
-                        new Date(h.date).toDateString() === new Date(workout.date).toDateString()
-                      );
-                      
-                      console.log('Тренировка в истории для даты', new Date(workout.date).toLocaleDateString(), 
-                                 foundWorkout ? 'найдена' : 'не найдена');
-                      
-                      // Если нет данных истории или нет упражнений, показываем сообщение
-                      if (!foundWorkout || !foundWorkout.exercises || foundWorkout.exercises.length === 0) {
-                        return (
-                          <p className="text-sm text-gray-500 italic">Нет подробных данных о тренировке</p>
-                        );
-                      }
-
-                      // Найдена история тренировки, показываем детальную информацию
-                      return (
-                        <div className="mt-2 space-y-2">
-                          <h4 className="text-sm font-medium text-gray-700">Выполненные упражнения:</h4>
-                          {foundWorkout.exercises.map((ex, exIdx) => (
-                            <div key={exIdx} className="text-sm pl-4 border-l-2 border-blue-200">
-                              <div className="font-medium">{ex.name || (ex as any).exercise?.name}</div>
-                              <div className="text-gray-600">
-                                {ex.sets?.filter(s => s.completed).length || 0} из {ex.sets?.length || 0} подходов
-                                {ex.sets && ex.sets.length > 0 ? (
-                                  <div className="text-gray-600 mt-1">
-                                    {ex.sets.filter(s => s.completed).map((set, setIdx) => (
-                                      <div key={setIdx} className="text-xs">
-                                        Подход {setIdx + 1}: 
-                                        {set.weight && typeof set.weight === 'number' && set.weight > 0 ? `${set.weight} кг` : 
-                                         set.weight && !isNaN(Number(set.weight)) && Number(set.weight) > 0 ? `${Number(set.weight)} кг` : ''}
-                                          
-                                        {(set.weight && ((typeof set.weight === 'number' && set.weight > 0) || 
-                                           (!isNaN(Number(set.weight)) && Number(set.weight) > 0))) && 
-                                         (set.reps && ((typeof set.reps === 'number' && set.reps > 0) || 
-                                           (!isNaN(Number(set.reps)) && Number(set.reps) > 0))) ? ' × ' : ''}
-                                          
-                                        {set.reps && typeof set.reps === 'number' && set.reps > 0 ? `${set.reps} повт.` : 
-                                         set.reps && !isNaN(Number(set.reps)) && Number(set.reps) > 0 ? `${Number(set.reps)} повт.` : ''}
-                                          
-                                        {(set as any).duration && typeof (set as any).duration === 'number' && (set as any).duration > 0 ? 
-                                           `${(set as any).duration} сек` : 
-                                         (set as any).duration && !isNaN(Number((set as any).duration)) && Number((set as any).duration) > 0 ? 
-                                           `${Number((set as any).duration)} сек` : ''}
-                                        
-                                        {((!set.weight || typeof set.weight !== 'number' || set.weight <= 0) && 
-                                          (!set.reps || typeof set.reps !== 'number' || set.reps <= 0) && 
-                                          (!(set as any).duration || typeof (set as any).duration !== 'number' || (set as any).duration <= 0)) || 
-                                         ((set.weight && !isNaN(Number(set.weight)) && Number(set.weight) <= 0) && 
-                                          (set.reps && !isNaN(Number(set.reps)) && Number(set.reps) <= 0) && 
-                                          ((set as any).duration && !isNaN(Number((set as any).duration)) && Number((set as any).duration) <= 0)) ? 
-                                         'Выполнено' : ''}
-                                      </div>
-                                    ))}
-                                  </div>
-                                ) : ''}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      );
-                    })()}
+                    {renderWorkoutHistory(workout)}
                   </div>
                 ))}
               </div>

@@ -21,7 +21,33 @@ const ContinueWorkoutButton: React.FC<ContinueWorkoutButtonProps> = ({
 
   useEffect(() => {
     // Проверяем наличие активной тренировки только на клиенте
-    setIsVisible(hasActiveWorkout());
+    const checkActiveWorkout = () => {
+      const isActive = hasActiveWorkout();
+      console.log('ContinueWorkoutButton: Проверка наличия активной тренировки', isActive);
+      setIsVisible(isActive);
+    };
+
+    // Проверяем при монтировании
+    checkActiveWorkout();
+
+    // Устанавливаем слушатель для изменений localStorage
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'workoutProgress' || e.key === 'lastWorkoutCleared') {
+        console.log('ContinueWorkoutButton: Обнаружено изменение в localStorage:', e.key);
+        checkActiveWorkout();
+      }
+    };
+
+    // Добавляем слушатель событий хранилища для обновлений из других вкладок
+    window.addEventListener('storage', handleStorageChange);
+
+    // Создаем интервал для периодической проверки (на случай, если данные изменились внутри этой же вкладки)
+    const intervalId = setInterval(checkActiveWorkout, 5000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(intervalId);
+    };
   }, []);
 
   // Если нет активной тренировки, не отображаем кнопку
