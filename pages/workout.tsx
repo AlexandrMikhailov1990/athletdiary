@@ -652,6 +652,14 @@ export default function Workout() {
 
   // Функция для навигации к меню программ
   const goToPrograms = () => {
+    // Очищаем прогресс текущей тренировки перед возвратом на страницу программ
+    clearWorkoutProgress();
+    console.log('Прогресс тренировки очищен, возврат к программам');
+    
+    // Закрываем модальное окно
+    setShowConfirmationModal(false);
+    
+    // Перенаправляем пользователя на страницу программ
     router.push('/programs');
   };
 
