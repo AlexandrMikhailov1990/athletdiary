@@ -67,26 +67,19 @@ export default function Workout() {
   const [timerCompleted, setTimerCompleted] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 
-  // Инициализируем звук только при первом клике пользователя
+  // Инициализируем звук при монтировании компонента
   useEffect(() => {
-    // Проверяем текущее состояние звука для обновления UI
     setIsMuted(soundManager.isSoundMuted());
-    
-    // Звуковой менеджер сам инициализируется в конструкторе, 
-    // а обработчики событий добавляются автоматически
-    console.log('[Workout] Звуковой менеджер уже инициализирован');
-    
-    // Слушаем только первое взаимодействие пользователя для активации звука
+
     const handleUserInteraction = () => {
       console.log('[Workout] User interaction detected');
       // Звуковой менеджер автоматически подготовит аудио при взаимодействии
     };
-    
-    // Добавляем обработчики один раз
+
     window.addEventListener('click', handleUserInteraction, { once: true });
     window.addEventListener('touchstart', handleUserInteraction, { once: true });
     window.addEventListener('keydown', handleUserInteraction, { once: true });
-    
+
     return () => {
       window.removeEventListener('click', handleUserInteraction);
       window.removeEventListener('touchstart', handleUserInteraction);

@@ -28,7 +28,7 @@ export const YOGA_BACK_PROGRAM: Program = {
   description: "Программа йоги, разработанная для укрепления и расслабления мышц спины, улучшения осанки и снятия напряжения. Включает позы для растяжки позвоночника, укрепления корпуса и снятия боли в спине.",
   isPublic: true,
   createdBy: "admin",
-  restBetweenExercises: 140,
+  restBetweenExercises: 10,
   workouts: [
     {
       id: uuidv4(),
