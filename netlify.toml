@@ -1,54 +1,25 @@
+# Основные настройки сборки
 [build]
   command = "npm run netlify-build"
   publish = "out"
 
+# Переменные окружения для сборки
 [build.environment]
   NODE_VERSION = "18"
   NPM_VERSION = "9"
   NEXT_TELEMETRY_DISABLED = "1"
 
-# Правила для обработки запросов без слэша
-[[redirects]]
-  from = "/*"
-  to = "/:splat/"
-  status = 301
-  force = false
-  conditions = {Path = {ends_with = false, regex = "^(?!.*\\/$)"}}
-
-# Правило для обработки SPA маршрутизации
+# Простое правило для обработки всех запросов через next/router
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
 
-# Правило для статических файлов - обслуживать напрямую
-[[redirects]]
-  from = "/_next/*"
-  to = "/_next/:splat"
-  status = 200
-
-# Правило для страниц - обслуживать напрямую
-[[redirects]]
-  from = "/pages/*"
-  to = "/pages/:splat"
-  status = 200
-
-# Заголовки безопасности
+# Заголовки безопасности для всех файлов
 [[headers]]
   for = "/*"
     [headers.values]
     X-Frame-Options = "DENY"
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-
-# Кэширование статических ресурсов
-[[headers]]
-  for = "/_next/static/*"
-    [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "/static/*"
-    [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable" 
+    Referrer-Policy = "strict-origin-when-cross-origin" 

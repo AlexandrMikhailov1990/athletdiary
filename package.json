@@ -4,12 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build && next export -o out",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "postinstall": "touch node_modules/.metadata_never_index",
-    "export": "next export -o out",
-    "netlify-build": "next build && next export -o out"
+    "netlify-build": "NODE_ENV=production next build && cp -r public/* out/"
   },
   "dependencies": {
     "@types/react-beautiful-dnd": "^13.1.8",
