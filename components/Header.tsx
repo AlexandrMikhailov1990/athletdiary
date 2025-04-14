@@ -88,14 +88,12 @@ export default function Header() {
       {/* Мобильное меню */}
       {isMenuOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
-          {/* Затемнение фона */}
           <div 
             className="absolute inset-0 bg-black bg-opacity-50 transition-opacity"
             onClick={closeMenu}
           />
           
-          {/* Меню */}
-          <div className="absolute right-0 top-0 h-full w-64 transform transition-transform duration-300 ease-in-out bg-white shadow-xl">
+          <div className="absolute right-0 top-0 w-64 h-full bg-white shadow-xl">
             <div className="flex flex-col h-full">
               {/* Заголовок меню */}
               <div className="flex items-center justify-between p-4 border-b">
@@ -110,23 +108,52 @@ export default function Header() {
                 </button>
               </div>
 
-              {/* Содержимое меню */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-2">
-                <Link href="/exercises" className={`block p-2 rounded-md hover:bg-gray-100 ${
-                  router.pathname === '/exercises' ? 'font-semibold text-blue-600' : 'text-gray-700'
-                }`} onClick={closeMenu}>
-                  Упражнения
-                </Link>
-                <Link href="/programs" className={`block p-2 rounded-md hover:bg-gray-100 ${
-                  router.pathname === '/programs' ? 'font-semibold text-blue-600' : 'text-gray-700'
-                }`} onClick={closeMenu}>
-                  Программы
-                </Link>
-                <Link href="/history" className={`block p-2 rounded-md hover:bg-gray-100 ${
-                  router.pathname === '/history' ? 'font-semibold text-blue-600' : 'text-gray-700'
-                }`} onClick={closeMenu}>
-                  История
-                </Link>
+              {/* Основное содержимое меню */}
+              <div className="flex flex-col flex-grow">
+                {/* Навигационные ссылки */}
+                <nav className="flex flex-col">
+                  <Link href="/exercises" 
+                    className={`px-4 py-3 ${
+                      router.pathname === '/exercises' 
+                        ? 'bg-blue-50 text-blue-600 font-medium' 
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    Упражнения
+                  </Link>
+                  <Link href="/programs"
+                    className={`px-4 py-3 ${
+                      router.pathname === '/programs'
+                        ? 'bg-blue-50 text-blue-600 font-medium'
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    Программы
+                  </Link>
+                  <Link href="/history"
+                    className={`px-4 py-3 ${
+                      router.pathname === '/history'
+                        ? 'bg-blue-50 text-blue-600 font-medium'
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    История
+                  </Link>
+                </nav>
+
+                {/* Дополнительные действия */}
+                <div className="border-t mt-4">
+                  <Link href="/login"
+                    className="block px-4 py-3 text-gray-700 hover:bg-gray-50"
+                  >
+                    Войти
+                  </Link>
+                  <Link href="/register"
+                    className="block px-4 py-3 text-blue-600 hover:bg-blue-50 font-medium"
+                  >
+                    Регистрация
+                  </Link>
+                </div>
               </div>
             </div>
           </div>

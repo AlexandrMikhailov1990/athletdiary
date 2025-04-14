@@ -48,6 +48,7 @@ export interface Program {
   createdBy?: string;
   restBetweenSets?: number;
   restBetweenExercises?: number;
+  isSample?: boolean;
 }
 
 interface CompletedWorkout {
@@ -160,4 +161,27 @@ export function migratePrograms(): void {
 }
 
 // Обновим и демо-программы
-export const SAMPLE_PROGRAMS: Program[] = []; 
+export const SAMPLE_PROGRAMS: Program[] = [];
+
+export function copyProgram(programId: string): Program {
+  const program = getProgramById(programId);
+  if (!program) {
+    throw new Error('Программа не найдена');
+  }
+
+  // Создаем копию программы с новым ID
+  const copiedProgram: Program = {
+    ...program,
+    id: uuidv4(),
+    name: `${program.name} (копия)`,
+    isPublic: false,
+    createdBy: 'user'
+  };
+
+  // Сохраняем копию в localStorage
+  const programs = JSON.parse(localStorage.getItem('programs') || '[]');
+  programs.push(copiedProgram);
+  localStorage.setItem('programs', JSON.stringify(programs));
+
+  return copiedProgram;
+} 

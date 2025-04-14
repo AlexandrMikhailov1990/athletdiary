@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '../../../components/Layout';
 import { Exercise, getAllExercises, translateMuscleGroup, translateEquipment, getAllMuscleGroups, getAllEquipment } from '../../../models/Exercise';
-import { Program, WorkoutExercise, getProgramById } from '../../../models/Program';
+import { Program, WorkoutExercise, getProgramById, copyProgram, SAMPLE_PROGRAMS } from '../../../models/Program';
 import { v4 as uuidv4 } from 'uuid';
 
 interface ProgramExerciseEdit extends WorkoutExercise {
@@ -28,7 +28,7 @@ const EditProgram: React.FC = () => {
     name: '',
     description: '',
     exercises: [],
-    restBetweenExercises: 120,
+    restBetweenExercises: 60,
   });
   
   // Состояние для выбора упражнений
@@ -40,6 +40,15 @@ const EditProgram: React.FC = () => {
   const [selectedMuscleGroup, setSelectedMuscleGroup] = useState<string | null>(null);
   const [selectedEquipment, setSelectedEquipment] = useState<string | null>(null);
   
+  // Добавим состояние для редактируемого упражнения
+  const [editingExercise, setEditingExercise] = useState<ProgramExerciseEdit | null>(null);
+  
+  // Добавим состояние для проверки стандартной программы
+  const [isSampleProgram, setIsSampleProgram] = useState(false);
+  
+  // Добавим состояние для модального окна добавления упражнения
+  const [showExerciseModal, setShowExerciseModal] = useState(false);
+  
   // Загрузка программы для редактирования
   useEffect(() => {
     if (!id) return;
@@ -50,6 +59,17 @@ const EditProgram: React.FC = () => {
         if (!program) {
           alert('Программа не найдена');
           router.push('/programs');
+          return;
+        }
+        
+        // Проверяем, является ли программа стандартной
+        const isSample = SAMPLE_PROGRAMS.some(p => p.id === program.id);
+        setIsSampleProgram(isSample);
+        
+        // Если программа стандартная, создаем копию
+        if (isSample) {
+          const copiedProgram = copyProgram(id as string);
+          router.push(`/programs/edit/${copiedProgram.id}`);
           return;
         }
         
@@ -307,11 +327,57 @@ const EditProgram: React.FC = () => {
     }
   };
 
+  // Обработчик копирования программы
+  const handleCopyProgram = () => {
+    try {
+      const copiedProgram = copyProgram(id as string);
+      router.push(`/programs/edit/${copiedProgram.id}`);
+    } catch (error) {
+      console.error('Ошибка при копировании программы:', error);
+      alert('Произошла ошибка при копировании программы');
+    }
+  };
+
+  // Добавим обработчик для редактирования упражнения
+  const handleEditExercise = (exercise: ProgramExerciseEdit) => {
+    setEditingExercise(exercise);
+  };
+
+  // Добавим обработчик для сохранения изменений упражнения
+  const handleSaveExerciseEdit = () => {
+    if (!editingExercise) return;
+    
+    setForm(prev => ({
+      ...prev,
+      exercises: prev.exercises.map(ex => 
+        ex.id === editingExercise.id ? editingExercise : ex
+      )
+    }));
+    
+    setEditingExercise(null);
+  };
+
   // Заголовок страницы
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-blue-800 mb-6">Редактирование программы</h1>
+      <div className="container mx-auto px-4 pb-24 py-8">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+          <h1 className="text-2xl font-bold text-gray-800">Редактирование программы</h1>
+          <div className="flex w-full sm:w-auto gap-3 justify-center">
+            <button
+              onClick={handleCopyProgram}
+              className="flex-1 sm:flex-none bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition-colors duration-200 text-base font-medium"
+            >
+              Копировать программу
+            </button>
+            <button
+              onClick={() => router.push('/programs')}
+              className="flex-1 sm:flex-none bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-colors duration-200 text-base font-medium"
+            >
+              Отмена
+            </button>
+          </div>
+        </div>
         
         {loading ? (
           <div className="flex justify-center">
@@ -381,74 +447,191 @@ const EditProgram: React.FC = () => {
                   <div className="space-y-4">
                     {form.exercises.map((exercise, index) => (
                       <div key={exercise.id} className="border rounded-lg p-4 relative">
-                        <div className="flex justify-between items-start">
-                          <div>
+                        {editingExercise?.id === exercise.id ? (
+                          <div className="space-y-4">
                             <h3 className="text-lg font-medium">{exercise.exerciseData.name}</h3>
-                            <p className="text-sm text-gray-600">{exercise.exerciseData.description}</p>
-                            
-                            <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
-                              <div className="bg-gray-50 p-2 rounded">
-                                <span className="text-xs text-gray-500 block">Подходы</span>
-                                <span className="font-medium">{exercise.sets}</span>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  Подходы
+                                </label>
+                                <input
+                                  type="number"
+                                  value={editingExercise.sets}
+                                  onChange={(e) => setEditingExercise(prev => prev ? {
+                                    ...prev,
+                                    sets: parseInt(e.target.value)
+                                  } : null)}
+                                  min="1"
+                                  className="w-full p-2 border border-gray-300 rounded"
+                                />
                               </div>
                               
                               {exercise.exerciseData.type === 'reps' && (
                                 <>
-                                  <div className="bg-gray-50 p-2 rounded">
-                                    <span className="text-xs text-gray-500 block">Повторения</span>
-                                    <span className="font-medium">{exercise.reps || '-'}</span>
+                                  <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                      Повторения
+                                    </label>
+                                    <input
+                                      type="number"
+                                      value={editingExercise.reps || 0}
+                                      onChange={(e) => setEditingExercise(prev => prev ? {
+                                        ...prev,
+                                        reps: parseInt(e.target.value)
+                                      } : null)}
+                                      min="0"
+                                      className="w-full p-2 border border-gray-300 rounded"
+                                    />
                                   </div>
-                                  <div className="bg-gray-50 p-2 rounded">
-                                    <span className="text-xs text-gray-500 block">Вес (кг)</span>
-                                    <span className="font-medium">{exercise.weight || '-'}</span>
+                                  <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                      Вес (кг)
+                                    </label>
+                                    <input
+                                      type="number"
+                                      value={editingExercise.weight || 0}
+                                      onChange={(e) => setEditingExercise(prev => prev ? {
+                                        ...prev,
+                                        weight: parseFloat(e.target.value)
+                                      } : null)}
+                                      min="0"
+                                      step="0.5"
+                                      className="w-full p-2 border border-gray-300 rounded"
+                                    />
                                   </div>
                                 </>
                               )}
                               
                               {exercise.exerciseData.type === 'timed' && (
-                                <div className="bg-gray-50 p-2 rounded">
-                                  <span className="text-xs text-gray-500 block">Длительность (сек)</span>
-                                  <span className="font-medium">{exercise.duration || '-'}</span>
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Длительность (сек)
+                                  </label>
+                                  <input
+                                    type="number"
+                                    value={editingExercise.duration || 0}
+                                    onChange={(e) => setEditingExercise(prev => prev ? {
+                                      ...prev,
+                                      duration: parseInt(e.target.value)
+                                    } : null)}
+                                    min="0"
+                                    className="w-full p-2 border border-gray-300 rounded"
+                                  />
                                 </div>
                               )}
                               
-                              <div className="bg-gray-50 p-2 rounded">
-                                <span className="text-xs text-gray-500 block">Отдых (сек)</span>
-                                <span className="font-medium">{exercise.rest}</span>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  Отдых (сек)
+                                </label>
+                                <input
+                                  type="number"
+                                  value={editingExercise.rest}
+                                  onChange={(e) => setEditingExercise(prev => prev ? {
+                                    ...prev,
+                                    rest: parseInt(e.target.value)
+                                  } : null)}
+                                  min="0"
+                                  className="w-full p-2 border border-gray-300 rounded"
+                                />
                               </div>
                             </div>
+                            
+                            <div className="flex justify-end space-x-2">
+                              <button
+                                type="button"
+                                onClick={() => setEditingExercise(null)}
+                                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded"
+                              >
+                                Отмена
+                              </button>
+                              <button
+                                type="button"
+                                onClick={handleSaveExerciseEdit}
+                                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
+                              >
+                                Сохранить
+                              </button>
+                            </div>
                           </div>
-                          
-                          <div className="flex flex-col space-y-2">
-                            <button
-                              type="button"
-                              onClick={() => handleMoveExercise(exercise.id, 'up')}
-                              disabled={index === 0}
-                              className={`p-1 rounded ${
-                                index === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-blue-600 hover:bg-blue-50'
-                              }`}
-                            >
-                              ↑
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleMoveExercise(exercise.id, 'down')}
-                              disabled={index === form.exercises.length - 1}
-                              className={`p-1 rounded ${
-                                index === form.exercises.length - 1 ? 'text-gray-300 cursor-not-allowed' : 'text-blue-600 hover:bg-blue-50'
-                              }`}
-                            >
-                              ↓
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveExercise(exercise.id)}
-                              className="p-1 text-red-600 hover:bg-red-50 rounded"
-                            >
-                              ✕
-                            </button>
+                        ) : (
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h3 className="text-lg font-medium">{exercise.exerciseData.name}</h3>
+                              <p className="text-sm text-gray-600">{exercise.exerciseData.description}</p>
+                              
+                              <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div className="bg-gray-50 p-2 rounded">
+                                  <span className="text-xs text-gray-500 block">Подходы</span>
+                                  <span className="font-medium">{exercise.sets}</span>
+                                </div>
+                                
+                                {exercise.exerciseData.type === 'reps' && (
+                                  <>
+                                    <div className="bg-gray-50 p-2 rounded">
+                                      <span className="text-xs text-gray-500 block">Повторения</span>
+                                      <span className="font-medium">{exercise.reps || '-'}</span>
+                                    </div>
+                                    <div className="bg-gray-50 p-2 rounded">
+                                      <span className="text-xs text-gray-500 block">Вес (кг)</span>
+                                      <span className="font-medium">{exercise.weight || '-'}</span>
+                                    </div>
+                                  </>
+                                )}
+                                
+                                {exercise.exerciseData.type === 'timed' && (
+                                  <div className="bg-gray-50 p-2 rounded">
+                                    <span className="text-xs text-gray-500 block">Длительность (сек)</span>
+                                    <span className="font-medium">{exercise.duration || '-'}</span>
+                                  </div>
+                                )}
+                                
+                                <div className="bg-gray-50 p-2 rounded">
+                                  <span className="text-xs text-gray-500 block">Отдых (сек)</span>
+                                  <span className="font-medium">{exercise.rest}</span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="flex flex-col space-y-2">
+                              <button
+                                type="button"
+                                onClick={() => handleMoveExercise(exercise.id, 'up')}
+                                disabled={index === 0}
+                                className={`p-1 rounded ${
+                                  index === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-blue-600 hover:bg-blue-50'
+                                }`}
+                              >
+                                ↑
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleMoveExercise(exercise.id, 'down')}
+                                disabled={index === form.exercises.length - 1}
+                                className={`p-1 rounded ${
+                                  index === form.exercises.length - 1 ? 'text-gray-300 cursor-not-allowed' : 'text-blue-600 hover:bg-blue-50'
+                                }`}
+                              >
+                                ↓
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleEditExercise(exercise)}
+                                className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                              >
+                                ✎
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveExercise(exercise.id)}
+                                className="p-1 text-red-600 hover:bg-red-50 rounded"
+                              >
+                                ✕
+                              </button>
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -464,24 +647,26 @@ const EditProgram: React.FC = () => {
                 <h2 className="text-xl font-semibold text-blue-800 mb-4">Добавить упражнение</h2>
                 
                 <div className="mb-6">
-                  <div className="flex justify-between items-center mb-4">
-                    <div>
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
+                    <div className="w-full sm:w-auto">
                       <label htmlFor="searchQuery" className="block text-sm font-medium text-gray-700 mb-1">
                         Поиск упражнений
                       </label>
-                      <div className="flex space-x-2">
-                        <input
-                          type="text"
-                          id="searchQuery"
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          placeholder="Название или описание..."
-                          className="p-2 border border-gray-300 rounded w-64"
-                        />
+                      <div className="flex flex-col sm:flex-row gap-2 w-full">
+                        <div className="flex-1">
+                          <input
+                            type="text"
+                            id="searchQuery"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Название или описание..."
+                            className="w-full p-2 border border-gray-300 rounded"
+                          />
+                        </div>
                         <button
                           type="button"
                           onClick={toggleSelectionMode}
-                          className="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded"
+                          className="w-full sm:w-auto bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded text-sm font-medium whitespace-nowrap"
                         >
                           {selectionMode === 'list' ? 'По категориям' : 'Список'}
                         </button>
@@ -493,19 +678,19 @@ const EditProgram: React.FC = () => {
                   {selectionMode === 'list' ? (
                     <div className="h-60 overflow-y-auto border rounded p-2">
                       {filteredExercises.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 gap-2">
                           {filteredExercises.map(exercise => (
                             <div
                               key={exercise.id}
                               onClick={() => handleSelectExercise(exercise)}
-                              className={`p-2 rounded cursor-pointer ${
+                              className={`p-3 rounded cursor-pointer ${
                                 selectedExercise?.id === exercise.id
                                   ? 'bg-blue-100 border border-blue-300'
                                   : 'hover:bg-gray-100 border border-transparent'
                               }`}
                             >
                               <div className="font-medium">{exercise.name}</div>
-                              <div className="text-xs text-gray-500">{exercise.type === 'reps' ? 'Силовое' : 'Кардио'}</div>
+                              <div className="text-sm text-gray-500">{exercise.type === 'reps' ? 'Силовое' : 'Кардио'}</div>
                             </div>
                           ))}
                         </div>
@@ -516,62 +701,66 @@ const EditProgram: React.FC = () => {
                       )}
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4">
                       <div>
                         <h3 className="text-md font-medium mb-2">Группы мышц</h3>
-                        <div className="h-60 overflow-y-auto border rounded p-2">
-                          {muscleGroups.map(group => (
-                            <div
-                              key={group}
-                              onClick={() => handleSelectMuscleGroup(group)}
-                              className={`p-2 rounded cursor-pointer ${
-                                selectedMuscleGroup === group
-                                  ? 'bg-blue-100 border border-blue-300'
-                                  : 'hover:bg-gray-100 border border-transparent'
-                              }`}
-                            >
-                              {translateMuscleGroup(group)}
-                            </div>
-                          ))}
+                        <div className="h-40 overflow-y-auto border rounded p-2">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            {muscleGroups.map(group => (
+                              <div
+                                key={group}
+                                onClick={() => handleSelectMuscleGroup(group)}
+                                className={`p-2 rounded cursor-pointer text-sm ${
+                                  selectedMuscleGroup === group
+                                    ? 'bg-blue-100 border border-blue-300'
+                                    : 'hover:bg-gray-100 border border-transparent'
+                                }`}
+                              >
+                                {translateMuscleGroup(group)}
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
                       
                       <div>
                         <h3 className="text-md font-medium mb-2">Оборудование</h3>
-                        <div className="h-60 overflow-y-auto border rounded p-2">
-                          {equipmentTypes.map(equipment => (
-                            <div
-                              key={equipment}
-                              onClick={() => handleSelectEquipment(equipment)}
-                              className={`p-2 rounded cursor-pointer ${
-                                selectedEquipment === equipment
-                                  ? 'bg-blue-100 border border-blue-300'
-                                  : 'hover:bg-gray-100 border border-transparent'
-                              }`}
-                            >
-                              {translateEquipment(equipment)}
-                            </div>
-                          ))}
+                        <div className="h-40 overflow-y-auto border rounded p-2">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            {equipmentTypes.map(equipment => (
+                              <div
+                                key={equipment}
+                                onClick={() => handleSelectEquipment(equipment)}
+                                className={`p-2 rounded cursor-pointer text-sm ${
+                                  selectedEquipment === equipment
+                                    ? 'bg-blue-100 border border-blue-300'
+                                    : 'hover:bg-gray-100 border border-transparent'
+                                }`}
+                              >
+                                {translateEquipment(equipment)}
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
                       
-                      <div className="md:col-span-2">
+                      <div>
                         <h3 className="text-md font-medium mb-2">Результаты</h3>
-                        <div className="h-60 overflow-y-auto border rounded p-2">
+                        <div className="h-40 overflow-y-auto border rounded p-2">
                           {filteredExercises.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            <div className="grid grid-cols-1 gap-2">
                               {filteredExercises.map(exercise => (
                                 <div
                                   key={exercise.id}
                                   onClick={() => handleSelectExercise(exercise)}
-                                  className={`p-2 rounded cursor-pointer ${
+                                  className={`p-3 rounded cursor-pointer ${
                                     selectedExercise?.id === exercise.id
                                       ? 'bg-blue-100 border border-blue-300'
                                       : 'hover:bg-gray-100 border border-transparent'
                                   }`}
                                 >
                                   <div className="font-medium">{exercise.name}</div>
-                                  <div className="text-xs text-gray-500">{exercise.type === 'reps' ? 'Силовое' : 'Кардио'}</div>
+                                  <div className="text-sm text-gray-500">{exercise.type === 'reps' ? 'Силовое' : 'Кардио'}</div>
                                 </div>
                               ))}
                             </div>
@@ -695,17 +884,17 @@ const EditProgram: React.FC = () => {
               </div>
               
               {/* Кнопки управления */}
-              <div className="flex justify-between">
+              <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 flex justify-between items-center gap-3 z-50">
                 <button
                   type="button"
-                  onClick={() => router.push(`/programs/${form.id}`)}
-                  className="px-6 py-2 bg-gray-200 hover:bg-gray-300 rounded"
+                  onClick={() => setShowExerciseModal(true)}
+                  className="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition-colors duration-200 text-base font-medium"
                 >
-                  Отмена
+                  Добавить упражнение
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
+                  className="flex-1 bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg transition-colors duration-200 text-base font-medium"
                 >
                   Сохранить изменения
                 </button>
@@ -714,6 +903,43 @@ const EditProgram: React.FC = () => {
           </div>
         )}
       </div>
+      {showExerciseModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white w-full max-w-lg mx-4 rounded-lg shadow-xl">
+            <div className="p-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold">Добавить упражнение</h3>
+            </div>
+            <div className="p-4">
+              <div className="mb-4">
+                <input
+                  type="text"
+                  placeholder="Название или описание..."
+                  className="w-full p-2 border border-gray-300 rounded"
+                />
+              </div>
+              <div className="flex justify-between">
+                <button
+                  type="button"
+                  className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded"
+                  onClick={() => setShowExerciseModal(false)}
+                >
+                  Отмена
+                </button>
+                <button
+                  type="button"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
+                  onClick={() => {
+                    // Здесь будет логика добавления упражнения
+                    setShowExerciseModal(false);
+                  }}
+                >
+                  Добавить
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 };
