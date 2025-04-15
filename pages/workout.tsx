@@ -946,9 +946,23 @@ export default function Workout() {
                     <h3 className="text-lg font-semibold mb-4 text-gray-800">История подходов</h3>
                     <div className="space-y-2">
                       {exercises[currentExerciseIndex].setDetails.map((set, index) => (
-                        <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                        <div 
+                          key={index} 
+                          className="flex justify-between items-center p-3 bg-gray-50 rounded hover:bg-blue-50 active:bg-blue-100 cursor-pointer transition-all duration-200"
+                          onClick={() => {
+                            console.log('Копирование данных из подхода:', set);
+                            
+                            // Проверяем, что все данные из подхода валидны прежде чем копировать
+                            if (exercises[currentExerciseIndex]?.exercise.type === 'reps') {
+                              if (set.weight !== undefined) setCurrentWeight(set.weight);
+                              if (set.reps !== undefined) setCurrentReps(set.reps);
+                            } else if (exercises[currentExerciseIndex]?.exercise.type === 'timed') {
+                              if (set.duration !== undefined) setTimeLeft(set.duration);
+                            }
+                          }}
+                        >
                           <span className="font-medium text-gray-800">Подход {index + 1}</span>
-                          <span className="text-gray-600">
+                          <span className="text-gray-600 font-medium">
                             {exercises[currentExerciseIndex].exercise.type === 'reps' 
                               ? ((set.reps || 0) > 0 || (set.weight || 0) > 0) 
                                 ? `${(set.reps || 0) > 0 ? `${set.reps} повт.` : ''} ${(set.weight || 0) > 0 ? `${(set.reps || 0) > 0 ? '× ' : ''}${set.weight} кг` : ''}`
@@ -977,12 +991,31 @@ export default function Workout() {
                           </div>
                           <div className="pl-4 space-y-2">
                             {workout.sets.map((set, setIndex) => (
-                              <div key={setIndex} className="flex justify-between items-center py-1 border-b border-gray-100">
+                              <div 
+                                key={setIndex} 
+                                className="flex justify-between items-center py-2 px-3 border-b border-gray-100 hover:bg-blue-50 active:bg-blue-100 rounded cursor-pointer transition-all duration-200"
+                                onClick={() => {
+                                  // Копируем данные из истории в текущий подход
+                                  console.log('Копирование данных из истории:', set);
+                                  
+                                  // Обновляем форму только если текущий тип упражнения соответствует
+                                  const currentExercise = exercises[currentExerciseIndex]?.exercise;
+                                  
+                                  if (currentExercise && currentExercise.type === 'reps') {
+                                    // Устанавливаем значения веса и повторений
+                                    if (set.weight !== undefined) setCurrentWeight(set.weight);
+                                    if (set.reps !== undefined) setCurrentReps(set.reps);
+                                  } else if (currentExercise && currentExercise.type === 'timed') {
+                                    // Для упражнения с таймером копируем только длительность
+                                    if (set.duration !== undefined) setTimeLeft(set.duration);
+                                  }
+                                }}
+                              >
                                 <span className="text-sm text-gray-700">Подход {setIndex + 1}:</span>
                                 <div className="flex gap-4">
-                                  {set.weight && set.weight > 0 && <span className="text-sm text-gray-700">{set.weight} кг</span>}
-                                  {set.reps && set.reps > 0 && <span className="text-sm text-gray-700">{set.reps} повт.</span>}
-                                  {set.duration && set.duration > 0 && <span className="text-sm text-gray-700">{set.duration} сек</span>}
+                                  {set.weight && set.weight > 0 && <span className="text-sm text-gray-700 font-medium">{set.weight} кг</span>}
+                                  {set.reps && set.reps > 0 && <span className="text-sm text-gray-700 font-medium">{set.reps} повт.</span>}
+                                  {set.duration && set.duration > 0 && <span className="text-sm text-gray-700 font-medium">{set.duration} сек</span>}
                                   {(!set.weight || set.weight === 0) && 
                                    (!set.reps || set.reps === 0) && 
                                    (!set.duration || set.duration === 0) && 
