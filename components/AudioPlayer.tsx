@@ -36,7 +36,7 @@ const AudioPlayer = ({
       // Используем небольшую задержку для предотвращения конфликтов
       setTimeout(() => {
         if (autoPlay) {
-          soundManager.playTimerBeep(isCompletion);
+          soundManager.playTimerBeep(0, isCompletion);
         }
       }, 50);
     } catch (error) {
