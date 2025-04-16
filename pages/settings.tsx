@@ -108,7 +108,7 @@ export default function Settings() {
 
   // Функция для тестирования звука
   const testSound = () => {
-    soundManager.playTimerBeep(true);
+    soundManager.playTimerBeep(0, true);
   };
 
   // Функция для тестирования вибрации
