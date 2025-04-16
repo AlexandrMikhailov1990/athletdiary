@@ -174,5 +174,57 @@ export function convertProgressToHistory(progress: WorkoutProgress): WorkoutHist
 
 // Проверка наличия активной тренировки
 export function hasActiveWorkout(): boolean {
-  return getCurrentWorkoutProgress() !== null;
+  const progress = getCurrentWorkoutProgress();
+  
+  if (!progress) return false;
+  
+  // Проверяем, все ли упражнения и подходы завершены
+  const allExercisesCompleted = progress.exercises.every(exercise => {
+    // Получаем количество подходов для этого упражнения из localStorage
+    // Пытаемся получить данные из локального хранилища
+    try {
+      // Проверяем запись тренировки из программы
+      const programsJson = localStorage.getItem('programs');
+      const programsData = programsJson ? JSON.parse(programsJson) : [];
+      const program = programsData.find((p: any) => p.id === progress.programId);
+      
+      // Если нашли программу, пытаемся найти тренировку
+      if (program) {
+        const workout = program.workouts?.find((w: any) => w.id === progress.workoutId);
+        if (workout) {
+          // Ищем упражнение в тренировке
+          const workoutExercise = workout.exercises?.find((e: any) => 
+            e.exerciseId === exercise.exerciseId || e.id === exercise.exerciseId
+          );
+          
+          if (workoutExercise) {
+            // Получаем количество подходов для этого упражнения
+            const totalSets = workoutExercise.sets || 1;
+            
+            // Проверяем, все ли подходы выполнены
+            return exercise.completedSets >= totalSets;
+          }
+        }
+      }
+      
+      // Если не нашли точное количество подходов, проверяем, выполнен ли хотя бы один
+      return exercise.completedSets > 0 && 
+             exercise.setDetails.length > 0 && 
+             exercise.setDetails.every(set => set.completed);
+      
+    } catch (error) {
+      console.error('Ошибка при проверке завершенности упражнения:', error);
+      // В случае ошибки считаем, что упражнение не завершено
+      return false;
+    }
+  });
+  
+  // Если индекс текущего упражнения равен длине массива упражнений
+  // и все упражнения завершены, то тренировка считается завершенной
+  if (progress.currentExerciseIndex >= progress.exercises.length - 1 && allExercisesCompleted) {
+    console.log('Тренировка считается завершенной, все упражнения выполнены');
+    return false;
+  }
+  
+  return true;
 } 
