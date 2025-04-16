@@ -305,21 +305,22 @@ export default function Workout() {
       // Установка таймера отдыха с использованием setInterval для более точного отсчета
       const startValue = restTimer;
       const startTime = Date.now();
-      let beepPlayed = false; // Флаг для отслеживания воспроизведения звука
+      
+      // Убираем флаг для отслеживания звука, так как теперь он должен срабатывать на каждой секунде
+      // let beepPlayed = false; 
       
       const restIntervalId = setInterval(() => {
         const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
         const remaining = startValue - elapsedTime;
         
-        // Активируем обратный отсчет и звук за 5 секунд до конца
-        if (remaining === 5 && !beepPlayed) {
+        // Активируем обратный отсчет и звук за последние 5 секунд
+        if (remaining <= 5 && remaining > 0) {
           setIsCountdown(true);
-          beepPlayed = true; // Устанавливаем флаг, чтобы звук сработал только один раз
           
-          console.log('Rest timer 5 seconds remaining, playing beep');
+          console.log(`Rest timer ${remaining} seconds remaining, playing beep`);
           // Воспроизводим звук только если не выключен звук
           if (!isMuted) {
-            soundManager.playTimerBeep(false);
+            soundManager.playTimerBeep(remaining, false);
           }
         }
         
@@ -330,8 +331,12 @@ export default function Workout() {
           // Устанавливаем значение в 0 для визуального обновления
           setRestTimer(0);
           
-          // Убираем звуковой сигнал при нулевом значении таймера отдыха
-          console.log('Таймер отдыха завершен, без звукового сигнала');
+          // Воспроизводим звук завершения
+          console.log('Таймер отдыха завершен, воспроизводим звук завершения');
+          if (!isMuted) {
+            soundManager.playTimerBeep(0, true);
+          }
+          
           setTimerCompleted(true);
           
           // Обработка завершения с задержкой для корректного визуального отображения
@@ -401,22 +406,23 @@ export default function Workout() {
     
     // Запускаем новый таймер
     const startTime = Date.now();
-    let beepPlayed = false; // Флаг для отслеживания воспроизведения звука
+    
+    // Убираем флаг для отслеживания звука, так как теперь он должен срабатывать на каждой секунде
+    // let beepPlayed = false;
     
     const timer = setInterval(() => {
       const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
       const remaining = duration - elapsedTime;
       
-      // Устанавливаем режим обратного отсчета за 5 секунд до конца
-      if (remaining === 5 && !beepPlayed) {
+      // Устанавливаем режим обратного отсчета за 5 секунд до конца и воспроизводим звук на каждой секунде
+      if (remaining <= 5 && remaining > 0) {
         // Активируем режим обратного отсчета
         setIsCountdown(true);
-        beepPlayed = true; // Устанавливаем флаг, чтобы звук сработал только один раз
         
-        console.log('Exercise timer 5 seconds remaining, playing beep');
+        console.log(`Exercise timer ${remaining} seconds remaining, playing beep`);
         // Воспроизводим звук только если не выключен звук
         if (!isMuted) {
-          soundManager.playTimerBeep(false);
+          soundManager.playTimerBeep(remaining, false);
         }
       }
       
@@ -433,8 +439,11 @@ export default function Workout() {
           // Устанавливаем флаг завершения
           setTimerCompleted(true);
           
-          // Убираем звуковой сигнал при нулевом значении таймера
-          console.log('Таймер упражнения завершен, без звукового сигнала');
+          // Воспроизводим звук завершения
+          console.log('Таймер упражнения завершен, воспроизводим звук завершения');
+          if (!isMuted) {
+            soundManager.playTimerBeep(0, true);
+          }
         }
       } else {
         setTimeLeft(remaining);
@@ -641,7 +650,7 @@ export default function Workout() {
     
     // Используем SoundManager напрямую для воспроизведения звука
     // Это самый надежный способ воспроизведения
-    soundManager.playTimerBeep(true);
+    soundManager.playTimerBeep(0, true);
     
     // Добавляем немного обратной связи
     alert('Звук должен быть воспроизведен. Вы его слышите?');

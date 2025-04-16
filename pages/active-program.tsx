@@ -4,6 +4,8 @@ import { SAMPLE_PROGRAMS, Program } from '../models/Program';
 import type { ActiveProgram as ActiveProgramType } from '../models/ActiveProgram';
 import type { WorkoutHistory } from '../models/WorkoutHistory';
 import ContinueWorkoutButton from '../components/ContinueWorkoutButton';
+import Link from 'next/link';
+import { Exercise, NORMALIZED_SAMPLE_EXERCISES } from '../models/Exercise';
 
 export default function ActiveProgram() {
   const router = useRouter();
@@ -15,12 +17,76 @@ export default function ActiveProgram() {
   const [loading, setLoading] = useState(true);
   const [workoutHistory, setWorkoutHistory] = useState<WorkoutHistory[]>([]);
   
+  // Добавим переменную currentWorkout
+  const currentWorkout = useMemo(() => {
+    if (!activeProgram || !program || !program.workouts) return null;
+    
+    const currentWorkoutIndex = activeProgram.currentDay - 1;
+    if (currentWorkoutIndex < 0 || currentWorkoutIndex >= program.workouts.length) {
+      return null;
+    }
+    
+    return program.workouts[currentWorkoutIndex];
+  }, [activeProgram, program]);
+
+  // Используем NORMALIZED_SAMPLE_EXERCISES в качестве sampleExercises
+  const sampleExercises = NORMALIZED_SAMPLE_EXERCISES;
+
+  // Функция для получения типа упражнения
+  const getExerciseType = (type: string | undefined): string => {
+    switch(type) {
+      case 'reps':
+        return 'Повторения';
+      case 'timed':
+        return 'Таймер';
+      case 'distance':
+        return 'Дистанция';
+      default:
+        return 'Упражнение';
+    }
+  };
+  
+  // Добавим функцию для сброса прогресса программы
+  const resetProgramProgress = () => {
+    if (!activeProgram || !program) return;
+    
+    // Создаем новый объект активной программы с сброшенными значениями
+    const resetProgram: ActiveProgramType = {
+      ...activeProgram,
+      currentDay: 1,
+      currentWeek: 1,
+      completedWorkouts: [],
+      startDate: new Date().toISOString()
+    };
+    
+    // Сохраняем сброшенную программу
+    localStorage.setItem('activeProgram', JSON.stringify(resetProgram));
+    
+    // Обновляем состояние
+    setActiveProgram(resetProgram);
+    
+    // Уведомляем пользователя
+    alert('Прогресс программы сброшен. Программа начата сначала.');
+  };
+  
   // Безопасно вычисляем значения даже при отсутствии данных
   const daysSinceStart = useMemo(() => {
     if (!activeProgram) return 0;
     const currentDate = new Date();
     const startDate = new Date(activeProgram.startDate);
     return Math.floor((currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+  }, [activeProgram]);
+  
+  // Вычисляем дни с последней тренировки
+  const daysSinceLastWorkout = useMemo(() => {
+    if (!activeProgram || !activeProgram.completedWorkouts || activeProgram.completedWorkouts.length === 0) return 0;
+    
+    // Находим дату последней тренировки
+    const lastWorkoutDate = new Date(
+      Math.max(...activeProgram.completedWorkouts.map(w => new Date(w.date).getTime()))
+    );
+    const currentDate = new Date();
+    return Math.floor((currentDate.getTime() - lastWorkoutDate.getTime()) / (1000 * 60 * 60 * 24));
   }, [activeProgram]);
   
   // Вычисляем прогресс безопасно
@@ -225,15 +291,10 @@ export default function ActiveProgram() {
           <div className="bg-white rounded-lg shadow-md p-6 mb-8">
             <h2 className="text-xl font-semibold text-blue-800 mb-4">Ваш прогресс</h2>
             
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div className="bg-blue-50 p-4 rounded-lg text-center">
-                <div className="text-3xl font-bold text-blue-700">{activeProgram.currentWeek}</div>
-                <div className="text-gray-600">Неделя</div>
-              </div>
-              
-              <div className="bg-blue-50 p-4 rounded-lg text-center">
-                <div className="text-3xl font-bold text-blue-700">{activeProgram.currentDay}</div>
-                <div className="text-gray-600">День недели</div>
+                <div className="text-3xl font-bold text-blue-700">{progressData.completed}</div>
+                <div className="text-gray-600">Завершено тренировок</div>
               </div>
               
               <div className="bg-blue-50 p-4 rounded-lg text-center">
@@ -242,10 +303,8 @@ export default function ActiveProgram() {
               </div>
               
               <div className="bg-blue-50 p-4 rounded-lg text-center">
-                <div className="text-3xl font-bold text-blue-700">
-                  {progressData.completed}
-                </div>
-                <div className="text-gray-600">Завершено</div>
+                <div className="text-3xl font-bold text-blue-700">{daysSinceLastWorkout}</div>
+                <div className="text-gray-600">Дней с последней тренировки</div>
               </div>
             </div>
 
@@ -311,7 +370,7 @@ export default function ActiveProgram() {
                 </div>
               )}
               
-              <div className="mt-6 flex justify-center space-x-4">
+              <div className="mt-6 flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4">
                 <button
                   onClick={() => router.push('/workout')}
                   className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg transition-colors duration-200"
@@ -319,7 +378,7 @@ export default function ActiveProgram() {
                   Начать тренировку
                 </button>
                 
-                <ContinueWorkoutButton />
+                <ContinueWorkoutButton fullWidth={false} />
                 
                 <button
                   onClick={() => router.push('/programs')}
@@ -371,6 +430,80 @@ export default function ActiveProgram() {
               Отменить программу
             </button>
           </div>
+
+          {activeProgram && program && (
+            <div className="mt-8">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-gray-800">Следующая тренировка</h2>
+                <div className="relative">
+                  <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+                  </span>
+                </div>
+              </div>
+              <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-blue-500">
+                {currentWorkout ? (
+                  <>
+                    <div className="flex justify-between items-start mb-4">
+                      <h3 className="text-lg font-medium text-gray-800">{currentWorkout.name}</h3>
+                      <div className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                        День {activeProgram.currentDay} / Неделя {activeProgram.currentWeek}
+                      </div>
+                    </div>
+                    <p className="text-gray-600 mb-4">{currentWorkout.notes || "Тренировка в рамках программы"}</p>
+                    
+                    {/* Список упражнений в тренировке */}
+                    <div className="divide-y divide-gray-100">
+                      {currentWorkout.exercises && currentWorkout.exercises.map((exercise, index) => {
+                        const ex = exercise.exercise || sampleExercises.find(e => e.id === exercise.exerciseId) || null;
+                        if (!ex) return null;
+                        
+                        return (
+                          <div key={index} className="py-3 flex justify-between items-center">
+                            <div>
+                              <p className="font-medium text-gray-800">{ex.name}</p>
+                              <p className="text-sm text-gray-500">
+                                {ex.type === 'reps' 
+                                  ? `${exercise.sets || ex.sets || 3} × ${ex.reps || '8-12'} повт.`
+                                  : `${exercise.sets || ex.sets || 1} × ${ex.duration || 60} сек`
+                                }
+                              </p>
+                            </div>
+                            <div className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">
+                              {getExerciseType(ex.type)}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    {/* Кнопка начала тренировки */}
+                    <div className="mt-6">
+                      <Link href="/workout" passHref>
+                        <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg shadow-sm transition-colors flex items-center justify-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                          </svg>
+                          Начать тренировку
+                        </button>
+                      </Link>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-gray-600 mb-4">Программа тренировок завершена</p>
+                    <button 
+                      onClick={resetProgramProgress}
+                      className="mt-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
+                    >
+                      Начать программу заново
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

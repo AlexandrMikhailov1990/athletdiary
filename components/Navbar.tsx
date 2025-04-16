@@ -70,6 +70,15 @@ export default function Navbar() {
             }`}>
               История
             </Link>
+            
+            <Link href="/settings" className={`nav-link ${
+              router.pathname === '/settings' ? 'nav-link-active' : 'nav-link-default'
+            }`}>
+              Настройки
+              <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                Новое
+              </span>
+            </Link>
 
             {/* Кнопка продолжения тренировки */}
             <ContinueWorkoutButton className="py-1 px-2 text-sm" iconOnly={true} />
@@ -187,6 +196,15 @@ export default function Navbar() {
                   router.pathname === '/history' ? 'font-semibold text-blue-600' : 'text-gray-700'
                 }`} onClick={closeMenu}>
                   История
+                </Link>
+                
+                <Link href="/settings" className={`block p-2 rounded-md hover:bg-gray-100 ${
+                  router.pathname === '/settings' ? 'font-semibold text-blue-600' : 'text-gray-700'
+                }`} onClick={closeMenu}>
+                  Настройки
+                  <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                    Новое
+                  </span>
                 </Link>
                 
                 {/* Кнопка продолжения тренировки в мобильном меню */}

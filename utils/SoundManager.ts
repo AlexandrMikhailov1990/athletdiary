@@ -5,35 +5,44 @@ class SoundManager {
   private isInitialized = false;
   private isMuted = false;
   private canVibrate = false;
-  private timerBeepSound: HTMLAudioElement | null = null;
-  private activeAudioElements: HTMLAudioElement[] = [];
-  private soundPlaybackQueue: (() => void)[] = [];
-  private isProcessingQueue = false;
-  private isPlayingContinuously = false;
-  private maxSimultaneousSounds = 2; // Ограничиваем количество одновременно воспроизводимых звуков
-  private soundPath: string = '/sounds/timer-beep.mp3'; // Исправленный путь к звуку
-  private alternativeSoundPaths: string[] = [
-    '/timer-beep.mp3',      // Корневая директория
-    '/static/timer-beep.mp3', // Альтернативный путь
-    '/static/sounds/timer-beep.mp3' // Еще один путь
-  ];
+  private audioContext: AudioContext | null = null;
+  private countdownBuffer: AudioBuffer | null = null; // Звук для отсчета
+  private completionBuffer: AudioBuffer | null = null; // Звук для завершения
   private isServer: boolean;
-  private isPlayingNow = false; // Флаг текущего воспроизведения
-  private lastPlayTime = 0; // Время последнего воспроизведения
   private isIOS: boolean;
   private hasUserInteraction = false;
 
   constructor() {
     // Проверяем, запущен ли код на сервере или в браузере
     this.isServer = typeof window === 'undefined';
-    this.isIOS = !this.isServer && /iPad|iPhone|iPod/.test(navigator.userAgent);
+    this.isIOS = this.detectIOSDevice();
     
     // Инициализируем менеджер звуков только на клиенте
     if (!this.isServer) {
       this.initialize();
       this.setupUserInteractionHandlers();
-      console.log('SoundManager initialized. Sound path:', this.soundPath);
+      console.log('SoundManager initialized, iOS device detected:', this.isIOS);
     }
+  }
+
+  /**
+   * Более точное определение iOS устройств
+   */
+  private detectIOSDevice(): boolean {
+    if (this.isServer || typeof navigator === 'undefined') return false;
+    
+    // Проверяем по user agent
+    const ua = navigator.userAgent;
+    const isIPad = /iPad/i.test(ua);
+    const isIPhone = /iPhone/i.test(ua);
+    const isIPod = /iPod/i.test(ua);
+    
+    // Дополнительная проверка для iPad в режиме планшета в Safari
+    const isIPadOS = navigator.platform === 'MacIntel' && 
+                    navigator.maxTouchPoints > 1 &&
+                    !((window as any).MSStream);
+    
+    return isIPad || isIPhone || isIPod || isIPadOS;
   }
 
   private setupUserInteractionHandlers() {
@@ -41,14 +50,15 @@ class SoundManager {
 
     const handleInteraction = () => {
       this.hasUserInteraction = true;
-      if (this.timerBeepSound) {
-        // На iOS нужно воспроизвести и сразу поставить на паузу
-        this.timerBeepSound.play()
-          .then(() => {
-            this.timerBeepSound?.pause();
-            this.timerBeepSound?.load();
-          })
-          .catch(console.error);
+      
+      // Инициализируем AudioContext при первом взаимодействии
+      if (!this.audioContext && window.AudioContext) {
+        this.initAudioContext();
+      }
+      
+      // Для iOS устройств пытаемся активировать звук
+      if (this.isIOS) {
+        this.requestIOSAudioPermission();
       }
     };
 
@@ -56,6 +66,141 @@ class SoundManager {
     window.addEventListener('touchstart', handleInteraction, { once: true });
     window.addEventListener('click', handleInteraction, { once: true });
     window.addEventListener('keydown', handleInteraction, { once: true });
+  }
+
+  /**
+   * Запрос разрешения на воспроизведение звука в iOS
+   * Решает проблемы с автозапуском аудио в Safari
+   */
+  private async requestIOSAudioPermission() {
+    if (!this.isIOS || !this.audioContext) return;
+    
+    try {
+      console.log('Requesting iOS audio permission');
+      
+      // Пытаемся возобновить AudioContext
+      if (this.audioContext.state === 'suspended') {
+        await this.audioContext.resume();
+        console.log('AudioContext resumed on iOS:', this.audioContext.state);
+      }
+      
+      // Создаем короткий тихий звук для "разблокировки" WebAudio
+      const silentBuffer = this.audioContext.createBuffer(1, 1, 22050);
+      const source = this.audioContext.createBufferSource();
+      source.buffer = silentBuffer;
+      source.connect(this.audioContext.destination);
+      source.start(0);
+      source.stop(0.001); // Останавливаем почти сразу
+      
+      console.log('iOS audio permission requested successfully');
+    } catch (error) {
+      console.error('Error requesting iOS audio permission:', error);
+    }
+  }
+
+  /**
+   * Инициализация Web Audio API
+   */
+  private initAudioContext() {
+    if (this.isServer || typeof window === 'undefined') return;
+    
+    try {
+      // Проверяем, доступен ли AudioContext в браузере
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContextClass) {
+        console.log('AudioContext не поддерживается в этом браузере');
+        return;
+      }
+      
+      // Создаем AudioContext без особых параметров для максимальной совместимости
+      this.audioContext = new AudioContextClass();
+      
+      // Создаем синтетические звуковые сигналы
+      this.createCountdownBeep(); // Звук для отсчета последних секунд
+      this.createCompletionBeep(); // Звук для завершения таймера
+      
+      console.log('AudioContext initialized successfully');
+    } catch (error) {
+      console.error('Failed to initialize AudioContext:', error);
+      this.audioContext = null;
+    }
+  }
+  
+  /**
+   * Создание синтетического звукового сигнала для отсчета секунд
+   */
+  private createCountdownBeep() {
+    if (!this.audioContext) return;
+    
+    try {
+      // Создаем буфер для короткого звукового сигнала
+      const sampleRate = this.audioContext.sampleRate;
+      const duration = 0.08; // 80 мс - очень короткий сигнал
+      const bufferSize = Math.floor(sampleRate * duration);
+      const buffer = this.audioContext.createBuffer(1, bufferSize, sampleRate);
+      const data = buffer.getChannelData(0);
+      
+      // Заполняем буфер синусоидальным сигналом частотой 1200 Гц
+      const frequency = 1200;
+      for (let i = 0; i < bufferSize; i++) {
+        // Создаем синусоидальный сигнал с плавным нарастанием и затуханием
+        const progress = i / bufferSize;
+        // Амплитудная огибающая с плавным нарастанием и затуханием
+        let amplitude;
+        if (progress < 0.1) {
+          // Нарастание в первые 10% времени
+          amplitude = progress / 0.1;
+        } else if (progress > 0.9) {
+          // Затухание в последние 10% времени
+          amplitude = (1 - progress) / 0.1;
+        } else {
+          // Полная громкость в середине
+          amplitude = 1.0;
+        }
+        data[i] = 0.5 * amplitude * Math.sin(2 * Math.PI * frequency * i / sampleRate);
+      }
+      
+      this.countdownBuffer = buffer;
+      console.log('Created countdown beep sound');
+    } catch (error) {
+      console.error('Error creating countdown beep:', error);
+    }
+  }
+
+  /**
+   * Создание синтетического звукового сигнала для завершения таймера
+   */
+  private createCompletionBeep() {
+    if (!this.audioContext) return;
+    
+    try {
+      // Создаем буфер для сигнала окончания (чуть длиннее)
+      const sampleRate = this.audioContext.sampleRate;
+      const duration = 0.2; // 200 мс - длиннее, чем отсчет
+      const bufferSize = Math.floor(sampleRate * duration);
+      const buffer = this.audioContext.createBuffer(1, bufferSize, sampleRate);
+      const data = buffer.getChannelData(0);
+      
+      // Используем другую, более низкую частоту для явного различия
+      const frequency = 800; // Используем более низкую частоту для отличия
+      for (let i = 0; i < bufferSize; i++) {
+        const progress = i / bufferSize;
+        let amplitude;
+        if (progress < 0.1) {
+          amplitude = progress / 0.1;
+        } else if (progress > 0.9) {
+          amplitude = (1 - progress) / 0.1;
+        } else {
+          amplitude = 1.0;
+        }
+        data[i] = 0.5 * amplitude * Math.sin(2 * Math.PI * frequency * i / sampleRate);
+      }
+      
+      this.completionBuffer = buffer;
+      console.log('Created completion beep sound');
+    } catch (error) {
+      console.error('Error creating completion beep:', error);
+    }
   }
 
   /**
@@ -67,7 +212,6 @@ class SoundManager {
 
   /**
    * Инициализация менеджера звуков
-   * @public - для обратной совместимости
    */
   public initialize() {
     // Не инициализируем на сервере
@@ -78,9 +222,6 @@ class SoundManager {
 
     // Проверяем поддержку вибрации
     this.canVibrate = typeof navigator !== 'undefined' && 'vibrate' in navigator;
-
-    // Загружаем звук для таймера
-    this.loadTimerBeepSound();
 
     // Получаем настройки звука из локального хранилища
     try {
@@ -100,421 +241,151 @@ class SoundManager {
       console.warn('LocalStorage not available:', e);
     }
 
-    // Подготавливаем аудио к воспроизведению при взаимодействии пользователя
-    const prepareAudio = () => {
-      if (this.timerBeepSound && typeof document !== 'undefined') {
-        // Добавляем обработчики ошибок
-        this.timerBeepSound.addEventListener('error', (e) => {
-          console.error('Error with audio playback:', e);
-        });
-        
-        // Создаем временный обработчик для воспроизведения и приостановки звука
-        const temporaryPlayHandler = () => {
-          this.timerBeepSound?.play()
-            .then(() => {
-              // Немедленно приостанавливаем, нам нужно только разблокировать аудио
-              this.timerBeepSound?.pause();
-              
-              // После успешного воспроизведения удаляем обработчик
-              document.removeEventListener('click', temporaryPlayHandler);
-              document.removeEventListener('touchstart', temporaryPlayHandler);
-            })
-            .catch(err => {
-              console.warn('Could not prepare audio:', err);
-              // Оставляем обработчик, чтобы попробовать снова при следующем взаимодействии
-            });
-        };
-
-        // Добавляем обработчики событий для различных пользовательских взаимодействий
-        document.addEventListener('click', temporaryPlayHandler);
-        document.addEventListener('touchstart', temporaryPlayHandler);
-      }
-    };
-
     // Устанавливаем флаг инициализации
     this.isInitialized = true;
-
-    // Запускаем подготовку аудио
-    prepareAudio();
-  }
-  
-  /**
-   * @deprecated Используйте автоматическую инициализацию
-   */
-  public userInteraction(): void {
-    if (this.isServer) return;
-    console.warn('userInteraction метод устарел и будет удален');
-    // Для обратной совместимости оставляем метод пустым
+    
+    console.log('SoundManager initialization complete');
   }
 
   /**
-   * Загрузка звука для таймера
+   * Воспроизведение звука для отсчета последних секунд
    */
-  private loadTimerBeepSound() {
-    // Не загружаем звуки на сервере
-    if (this.isServer || !this.isBrowserEnv()) return;
+  private async playCountdownSound() {
+    if (this.isServer || this.isMuted || !this.audioContext || !this.countdownBuffer) return;
     
     try {
-      // Создаем новый элемент аудио только в браузере
-      if (typeof Audio !== 'undefined') {
-        // Проверяем доступность звукового файла
-        console.log('Attempting to load sound from:', this.soundPath);
-        
-        this.timerBeepSound = new Audio(this.soundPath);
-        
-        // Обработчик для проверки ошибки загрузки и попытки использовать альтернативные пути
-        this.timerBeepSound.onerror = () => {
-          console.error(`Не удалось загрузить звук по пути: ${this.soundPath}, пробую альтернативные пути`);
-          this.tryAlternativeSoundPaths();
-        };
-        
-        // Настраиваем аудио для лучшей совместимости
-        this.timerBeepSound.preload = 'auto';
-        
-        // Добавляем обработчики событий
-        this.timerBeepSound.addEventListener('canplaythrough', () => {
-          console.log('Sound loaded successfully and can play through');
-        });
-        
-        this.timerBeepSound.addEventListener('error', (e) => {
-          console.error('Error loading sound:', e);
-        });
-        
-        this.timerBeepSound.addEventListener('ended', () => {
-          // Удаляем элемент из активных, когда звук закончился
-          this.activeAudioElements = this.activeAudioElements.filter(audio => audio !== this.timerBeepSound);
-          console.log('Sound playback ended');
-        });
-        
-        // Подготавливаем аудио
-        this.timerBeepSound.load();
+      // Проверяем состояние AudioContext
+      if (this.audioContext.state === 'suspended') {
+        await this.audioContext.resume();
       }
-    } catch (error) {
-      console.error('Failed to load timer beep sound:', error);
-      this.timerBeepSound = null;
-      // Пробуем альтернативные пути
-      this.tryAlternativeSoundPaths();
-    }
-  }
-  
-  /**
-   * Пробует загрузить звук из альтернативных источников
-   */
-  private tryAlternativeSoundPaths() {
-    if (this.isServer || !this.isBrowserEnv()) return;
-    
-    for (const path of this.alternativeSoundPaths) {
-      try {
-        console.log(`Attempting to load sound from alternative path: ${path}`);
-        const audio = new Audio(path);
-        
-        // Настраиваем обработчик успешной загрузки
-        audio.oncanplaythrough = () => {
-          console.log(`Sound successfully loaded from alternative path: ${path}`);
-          this.timerBeepSound = audio;
-          this.soundPath = path; // Обновляем основной путь на рабочий
-        };
-        
-        // Обработчик ошибки для продолжения перебора
-        audio.onerror = () => {
-          console.error(`Failed to load sound from alternative path: ${path}`);
-        };
-        
-        // Пытаемся загрузить
-        audio.load();
-      } catch (error) {
-        console.error(`Error trying alternative sound path ${path}:`, error);
-      }
-    }
-  }
-
-  /**
-   * Воспроизведение звука таймера
-   */
-  public async playTimerBeep(isCompletion: boolean = false) {
-    if (this.isServer || this.isMuted || !this.timerBeepSound) return;
-
-    try {
-      // Для iOS требуется пользовательское взаимодействие
-      if (this.isIOS && !this.hasUserInteraction) {
-        console.log('Waiting for user interaction on iOS...');
-        return;
-      }
-
-      // Перезагружаем звук перед каждым воспроизведением на iOS
-      if (this.isIOS) {
-        await this.timerBeepSound.load();
-      }
-
-      await this.timerBeepSound.play();
       
-      // Вибрация для мобильных устройств
-      if (this.canVibrate) {
-        navigator.vibrate(200);
+      // Создаем источник звука
+      const source = this.audioContext.createBufferSource();
+      source.buffer = this.countdownBuffer;
+      
+      // Добавляем регулятор громкости
+      const gainNode = this.audioContext.createGain();
+      gainNode.gain.value = 0.5; // Увеличенная громкость с 0.3 до 0.5 (50%)
+      
+      // Подключаем источник к регулятору громкости, а затем к выходу
+      source.connect(gainNode);
+      gainNode.connect(this.audioContext.destination);
+      
+      // Воспроизводим звуковой сигнал
+      source.start(0);
+      console.log('Playing countdown beep');
+    } catch (error) {
+      console.error('Error playing countdown sound:', error);
+    }
+  }
+
+  /**
+   * Воспроизведение звука завершения таймера
+   */
+  private async playCompletionSound() {
+    if (this.isServer || this.isMuted || !this.audioContext || !this.completionBuffer) return;
+    
+    try {
+      // Проверяем состояние AudioContext
+      if (this.audioContext.state === 'suspended') {
+        await this.audioContext.resume();
+      }
+      
+      // Создаем источник звука
+      const source = this.audioContext.createBufferSource();
+      source.buffer = this.completionBuffer;
+      
+      // Добавляем регулятор громкости
+      const gainNode = this.audioContext.createGain();
+      gainNode.gain.value = 0.6; // Увеличенная громкость с 0.4 до 0.6 (60%, чуть громче, чем отсчет)
+      
+      // Подключаем источник к регулятору громкости, а затем к выходу
+      source.connect(gainNode);
+      gainNode.connect(this.audioContext.destination);
+      
+      // Воспроизводим звуковой сигнал
+      source.start(0);
+      console.log('Playing completion beep');
+    } catch (error) {
+      console.error('Error playing completion sound:', error);
+    }
+  }
+
+  /**
+   * Публичный метод для воспроизведения звука таймера
+   * @param secondsLeft - Количество секунд, оставшихся до конца таймера
+   * @param isCompletion - Флаг, указывающий, что таймер завершился
+   */
+  public async playTimerBeep(secondsLeft: number = 0, isCompletion: boolean = false) {
+    // Не воспроизводим звук, если это серверный рендеринг или звук отключен
+    if (this.isServer || this.isMuted) {
+      console.log('Sound skipped: server rendering or muted');
+      return;
+    }
+    
+    console.log(`Timer beep: ${secondsLeft}s left, completion: ${isCompletion}, iOS: ${this.isIOS}, userInteraction: ${this.hasUserInteraction}`);
+    
+    // Для iOS требуется пользовательское взаимодействие
+    if (this.isIOS && !this.hasUserInteraction) {
+      console.warn('Sound not played: waiting for user interaction on iOS');
+      
+      // Пытаемся запросить разрешение, если это действие инициировано пользователем
+      this.requestIOSAudioPermission();
+      return;
+    }
+    
+    // Вибрация в зависимости от ситуации
+    if (this.canVibrate && navigator.vibrate) {
+      if (isCompletion) {
+        // Длинная вибрация для завершения
+        navigator.vibrate(300);
+        console.log('Vibrating for completion: 300ms');
+      } else if (secondsLeft <= 5 && secondsLeft > 0) {
+        // Короткая вибрация для отсчета последних 5 секунд
+        navigator.vibrate(100);
+        console.log(`Vibrating for countdown (${secondsLeft}s): 100ms`);
+      }
+    }
+    
+    try {
+      // Создаем/инициализируем AudioContext при необходимости
+      if (!this.audioContext && window.AudioContext) {
+        console.log('Initializing AudioContext');
+        this.initAudioContext();
+      }
+      
+      if (this.isIOS) {
+        // Для iOS перезагружаем контекст перед каждым воспроизведением
+        if (this.audioContext && this.audioContext.state === 'suspended') {
+          console.log('Resuming suspended AudioContext on iOS');
+          try {
+            await this.audioContext.resume();
+            console.log('AudioContext state after resume:', this.audioContext.state);
+          } catch (error) {
+            console.error('Failed to resume AudioContext:', error);
+          }
+        }
+      }
+      
+      if (isCompletion) {
+        // Воспроизводим звук завершения (низкий тон)
+        console.log('Playing completion sound');
+        await this.playCompletionSound();
+      } else if (secondsLeft <= 5 && secondsLeft > 0) {
+        // Воспроизводим звук отсчета (короткий высокий тон) для последних 5 секунд
+        console.log(`Playing countdown sound for ${secondsLeft}s`);
+        await this.playCountdownSound();
       }
     } catch (error) {
-      console.error('Error playing sound:', error);
+      console.error('Error in playTimerBeep:', error);
     }
-  }
-
-  /**
-   * Воспроизведение обычного однократного звукового сигнала
-   */
-  private playSimpleBeep() {
-    // Не воспроизводим звуки на сервере
-    if (this.isServer || !this.isBrowserEnv()) return;
-    
-    // Проверяем, не воспроизводится ли уже звук
-    const currentTime = Date.now();
-    if (this.isPlayingNow && currentTime - this.lastPlayTime < 1000) {
-      console.log('Skipping simple beep because sound was played recently');
-      return;
-    }
-    
-    // Устанавливаем флаг воспроизведения и обновляем время
-    this.isPlayingNow = true;
-    this.lastPlayTime = currentTime;
-    
-    console.log('Playing simple beep, isPlayingContinuously:', this.isPlayingContinuously);
-    
-    // Проверяем, не воспроизводится ли уже непрерывный звук
-    if (this.isPlayingContinuously) {
-      console.log('Skipping simple beep because continuous sound is playing');
-      return; // Пропускаем обычное воспроизведение, если уже идет непрерывное
-    }
-
-    // Добавляем воспроизведение в очередь
-    this.addToPlaybackQueue(() => {
-      // Ограничиваем количество одновременно воспроизводимых звуков
-      if (this.activeAudioElements.length >= this.maxSimultaneousSounds) {
-        // Убираем наиболее старые звуки, если превышен лимит
-        const oldestAudio = this.activeAudioElements.shift();
-        if (oldestAudio) {
-          oldestAudio.pause();
-          oldestAudio.currentTime = 0;
-          console.log('Stopped oldest audio to make room for new sound');
-        }
-      }
-
-      try {
-        // Создаем новый экземпляр звука для надежного воспроизведения
-        if (typeof Audio !== 'undefined') {
-          console.log('Creating new Audio instance for simple beep');
-          const newAudio = new Audio(this.soundPath);
-          newAudio.volume = 1.0;
-          
-          // Добавляем обработчик ошибок
-          newAudio.onerror = (e) => {
-            console.error('Error with simple beep playback:', e);
-          };
-          
-          // Добавляем обработчик завершения
-          newAudio.onended = () => {
-            this.activeAudioElements = this.activeAudioElements.filter(audio => audio !== newAudio);
-            console.log('Simple beep playback ended');
-            this.isPlayingNow = false; // Сбрасываем флаг по завершении
-          };
-          
-          // Добавляем звук в список активных
-          this.activeAudioElements.push(newAudio);
-          
-          // Воспроизводим звук
-          const playPromise = newAudio.play();
-          if (playPromise !== undefined) {
-            playPromise
-              .then(() => {
-                console.log('Simple beep playback started successfully');
-              })
-              .catch(err => {
-                console.error('Error playing simple beep:', err);
-                this.activeAudioElements = this.activeAudioElements.filter(audio => audio !== newAudio);
-                this.isPlayingNow = false; // Сбрасываем флаг при ошибке
-              });
-          }
-          
-          // Вибрация для тактильной обратной связи (если доступно)
-          if (this.canVibrate && typeof navigator !== 'undefined') {
-            navigator.vibrate(200);
-            console.log('Vibration triggered for simple beep');
-          }
-        }
-      } catch (error) {
-        console.error('Failed to play simple beep:', error);
-        this.isPlayingNow = false; // Сбрасываем флаг при ошибке
-      }
-    });
-  }
-
-  /**
-   * Воспроизведение звука для режима будильника (окончание таймера)
-   */
-  private playAlarmBeep() {
-    // Не воспроизводим звуки на сервере
-    if (this.isServer || !this.isBrowserEnv()) return;
-    
-    console.log('Starting alarm beep playback');
-    
-    // Всегда останавливаем все предыдущие звуки перед новым воспроизведением
-    this.stopAllSounds();
-
-    // Небольшая задержка после остановки всех звуков, чтобы гарантировать их полное завершение
-    setTimeout(() => {
-      try {
-        // Создаем новый экземпляр звука для каждого воспроизведения
-        if (typeof Audio !== 'undefined') {
-          console.log('Creating new Audio instance for alarm beep');
-          const alarmAudio = new Audio(this.soundPath);
-          alarmAudio.volume = 1.0; // Полная громкость для будильника
-          
-          // Добавляем обработчик ошибок
-          alarmAudio.onerror = (e) => {
-            console.error('Error with alarm beep playback:', e);
-          };
-          
-          // Добавляем обработчик завершения
-          alarmAudio.onended = () => {
-            this.activeAudioElements = this.activeAudioElements.filter(audio => audio !== alarmAudio);
-            console.log('Alarm beep playback ended');
-          };
-          
-          // Добавляем звук в список активных
-          this.activeAudioElements.push(alarmAudio);
-          
-          // Воспроизводим звук
-          const playPromise = alarmAudio.play();
-          if (playPromise !== undefined) {
-            playPromise
-              .then(() => {
-                console.log('Alarm beep playback started successfully');
-              })
-              .catch(err => {
-                console.error('Error playing alarm beep:', err);
-                this.activeAudioElements = this.activeAudioElements.filter(audio => audio !== alarmAudio);
-              });
-          }
-          
-          // Вибрация для тактильной обратной связи (если доступно)
-          if (this.canVibrate && typeof navigator !== 'undefined') {
-            navigator.vibrate(500); // Более длительная вибрация для будильника
-            console.log('Vibration triggered for alarm beep');
-          }
-        }
-      } catch (error) {
-        console.error('Failed to play alarm beep:', error);
-      }
-    }, 200); // Увеличенная задержка для гарантии остановки предыдущих звуков
-  }
-
-  /**
-   * Запуск режима будильника (непрерывного воспроизведения)
-   */
-  private startAlarmMode() {
-    // Не запускаем режим будильника на сервере
-    if (this.isServer || !this.isBrowserEnv()) return;
-    
-    // Проверяем, не воспроизводится ли уже звук
-    const currentTime = Date.now();
-    if (this.isPlayingNow && currentTime - this.lastPlayTime < 1000) {
-      console.log('Skipping alarm mode because sound was played recently');
-      return;
-    }
-    
-    // Устанавливаем флаг воспроизведения и обновляем время
-    this.isPlayingNow = true;
-    this.lastPlayTime = currentTime;
-    
-    // Если режим уже запущен, ничего не делаем
-    if (this.isPlayingContinuously) {
-      return;
-    }
-
-    // Устанавливаем флаг непрерывного воспроизведения (для предотвращения перекрытия)
-    this.isPlayingContinuously = true;
-    
-    // Воспроизводим только один звук при завершении таймера
-    this.playAlarmBeep();
-    
-    // Автоматически сбрасываем флаг через 3 секунды, чтобы гарантировать
-    // полное воспроизведение звука без наложений
-    setTimeout(() => {
-      this.isPlayingContinuously = false;
-      this.isPlayingNow = false; // Также сбрасываем флаг воспроизведения
-    }, 3000);
-  }
-
-  /**
-   * Остановка всех звуков
-   */
-  private stopAllSounds() {
-    // Не останавливаем звуки на сервере
-    if (this.isServer || !this.isBrowserEnv()) return;
-    
-    // Останавливаем все активные звуки
-    this.activeAudioElements.forEach(audio => {
-      try {
-        audio.pause();
-        audio.currentTime = 0;
-      } catch (e) {
-        console.error('Error stopping sound:', e);
-      }
-    });
-    
-    // Очищаем список активных звуков
-    this.activeAudioElements = [];
-  }
-
-  /**
-   * Добавление функции воспроизведения в очередь
-   */
-  private addToPlaybackQueue(playbackFn: () => void) {
-    // Не добавляем в очередь на сервере
-    if (this.isServer || !this.isBrowserEnv()) return;
-    
-    // Добавляем функцию в очередь
-    this.soundPlaybackQueue.push(playbackFn);
-    
-    // Запускаем обработку очереди, если она еще не запущена
-    if (!this.isProcessingQueue) {
-      this.processPlaybackQueue();
-    }
-  }
-
-  /**
-   * Обработка очереди воспроизведения
-   */
-  private processPlaybackQueue() {
-    // Не обрабатываем очередь на сервере
-    if (this.isServer || !this.isBrowserEnv()) return;
-    
-    if (this.soundPlaybackQueue.length === 0) {
-      this.isProcessingQueue = false;
-      return;
-    }
-
-    this.isProcessingQueue = true;
-    
-    // Получаем и выполняем первую функцию из очереди
-    const playbackFn = this.soundPlaybackQueue.shift();
-    if (playbackFn) {
-      playbackFn();
-    }
-    
-    // Обрабатываем следующий элемент очереди с небольшой задержкой
-    // для предотвращения перекрытия звуков
-    setTimeout(() => {
-      this.processPlaybackQueue();
-    }, 100);
   }
 
   /**
    * Отключение звука
    */
   muteSound() {
-    // Не отключаем звук на сервере
-    if (this.isServer || !this.isBrowserEnv()) return;
-    
     this.isMuted = true;
-    this.stopAllSounds();
     this.saveSettings();
   }
 
@@ -522,26 +393,16 @@ class SoundManager {
    * Включение звука
    */
   unmuteSound() {
-    // Не включаем звук на сервере
-    if (this.isServer || !this.isBrowserEnv()) return;
-    
     this.isMuted = false;
     this.saveSettings();
   }
   
   /**
-   * Переключение звука (для обратной совместимости)
-   * @returns текущее состояние (true - звук выключен, false - звук включен)
+   * Переключение звука
    */
   toggleMute(): boolean {
-    // Не переключаем звук на сервере
-    if (this.isServer || !this.isBrowserEnv()) return false;
-    
-    if (this.isMuted) {
-      this.unmuteSound();
-    } else {
-      this.muteSound();
-    }
+    this.isMuted = !this.isMuted;
+    this.saveSettings();
     return this.isMuted;
   }
 
@@ -549,7 +410,6 @@ class SoundManager {
    * Сохранение настроек звука
    */
   private saveSettings() {
-    // Не сохраняем настройки на сервере
     if (this.isServer || !this.isBrowserEnv()) return;
     
     try {
@@ -567,9 +427,6 @@ class SoundManager {
    * Проверка состояния звука (включен/выключен)
    */
   isSoundMuted() {
-    // На сервере всегда возвращаем false
-    if (this.isServer || !this.isBrowserEnv()) return false;
-    
     return this.isMuted;
   }
 
@@ -577,26 +434,18 @@ class SoundManager {
    * Очистка ресурсов перед уничтожением
    */
   public dispose() {
-    this.stopAllSounds();
+    if (this.audioContext) {
+      try {
+        this.audioContext.close();
+      } catch (e) {
+        console.error('Error closing AudioContext:', e);
+      }
+    }
     
-    // Очищаем звуки
-    this.timerBeepSound = null;
-    this.activeAudioElements = [];
-    this.soundPlaybackQueue = [];
-    
-    // Сбрасываем флаги
+    this.audioContext = null;
+    this.countdownBuffer = null;
+    this.completionBuffer = null;
     this.isInitialized = false;
-    this.isProcessingQueue = false;
-    this.isPlayingContinuously = false;
-  }
-
-  /**
-   * Уничтожение экземпляра Sound Manager
-   */
-  public destroy() {
-    this.dispose();
-    // Удаляем singleton инстанс
-    (SoundManager as any)._instance = null;
   }
 }
 

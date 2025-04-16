@@ -49,6 +49,11 @@ export interface Program {
   restBetweenSets?: number;
   restBetweenExercises?: number;
   isSample?: boolean;
+  isImported?: boolean;
+  category?: string;
+  difficulty?: number;
+  weeks?: number;
+  isShared?: boolean;
 }
 
 interface CompletedWorkout {
