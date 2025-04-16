@@ -97,38 +97,42 @@ export default function ExerciseCard({
         </div>
         
         <div className="mb-2 sm:mb-4 flex-grow">
-          <div className="grid grid-cols-2 gap-y-1 sm:gap-y-3 gap-x-2 sm:gap-x-4">
-            <div className="flex items-center text-xs sm:text-sm text-gray-600">
-              <span className="font-medium mr-1">Подходы:</span> {exercise.sets}
+          <div className="grid grid-cols-2 gap-2 sm:gap-3">
+            <div className="flex flex-col">
+              <span className="text-xs sm:text-sm font-medium text-gray-700">Подходы:</span>
+              <span className="text-xs sm:text-sm font-bold text-gray-800">{exercise.sets}</span>
             </div>
+            
             {exercise.type === 'reps' ? (
               <>
-                <div className="flex items-center text-xs sm:text-sm text-gray-600">
-                  <span className="font-medium mr-1">Повторения:</span> {exercise.reps}
+                <div className="flex flex-col">
+                  <span className="text-xs sm:text-sm font-medium text-gray-700">Повторения:</span>
+                  <span className="text-xs sm:text-sm font-bold text-gray-800">{exercise.reps}</span>
                 </div>
+                
                 {exercise.weight && exercise.weight > 0 && (
-                  <div className="flex items-center text-xs sm:text-sm text-gray-600 col-span-2">
-                    <span className="font-medium mr-1">Вес:</span> {exercise.weight} кг
+                  <div className="flex flex-col col-span-2">
+                    <span className="text-xs sm:text-sm font-medium text-gray-700">Вес:</span>
+                    <span className="text-xs sm:text-sm font-bold text-gray-800">{exercise.weight} кг</span>
                   </div>
                 )}
               </>
             ) : (
-              <div className="flex items-center text-xs sm:text-sm text-gray-600">
-                <span className="font-medium mr-1">Длительность:</span> {exercise.duration}с
+              <div className="flex flex-col">
+                <span className="text-xs sm:text-sm font-medium text-gray-700">Длительность:</span>
+                <span className="text-xs sm:text-sm font-bold text-gray-800">{exercise.duration}с</span>
               </div>
             )}
+            
+            <div className="flex flex-col">
+              <span className="text-xs sm:text-sm font-medium text-gray-700">Отдых:</span>
+              <span className="text-xs sm:text-sm font-bold text-gray-800">{exercise.restTime}с</span>
+            </div>
           </div>
         </div>
         
-        <div className="flex justify-between items-center pt-2 sm:pt-4 border-t border-gray-100">
-          <div className="text-xs sm:text-sm text-gray-500 hidden sm:block">
-            Отдых: {exercise.restTime}с
-          </div>
-          
-          <div className="flex items-center justify-between w-full sm:justify-end">
-            <div className="text-xs text-gray-500 sm:hidden">
-              Отдых: {exercise.restTime}с
-            </div>
+        <div className="mt-auto pt-2 sm:pt-4 border-t border-gray-100">
+          <div className="flex justify-end">
             <button
               onClick={handleMoreInfo}
               className="bg-blue-600 hover:bg-blue-700 text-white py-1 sm:py-2 px-2 sm:px-4 rounded-lg transition-colors duration-200 text-xs sm:text-sm font-medium"
