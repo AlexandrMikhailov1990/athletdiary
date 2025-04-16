@@ -567,41 +567,24 @@ export default function Workout() {
     if (foundProgram) {
       setProgram(foundProgram);
       
-      // Проверяем, есть ли сохраненный прогресс тренировки
-      const workoutProgress = getCurrentWorkoutProgress();
+      // Проверяем, откуда был переход на страницу тренировки
+      const fromStartWorkout = router.query.start === 'true';
+      
+      // Текущий ID тренировки
       const currentWorkoutId = foundProgram.workouts[activeProgramData.currentDay - 1]?.id;
       
-      if (workoutProgress && 
-          workoutProgress.programId === foundProgram.id && 
-          workoutProgress.workoutId === currentWorkoutId) {
-        console.log('Восстанавливаем сохраненный прогресс тренировки:', workoutProgress);
+      // Если переход был с кнопки "Начать тренировку" или нет сохраненного прогресса, создаем новую тренировку
+      if (fromStartWorkout) {
+        console.log('Переход с кнопки "Начать тренировку", создаем новую тренировку');
+        // Очищаем предыдущий прогресс
+        clearWorkoutProgress();
         
-        // Инициализируем упражнения из текущей тренировки
+        // Инициализируем тренировку с нуля
         const workoutIndex = activeProgramData.currentDay - 1;
         const currentWorkout = foundProgram.workouts[workoutIndex];
         
         if (currentWorkout && currentWorkout.exercises) {
-          // Создаем список упражнений с учетом сохраненного прогресса
-          const initializedExercises = currentWorkout.exercises.map((ex, idx) => {
-            const savedExercise = workoutProgress.exercises.find(e => e.exerciseId === ex.exerciseId);
-            
-            return {
-              exercise: ex.exercise || NORMALIZED_SAMPLE_EXERCISES.find(e => e.id === ex.exerciseId) || ex,
-              completedSets: savedExercise?.completedSets || 0,
-              setDetails: savedExercise?.setDetails || [],
-              rest: ex.rest
-            };
-          });
-          
-          setExercises(initializedExercises);
-          setCurrentExerciseIndex(workoutProgress.currentExerciseIndex);
-        }
-      } else {
-        // Инициализируем упражнения с нуля
-        const workoutIndex = activeProgramData.currentDay - 1;
-        const currentWorkout = foundProgram.workouts[workoutIndex];
-        
-        if (currentWorkout && currentWorkout.exercises) {
+          // Создаем список упражнений с нуля
           const initializedExercises = currentWorkout.exercises.map(ex => ({
             exercise: ex.exercise || NORMALIZED_SAMPLE_EXERCISES.find(e => e.id === ex.exerciseId) || ex,
             completedSets: 0,
@@ -610,6 +593,7 @@ export default function Workout() {
           }));
           
           setExercises(initializedExercises);
+          setCurrentExerciseIndex(0);
           
           // Создаем новый прогресс тренировки
           if (initializedExercises.length > 0) {
@@ -624,6 +608,66 @@ export default function Workout() {
               }))
             );
             saveWorkoutProgress(newProgress);
+          }
+        }
+      } else {
+        // Проверяем, есть ли сохраненный прогресс тренировки
+        const workoutProgress = getCurrentWorkoutProgress();
+        
+        if (workoutProgress && 
+            workoutProgress.programId === foundProgram.id && 
+            workoutProgress.workoutId === currentWorkoutId) {
+          console.log('Восстанавливаем сохраненный прогресс тренировки:', workoutProgress);
+          
+          // Инициализируем упражнения из текущей тренировки
+          const workoutIndex = activeProgramData.currentDay - 1;
+          const currentWorkout = foundProgram.workouts[workoutIndex];
+          
+          if (currentWorkout && currentWorkout.exercises) {
+            // Создаем список упражнений с учетом сохраненного прогресса
+            const initializedExercises = currentWorkout.exercises.map((ex, idx) => {
+              const savedExercise = workoutProgress.exercises.find(e => e.exerciseId === ex.exerciseId);
+              
+              return {
+                exercise: ex.exercise || NORMALIZED_SAMPLE_EXERCISES.find(e => e.id === ex.exerciseId) || ex,
+                completedSets: savedExercise?.completedSets || 0,
+                setDetails: savedExercise?.setDetails || [],
+                rest: ex.rest
+              };
+            });
+            
+            setExercises(initializedExercises);
+            setCurrentExerciseIndex(workoutProgress.currentExerciseIndex);
+          }
+        } else {
+          // Инициализируем упражнения с нуля
+          const workoutIndex = activeProgramData.currentDay - 1;
+          const currentWorkout = foundProgram.workouts[workoutIndex];
+          
+          if (currentWorkout && currentWorkout.exercises) {
+            const initializedExercises = currentWorkout.exercises.map(ex => ({
+              exercise: ex.exercise || NORMALIZED_SAMPLE_EXERCISES.find(e => e.id === ex.exerciseId) || ex,
+              completedSets: 0,
+              setDetails: [],
+              rest: ex.rest
+            }));
+            
+            setExercises(initializedExercises);
+            
+            // Создаем новый прогресс тренировки
+            if (initializedExercises.length > 0) {
+              const newProgress = createWorkoutProgress(
+                foundProgram.id,
+                currentWorkout.id,
+                initializedExercises.map(ex => ({
+                  id: ex.exercise.id,
+                  exerciseId: ex.exercise.id,
+                  completedSets: 0,
+                  setDetails: []
+                }))
+              );
+              saveWorkoutProgress(newProgress);
+            }
           }
         }
       }
