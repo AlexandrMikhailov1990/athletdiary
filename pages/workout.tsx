@@ -13,7 +13,7 @@ import {
   clearWorkoutProgress, 
   WorkoutProgress 
 } from '../models/WorkoutProgress';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import Layout from '../components/Layout';
 
 // Добавим константу WORKOUT_PROGRESS_KEY для прямого доступа
@@ -66,6 +66,7 @@ export default function Workout() {
   const [isCountdown, setIsCountdown] = useState(false);
   const [timerCompleted, setTimerCompleted] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [showExerciseSelector, setShowExerciseSelector] = useState(false);
 
   // Инициализируем звук при монтировании компонента
   useEffect(() => {
@@ -680,6 +681,21 @@ export default function Workout() {
     }
   };
 
+  // Функция для переключения на другое упражнение
+  const switchToExercise = (index: number) => {
+    // Сохраняем текущий прогресс перед переключением
+    saveCurrentProgress();
+    
+    // Переключаемся на выбранное упражнение
+    setCurrentExerciseIndex(index);
+    setShowExerciseSelector(false);
+    
+    // Сбрасываем поля ввода
+    setCurrentWeight('');
+    setCurrentReps('');
+    resetExerciseTimer();
+  };
+
   if (!activeProgram || !program) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -780,6 +796,96 @@ export default function Workout() {
                     <h2 className="text-xl font-semibold mb-2 text-gray-800">{exercises[currentExerciseIndex].exercise.name}</h2>
                     <p className="text-gray-600 mb-4">{exercises[currentExerciseIndex].exercise.description}</p>
                     
+                    {/* Добавляем кнопку для выбора упражнения */}
+                    <button
+                      onClick={() => setShowExerciseSelector(true)}
+                      className="mb-4 bg-blue-100 hover:bg-blue-200 text-blue-800 px-4 py-2 rounded-lg flex items-center text-sm"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
+                      </svg>
+                      Выбрать другое упражнение
+                    </button>
+                    
+                    {/* Модальное окно выбора упражнения */}
+                    <AnimatePresence>
+                      {showExerciseSelector && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                          onClick={() => setShowExerciseSelector(false)}
+                        >
+                          <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-white rounded-lg p-6 max-w-md mx-4 w-full max-h-[80vh] overflow-y-auto"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <div className="flex justify-between items-center mb-4">
+                              <h3 className="text-lg font-semibold text-gray-800">Выберите упражнение</h3>
+                              <button
+                                onClick={() => setShowExerciseSelector(false)}
+                                className="text-gray-500 hover:text-gray-700"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            </div>
+                            
+                            <div className="space-y-2">
+                              {exercises.map((ex, index) => (
+                                <div
+                                  key={index}
+                                  className={`p-4 rounded-lg cursor-pointer transition-colors ${
+                                    index === currentExerciseIndex
+                                      ? 'bg-blue-100 border-2 border-blue-500'
+                                      : 'bg-gray-50 hover:bg-blue-50 border border-gray-200'
+                                  }`}
+                                  onClick={() => switchToExercise(index)}
+                                >
+                                  <div className="flex justify-between items-center">
+                                    <div>
+                                      <h4 className="font-medium text-gray-800">{ex.exercise.name}</h4>
+                                      <p className="text-sm text-gray-600 mt-1 line-clamp-2">{ex.exercise.description}</p>
+                                    </div>
+                                    <div className="flex flex-col items-end">
+                                      <span className={`text-sm px-2 py-1 rounded-full ${
+                                        ex.completedSets >= (ex.exercise.sets || 1)
+                                          ? 'bg-green-100 text-green-800'
+                                          : ex.completedSets > 0
+                                          ? 'bg-yellow-100 text-yellow-800'
+                                          : 'bg-gray-100 text-gray-800'
+                                      }`}>
+                                        {ex.completedSets}/{ex.exercise.sets || 1}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Индикатор прогресса */}
+                                  <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
+                                    <div
+                                      className={`h-1.5 rounded-full ${
+                                        ex.completedSets >= (ex.exercise.sets || 1)
+                                          ? 'bg-green-500'
+                                          : 'bg-blue-500'
+                                      }`}
+                                      style={{
+                                        width: `${(ex.completedSets / (ex.exercise.sets || 1)) * 100}%`
+                                      }}
+                                    ></div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </motion.div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
                     {/* Прогресс упражнения */}
                     <div className="mb-4">
                       <p className="text-lg text-gray-800">
