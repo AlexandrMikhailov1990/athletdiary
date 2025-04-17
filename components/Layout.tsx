@@ -7,7 +7,7 @@ interface LayoutProps {
   bgColor?: string;
 }
 
-export default function Layout({ children, title = 'AthletDiary', bgColor = 'bg-gray-100' }: LayoutProps) {
+export default function Layout({ children, title = 'AthleteDiary', bgColor = 'bg-gray-100' }: LayoutProps) {
   return (
     <>
       <Head>

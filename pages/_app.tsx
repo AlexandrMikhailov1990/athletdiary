@@ -51,7 +51,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
       <Head>
-        <title>AthletDiary</title>
+        <title>AthleteDiary</title>
         <meta name="description" content="Трекер тренировок и фитнеса" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
         <link rel="icon" href="/favicon.ico" />

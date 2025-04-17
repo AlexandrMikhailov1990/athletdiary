@@ -12,7 +12,7 @@ export default function Home() {
       <div className="container mx-auto px-4 py-16">
         {/* Hero секция */}
         <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold text-blue-800 mb-4">AthletDiary</h1>
+          <h1 className="text-5xl font-bold text-blue-800 mb-4">AthleteDiary</h1>
           <h2 className="text-2xl font-semibold text-gray-700 mb-6">Ваш персональный дневник тренировок</h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
             Отслеживайте прогресс, планируйте тренировки и достигайте своих спортивных целей
@@ -108,7 +108,7 @@ export default function Home() {
 
         {/* Преимущества */}
         <div className="mb-16">
-          <h2 className="text-3xl font-bold text-blue-800 mb-8 text-center">Почему выбирают AthletDiary?</h2>
+          <h2 className="text-3xl font-bold text-blue-800 mb-8 text-center">Почему выбирают AthleteDiary?</h2>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-white p-6 rounded-lg shadow-md">
