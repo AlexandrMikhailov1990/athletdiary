@@ -170,7 +170,9 @@ export default function Calendar({ workoutHistory, plannedWorkouts, onUpdatePlan
   
   // Форматирование даты для отображения месяца и года
   const formatMonthYear = (date: Date) => {
-    return date.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
+    const formatted = date.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
+    // Заменяем "Г." на "г." (делаем букву строчной)
+    return formatted.replace(' Г.', ' г.');
   };
   
   return (
