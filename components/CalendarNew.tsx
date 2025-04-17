@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { WorkoutHistory, PlannedWorkout } from '../models/WorkoutHistory';
+import { SAMPLE_PROGRAMS } from '../models/Program';
 
 interface CalendarDay {
   date: Date;
@@ -53,6 +54,10 @@ export default function CalendarNew({ workoutHistory, plannedWorkouts, onUpdateP
     type: 'workout',
     position: {x: 0, y: 0}
   });
+  
+  // Добавляем состояние для отслеживания активного меню
+  const [activeMenu, setActiveMenu] = useState<{dayIndex: number, workoutId: string} | null>(null);
+  const menuTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   
   // Получение списка программ пользователя
   useEffect(() => {
@@ -306,10 +311,53 @@ export default function CalendarNew({ workoutHistory, plannedWorkouts, onUpdateP
     const plannedWorkout = plannedWorkouts.find(w => w.id === workoutId);
     
     if (plannedWorkout && plannedWorkout.type === 'program' && plannedWorkout.programId) {
-      // Если это программа, переходим на страницу активной программы
-      router.push(`/active-program?id=${plannedWorkout.programId}`);
+      // Проверяем есть ли активная программа
+      const activeProgram = localStorage.getItem('activeProgram');
+      let activeProgramData = null;
+      
+      if (activeProgram) {
+        activeProgramData = JSON.parse(activeProgram);
+      }
+      
+      // Если активная программа не существует или имеет другой ID, создаем новую
+      if (!activeProgramData || activeProgramData.programId !== plannedWorkout.programId) {
+        // Получаем программу по ID
+        const savedPrograms = localStorage.getItem('programs');
+        const programs = savedPrograms ? JSON.parse(savedPrograms) : [];
+        // Используем импортированную константу SAMPLE_PROGRAMS вместо чтения из localStorage
+        const allPrograms = [...SAMPLE_PROGRAMS, ...programs];
+        
+        // Ищем нужную программу среди всех программ
+        const program = allPrograms.find(p => p.id === plannedWorkout.programId);
+        
+        if (program) {
+          // Создаем новую активную программу
+          const newActiveProgram = {
+            programId: plannedWorkout.programId,
+            userId: 'user',
+            startDate: new Date().toISOString(),
+            currentWeek: 1,
+            currentDay: 1,
+            completedWorkouts: []
+          };
+          
+          // Сохраняем в localStorage
+          localStorage.setItem('activeProgram', JSON.stringify(newActiveProgram));
+          
+          // Также сохраняем программу в activePrograms для полной совместимости
+          const activePrograms = JSON.parse(localStorage.getItem('activePrograms') || '[]');
+          activePrograms.push({
+            ...newActiveProgram,
+            program: program
+          });
+          localStorage.setItem('activePrograms', JSON.stringify(activePrograms));
+        }
+      }
+      
+      // Переходим на страницу активной программы
+      router.push('/active-program');
     } else {
-      // Для пользовательских тренировок можно направить на страницу создания тренировки
+      // Для пользовательских тренировок направляем на страницу создания тренировки
       router.push('/create-workout');
     }
   };
@@ -697,7 +745,30 @@ export default function CalendarNew({ workoutHistory, plannedWorkouts, onUpdateP
         
         {/* Индикатор запланированной тренировки */}
         {day.isPlanned && (
-          <div className="group relative">
+          <div 
+            className="relative"
+            onMouseEnter={() => {
+              // Очищаем таймаут при наведении на блок тренировки
+              if (menuTimeoutRef.current) {
+                clearTimeout(menuTimeoutRef.current);
+                menuTimeoutRef.current = null;
+              }
+              
+              // Устанавливаем активное меню
+              if (day.plannedWorkoutDetails?.id) {
+                setActiveMenu({
+                  dayIndex: index,
+                  workoutId: day.plannedWorkoutDetails.id
+                });
+              }
+            }}
+            onMouseLeave={() => {
+              // Отложенное скрытие меню при уходе курсора
+              menuTimeoutRef.current = setTimeout(() => {
+                setActiveMenu(null);
+              }, 300);
+            }}
+          >
             <div 
               className="bg-blue-500 text-white text-xs rounded p-0.5 md:p-1 overflow-hidden text-ellipsis text-[10px] md:text-xs"
               onClick={(e) => {
@@ -712,30 +783,47 @@ export default function CalendarNew({ workoutHistory, plannedWorkouts, onUpdateP
             </div>
             
             {/* Всплывающее меню действий */}
-            <div className="absolute hidden group-hover:flex flex-col bg-white shadow-lg rounded border p-2 z-10 right-0 mt-1 min-w-[120px]">
-              <button 
-                className="text-blue-600 hover:text-blue-800 text-xs md:text-sm whitespace-nowrap mb-1"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (day.plannedWorkoutDetails?.id) {
-                    startPlannedWorkout(day.plannedWorkoutDetails.id);
+            {activeMenu && activeMenu.dayIndex === index && activeMenu.workoutId === day.plannedWorkoutDetails?.id && (
+              <div 
+                className="absolute flex flex-col bg-white shadow-lg rounded border p-2 z-10 right-0 mt-1 min-w-[120px]"
+                onMouseEnter={() => {
+                  // Очищаем таймаут при наведении на само меню
+                  if (menuTimeoutRef.current) {
+                    clearTimeout(menuTimeoutRef.current);
+                    menuTimeoutRef.current = null;
                   }
                 }}
-              >
-                Начать тренировку
-              </button>
-              <button 
-                className="text-red-600 hover:text-red-800 text-xs md:text-sm whitespace-nowrap"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (day.plannedWorkoutDetails?.id) {
-                    removePlannedWorkout(day.plannedWorkoutDetails.id);
-                  }
+                onMouseLeave={() => {
+                  // Скрываем меню при уходе с него
+                  menuTimeoutRef.current = setTimeout(() => {
+                    setActiveMenu(null);
+                  }, 300);
                 }}
               >
-                Удалить
-              </button>
-            </div>
+                <button 
+                  className="text-blue-600 hover:text-blue-800 text-xs md:text-sm whitespace-nowrap mb-1"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (day.plannedWorkoutDetails?.id) {
+                      startPlannedWorkout(day.plannedWorkoutDetails.id);
+                    }
+                  }}
+                >
+                  Начать тренировку
+                </button>
+                <button 
+                  className="text-red-600 hover:text-red-800 text-xs md:text-sm whitespace-nowrap"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (day.plannedWorkoutDetails?.id) {
+                      removePlannedWorkout(day.plannedWorkoutDetails.id);
+                    }
+                  }}
+                >
+                  Удалить
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -798,7 +886,30 @@ export default function CalendarNew({ workoutHistory, plannedWorkouts, onUpdateP
                   )}
                   
                   {isHourPlanned && (
-                    <div className="group relative">
+                    <div 
+                      className="relative"
+                      onMouseEnter={() => {
+                        // Очищаем таймаут при наведении
+                        if (menuTimeoutRef.current) {
+                          clearTimeout(menuTimeoutRef.current);
+                          menuTimeoutRef.current = null;
+                        }
+                        
+                        // Устанавливаем активное меню
+                        if (day.plannedWorkoutDetails?.id) {
+                          setActiveMenu({
+                            dayIndex: 0, // В представлении дня всегда один день
+                            workoutId: day.plannedWorkoutDetails.id
+                          });
+                        }
+                      }}
+                      onMouseLeave={() => {
+                        // Отложенное скрытие меню
+                        menuTimeoutRef.current = setTimeout(() => {
+                          setActiveMenu(null);
+                        }, 300);
+                      }}
+                    >
                       <div className="bg-blue-500 text-white rounded px-3 py-1">
                         <div className="font-semibold">{day.plannedWorkoutDetails?.title || 'Запланированная тренировка'}</div>
                         <div className="text-xs text-blue-100">
@@ -807,30 +918,47 @@ export default function CalendarNew({ workoutHistory, plannedWorkouts, onUpdateP
                       </div>
                       
                       {/* Всплывающее меню для запланированной тренировки */}
-                      <div className="absolute hidden group-hover:flex flex-col bg-white shadow-lg rounded border p-2 z-10 right-0 mt-1 min-w-[120px]">
-                        <button 
-                          className="text-blue-600 hover:text-blue-800 text-sm whitespace-nowrap mb-1"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (day.plannedWorkoutDetails?.id) {
-                              startPlannedWorkout(day.plannedWorkoutDetails.id);
+                      {activeMenu && activeMenu.workoutId === day.plannedWorkoutDetails?.id && (
+                        <div 
+                          className="absolute flex flex-col bg-white shadow-lg rounded border p-2 z-10 right-0 mt-1 min-w-[120px]"
+                          onMouseEnter={() => {
+                            // Очищаем таймаут при наведении на меню
+                            if (menuTimeoutRef.current) {
+                              clearTimeout(menuTimeoutRef.current);
+                              menuTimeoutRef.current = null;
                             }
                           }}
-                        >
-                          Начать тренировку
-                        </button>
-                        <button 
-                          className="text-red-600 hover:text-red-800 text-sm whitespace-nowrap"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (day.plannedWorkoutDetails?.id) {
-                              removePlannedWorkout(day.plannedWorkoutDetails.id);
-                            }
+                          onMouseLeave={() => {
+                            // Скрываем меню при уходе с него
+                            menuTimeoutRef.current = setTimeout(() => {
+                              setActiveMenu(null);
+                            }, 300);
                           }}
                         >
-                          Удалить
-                        </button>
-                      </div>
+                          <button 
+                            className="text-blue-600 hover:text-blue-800 text-sm whitespace-nowrap mb-1"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (day.plannedWorkoutDetails?.id) {
+                                startPlannedWorkout(day.plannedWorkoutDetails.id);
+                              }
+                            }}
+                          >
+                            Начать тренировку
+                          </button>
+                          <button 
+                            className="text-red-600 hover:text-red-800 text-sm whitespace-nowrap"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (day.plannedWorkoutDetails?.id) {
+                                removePlannedWorkout(day.plannedWorkoutDetails.id);
+                              }
+                            }}
+                          >
+                            Удалить
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
