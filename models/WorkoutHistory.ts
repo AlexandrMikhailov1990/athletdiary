@@ -69,4 +69,14 @@ export interface WorkoutHistory {
       completed: boolean;
     }[];
   }[];
+}
+
+// Интерфейс для запланированных тренировок
+export interface PlannedWorkout {
+  id: string;
+  date: string;
+  title: string;
+  type: 'custom' | 'program';
+  programId?: string;
+  notes?: string;
 } 

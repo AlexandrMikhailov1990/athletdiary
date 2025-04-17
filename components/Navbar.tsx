@@ -65,6 +65,11 @@ export default function Navbar() {
             }`}>
               Программы
             </Link>
+            <Link href="/calendar" className={`nav-link ${
+              router.pathname === '/calendar' ? 'nav-link-active' : 'nav-link-default'
+            }`}>
+              Календарь
+            </Link>
             <Link href="/history" className={`nav-link ${
               router.pathname === '/history' ? 'nav-link-active' : 'nav-link-default'
             }`}>
@@ -191,6 +196,11 @@ export default function Navbar() {
                   router.pathname === '/programs' ? 'font-semibold text-blue-600' : 'text-gray-700'
                 }`} onClick={closeMenu}>
                   Программы
+                </Link>
+                <Link href="/calendar" className={`block p-2 rounded-md hover:bg-gray-100 ${
+                  router.pathname === '/calendar' ? 'font-semibold text-blue-600' : 'text-gray-700'
+                }`} onClick={closeMenu}>
+                  Календарь
                 </Link>
                 <Link href="/history" className={`block p-2 rounded-md hover:bg-gray-100 ${
                   router.pathname === '/history' ? 'font-semibold text-blue-600' : 'text-gray-700'
