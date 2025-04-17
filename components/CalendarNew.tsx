@@ -17,6 +17,24 @@ interface CalendarProps {
   onUpdatePlannedWorkouts: (workouts: PlannedWorkout[]) => void;
 }
 
+// Вспомогательная функция для форматирования даты YYYY-MM-DD
+const formatDateYMD = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1; // Месяцы начинаются с 0
+  const day = date.getDate();
+  return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+};
+
+// Вспомогательная функция для форматирования времени в ISO строку
+const formatToLocalISOString = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1; // Месяцы начинаются с 0
+  const day = date.getDate();
+  const hour = date.getHours();
+  const minute = date.getMinutes();
+  return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}T${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:00.000`;
+};
+
 export default function CalendarNew({ workoutHistory, plannedWorkouts, onUpdatePlannedWorkouts }: CalendarProps) {
   const router = useRouter();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -133,16 +151,21 @@ export default function CalendarNew({ workoutHistory, plannedWorkouts, onUpdateP
   
   // Создание объекта дня календаря
   const createCalendarDay = (date: Date, isCurrentMonth: boolean): CalendarDay => {
-    // Проверяем, есть ли тренировка в истории для этого дня
-    const dateString = date.toISOString().slice(0, 10);
-    const workout = workoutHistory.find(w => 
-      new Date(w.date).toISOString().slice(0, 10) === dateString
-    );
+    // Получаем строку даты в формате YYYY-MM-DD для текущего дня календаря
+    // без учета временной зоны, чтобы избежать смещения из-за UTC
+    const dateString = formatDateYMD(date);
     
-    // Проверяем, есть ли запланированная тренировка для этого дня
-    const plannedWorkout = plannedWorkouts.find(p => 
-      new Date(p.date).toISOString().slice(0, 10) === dateString
-    );
+    // Ищем тренировки, сравнивая только дату без учета времени и временной зоны
+    const workout = workoutHistory.find(w => {
+      const wDate = new Date(w.date);
+      return formatDateYMD(wDate) === dateString;
+    });
+    
+    // Ищем запланированные тренировки, сравнивая только дату без учета времени
+    const plannedWorkout = plannedWorkouts.find(p => {
+      const pDate = new Date(p.date);
+      return formatDateYMD(pDate) === dateString;
+    });
     
     return {
       date,
@@ -243,14 +266,25 @@ export default function CalendarNew({ workoutHistory, plannedWorkouts, onUpdateP
   const addPlannedWorkout = () => {
     if (!selectedDate || !workoutTitle) return;
     
-    // Создаем новую дату с выбранным временем
+    // Создаем новую дату с выбранным временем, сохраняя выбранную дату
     const [hours, minutes] = selectedTime.split(':').map(Number);
     const dateWithTime = new Date(selectedDate);
+    
+    // Устанавливаем время без изменения даты
     dateWithTime.setHours(hours, minutes, 0, 0);
+    
+    // Используем вспомогательную функцию для создания локальной ISO строки
+    const localISOString = formatToLocalISOString(dateWithTime);
+    
+    // Для диагностики - выводим информацию о датах
+    console.log('Selected date:', selectedDate.toLocaleDateString());
+    console.log('Date with time:', dateWithTime.toLocaleDateString(), dateWithTime.toLocaleTimeString());
+    console.log('ISO string:', localISOString);
+    console.log('Parsed back date:', new Date(localISOString).toLocaleDateString());
     
     const newPlannedWorkout: PlannedWorkout = {
       id: Date.now().toString(),
-      date: dateWithTime.toISOString(),
+      date: localISOString,
       title: workoutTitle,
       type: workoutType as 'custom' | 'program',
       programId: workoutType === 'program' ? selectedProgram : undefined
@@ -340,8 +374,11 @@ export default function CalendarNew({ workoutHistory, plannedWorkouts, onUpdateP
     // Формируем информацию
     let info = '';
     if (planned) {
-      const time = new Date(planned.date).toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'});
-      info = `${planned.title} в ${time} (${planned.type === 'program' ? 'Из программы' : 'Своя тренировка'})`;
+      // Обрабатываем время с учетом локальной временной зоны
+      const plannedDate = new Date(planned.date);
+      const time = plannedDate.toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'});
+      const date = plannedDate.toLocaleDateString('ru-RU', {day: 'numeric', month: 'long'});
+      info = `${planned.title} в ${time} (${date}) - ${planned.type === 'program' ? 'Из программы' : 'Своя тренировка'}`;
     } else {
       info = 'Запланированная тренировка';
     }
