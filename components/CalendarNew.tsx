@@ -17,7 +17,7 @@ interface CalendarProps {
   onUpdatePlannedWorkouts: (workouts: PlannedWorkout[]) => void;
 }
 
-export default function Calendar({ workoutHistory, plannedWorkouts, onUpdatePlannedWorkouts }: CalendarProps) {
+export default function CalendarNew({ workoutHistory, plannedWorkouts, onUpdatePlannedWorkouts }: CalendarProps) {
   const router = useRouter();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
@@ -195,7 +195,7 @@ export default function Calendar({ workoutHistory, plannedWorkouts, onUpdatePlan
         </button>
         
         <div className="flex items-center">
-          <h3 className="text-xl font-semibold text-gray-800 capitalize">
+          <h3 className="text-xl font-semibold text-gray-800">
             {formatMonthYear(currentDate)}
           </h3>
           <button 

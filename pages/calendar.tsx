@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
-import Calendar from '@/components/Calendar';
+import CalendarNew from '../components/CalendarNew';
 import { WorkoutHistory, PlannedWorkout } from '../models/WorkoutHistory';
 
 export default function CalendarPage() {
@@ -37,7 +37,7 @@ export default function CalendarPage() {
           Календарь тренировок
         </h1>
         
-        <Calendar 
+        <CalendarNew 
           workoutHistory={workoutHistory} 
           plannedWorkouts={plannedWorkouts} 
           onUpdatePlannedWorkouts={savePlannedWorkouts} 
