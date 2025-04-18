@@ -75,6 +75,11 @@ export default function Navbar() {
             }`}>
               История
             </Link>
+            <Link href="/articles" className={`nav-link ${
+              router.pathname.startsWith('/articles') ? 'nav-link-active' : 'nav-link-default'
+            }`}>
+              Статьи
+            </Link>
             
             <Link href="/settings" className={`nav-link ${
               router.pathname === '/settings' ? 'nav-link-active' : 'nav-link-default'
@@ -206,6 +211,11 @@ export default function Navbar() {
                   router.pathname === '/history' ? 'font-semibold text-blue-600' : 'text-gray-700'
                 }`} onClick={closeMenu}>
                   История
+                </Link>
+                <Link href="/articles" className={`block p-2 rounded-md hover:bg-gray-100 ${
+                  router.pathname.startsWith('/articles') ? 'font-semibold text-blue-600' : 'text-gray-700'
+                }`} onClick={closeMenu}>
+                  Статьи
                 </Link>
                 
                 <Link href="/settings" className={`block p-2 rounded-md hover:bg-gray-100 ${
