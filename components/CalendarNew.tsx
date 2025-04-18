@@ -10,6 +10,7 @@ interface CalendarDay {
   isPlanned: boolean;
   workoutDetails?: WorkoutHistory | null;
   plannedWorkoutDetails?: PlannedWorkout | null;
+  plannedWorkouts: PlannedWorkout[];
 }
 
 interface CalendarProps {
@@ -36,6 +37,60 @@ const formatToLocalISOString = (date: Date): string => {
   return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}T${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:00.000`;
 };
 
+// Вспомогательная функция для получения иконки по типу тренировки
+const getWorkoutTypeIcon = (workoutType: string = 'custom'): string => {
+  switch (workoutType) {
+    case 'program':
+      return '📋'; // Программа
+    case 'strength':
+      return '💪'; // Силовая тренировка
+    case 'cardio':
+      return '🏃'; // Кардио
+    case 'flexibility':
+      return '🤸'; // Растяжка
+    case 'hiit':
+      return '⚡'; // HIIT
+    case 'yoga':
+      return '🧘'; // Йога
+    case 'functionalTraining':
+      return '🏋️'; // Функциональная тренировка
+    case 'recovery':
+      return '♨️'; // Восстановление
+    default:
+      return '🏆'; // Своя тренировка
+  }
+};
+
+// Вспомогательная функция для получения цвета по типу тренировки
+const getWorkoutTypeColor = (workoutType: string = 'custom'): string => {
+  switch (workoutType) {
+    case 'program':
+      return '#6B46C1'; // purple-700
+    case 'strength':
+      return '#E53E3E'; // red-600
+    case 'cardio':
+      return '#38A169'; // green-600
+    case 'flexibility':
+      return '#3182CE'; // blue-600
+    case 'hiit':
+      return '#DD6B20'; // orange-600
+    case 'yoga':
+      return '#805AD5'; // purple-600
+    case 'functionalTraining':
+      return '#2C7A7B'; // teal-700
+    case 'recovery':
+      return '#4299E1'; // blue-500
+    default:
+      return '#718096'; // gray-600
+  }
+};
+
+// Вспомогательная функция для сокращения названия тренировки
+const shortenWorkoutTitle = (title: string, maxLength: number = 8): string => {
+  if (!title) return '';
+  return title.length <= maxLength ? title : title.substring(0, maxLength) + '...';
+};
+
 export default function CalendarNew({ workoutHistory, plannedWorkouts, onUpdatePlannedWorkouts }: CalendarProps) {
   const router = useRouter();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -48,6 +103,7 @@ export default function CalendarNew({ workoutHistory, plannedWorkouts, onUpdateP
   const [userPrograms, setUserPrograms] = useState<any[]>([]);
   const [viewMode, setViewMode] = useState<'month' | 'week' | 'day'>('month');
   const [selectedTime, setSelectedTime] = useState('08:00');
+  const [workoutTypeId, setWorkoutTypeId] = useState('strength');
   const [mobileTooltip, setMobileTooltip] = useState<{visible: boolean, info: string, type: 'workout' | 'planned', position: {x: number, y: number}}>({
     visible: false,
     info: '',
@@ -66,6 +122,18 @@ export default function CalendarNew({ workoutHistory, plannedWorkouts, onUpdateP
       setUserPrograms(JSON.parse(savedPrograms));
     }
   }, []);
+  
+  // Обновляем название тренировки при выборе программы
+  useEffect(() => {
+    if (workoutType === 'program' && selectedProgram) {
+      // Находим выбранную программу
+      const program = [...SAMPLE_PROGRAMS, ...userPrograms].find(p => p.id === selectedProgram);
+      if (program) {
+        // Устанавливаем название программы как название тренировки
+        setWorkoutTitle(program.name);
+      }
+    }
+  }, [workoutType, selectedProgram, userPrograms]);
   
   // Генерация календаря при изменении месяца или данных тренировок
   useEffect(() => {
@@ -166,19 +234,27 @@ export default function CalendarNew({ workoutHistory, plannedWorkouts, onUpdateP
       return formatDateYMD(wDate) === dateString;
     });
     
-    // Ищем запланированные тренировки, сравнивая только дату без учета времени
-    const plannedWorkout = plannedWorkouts.find(p => {
+    // Ищем все запланированные тренировки для этой даты
+    const dayPlannedWorkouts = plannedWorkouts.filter(p => {
       const pDate = new Date(p.date);
       return formatDateYMD(pDate) === dateString;
+    });
+    
+    // Сортируем тренировки по времени
+    dayPlannedWorkouts.sort((a, b) => {
+      const dateA = new Date(a.date);
+      const dateB = new Date(b.date);
+      return dateA.getTime() - dateB.getTime();
     });
     
     return {
       date,
       isCurrentMonth,
       hasWorkout: !!workout,
-      isPlanned: !!plannedWorkout,
+      isPlanned: dayPlannedWorkouts.length > 0,
       workoutDetails: workout || null,
-      plannedWorkoutDetails: plannedWorkout || null
+      plannedWorkoutDetails: dayPlannedWorkouts.length > 0 ? dayPlannedWorkouts[0] : null,
+      plannedWorkouts: dayPlannedWorkouts
     };
   };
   
@@ -258,12 +334,23 @@ export default function CalendarNew({ workoutHistory, plannedWorkouts, onUpdateP
     }
   };
   
-  // Функция для отображения модального окна добавления тренировки
+  // Обработчик изменения типа тренировки
+  const handleWorkoutTypeChange = (type: string) => {
+    setWorkoutType(type);
+    
+    // Если изменен тип на "custom", сбрасываем название, если оно было автоматически установлено
+    if (type === 'custom') {
+      setWorkoutTitle('');
+    }
+  };
+  
+  // Функция для открытия модального окна добавления тренировки
   const openAddWorkoutModal = (date: Date) => {
     setSelectedDate(date);
     setWorkoutTitle('');
     setWorkoutType('custom');
     setSelectedProgram('');
+    setWorkoutTypeId('strength'); // Установка типа тренировки по умолчанию
     setShowAddModal(true);
   };
   
@@ -292,7 +379,8 @@ export default function CalendarNew({ workoutHistory, plannedWorkouts, onUpdateP
       date: localISOString,
       title: workoutTitle,
       type: workoutType as 'custom' | 'program',
-      programId: workoutType === 'program' ? selectedProgram : undefined
+      programId: workoutType === 'program' ? selectedProgram : undefined,
+      workoutTypeId: workoutType === 'program' ? 'program' : workoutTypeId // Устанавливаем тип тренировки
     };
     
     const updatedWorkouts = [...plannedWorkouts, newPlannedWorkout];
@@ -466,7 +554,13 @@ export default function CalendarNew({ workoutHistory, plannedWorkouts, onUpdateP
               onChange={(e) => setWorkoutTitle(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Введите название тренировки"
+              disabled={workoutType === 'program' && selectedProgram !== ''}
             />
+            {workoutType === 'program' && selectedProgram !== '' && (
+              <p className="text-xs text-gray-500 mt-1">
+                При выборе программы название устанавливается автоматически
+              </p>
+            )}
           </div>
           
           <div className="mb-3 md:mb-4">
@@ -491,7 +585,7 @@ export default function CalendarNew({ workoutHistory, plannedWorkouts, onUpdateP
                   type="radio"
                   value="custom"
                   checked={workoutType === 'custom'}
-                  onChange={() => setWorkoutType('custom')}
+                  onChange={() => handleWorkoutTypeChange('custom')}
                   className="mr-2"
                 />
                 Своя тренировка
@@ -501,13 +595,77 @@ export default function CalendarNew({ workoutHistory, plannedWorkouts, onUpdateP
                   type="radio"
                   value="program"
                   checked={workoutType === 'program'}
-                  onChange={() => setWorkoutType('program')}
+                  onChange={() => handleWorkoutTypeChange('program')}
                   className="mr-2"
                 />
                 Из программы
               </label>
             </div>
           </div>
+          
+          {workoutType === 'custom' && (
+            <div className="mb-3 md:mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Вид тренировки
+              </label>
+              <select
+                value={workoutTypeId}
+                onChange={(e) => setWorkoutTypeId(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="strength" style={{backgroundColor: 'rgba(229, 62, 62, 0.1)'}}>
+                  {getWorkoutTypeIcon('strength')} Силовая
+                </option>
+                <option value="cardio" style={{backgroundColor: 'rgba(56, 161, 105, 0.1)'}}>
+                  {getWorkoutTypeIcon('cardio')} Кардио
+                </option>
+                <option value="flexibility" style={{backgroundColor: 'rgba(49, 130, 206, 0.1)'}}>
+                  {getWorkoutTypeIcon('flexibility')} Растяжка
+                </option>
+                <option value="hiit" style={{backgroundColor: 'rgba(221, 107, 32, 0.1)'}}>
+                  {getWorkoutTypeIcon('hiit')} HIIT
+                </option>
+                <option value="yoga" style={{backgroundColor: 'rgba(128, 90, 213, 0.1)'}}>
+                  {getWorkoutTypeIcon('yoga')} Йога
+                </option>
+                <option value="functionalTraining" style={{backgroundColor: 'rgba(44, 122, 123, 0.1)'}}>
+                  {getWorkoutTypeIcon('functionalTraining')} Функциональная
+                </option>
+                <option value="recovery" style={{backgroundColor: 'rgba(66, 153, 225, 0.1)'}}>
+                  {getWorkoutTypeIcon('recovery')} Восстановление
+                </option>
+                <option value="custom" style={{backgroundColor: 'rgba(113, 128, 150, 0.1)'}}>
+                  {getWorkoutTypeIcon('custom')} Другое
+                </option>
+              </select>
+              
+              {/* Цветовая легенда */}
+              <div className="flex flex-wrap gap-2 mt-2">
+                {[
+                  {id: 'strength', name: 'Силовая'},
+                  {id: 'cardio', name: 'Кардио'},
+                  {id: 'flexibility', name: 'Растяжка'},
+                  {id: 'hiit', name: 'HIIT'},
+                  {id: 'yoga', name: 'Йога'},
+                  {id: 'functionalTraining', name: 'Функц.'},
+                  {id: 'recovery', name: 'Восст.'},
+                  {id: 'custom', name: 'Другое'}
+                ].map(type => (
+                  <div 
+                    key={type.id} 
+                    className="flex items-center text-xs cursor-pointer"
+                    onClick={() => setWorkoutTypeId(type.id)}
+                  >
+                    <span 
+                      className="w-3 h-3 inline-block rounded-full mr-1" 
+                      style={{ backgroundColor: getWorkoutTypeColor(type.id) }}
+                    ></span>
+                    {type.name}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           
           {workoutType === 'program' && (
             <div className="mb-3 md:mb-4">
@@ -521,6 +679,11 @@ export default function CalendarNew({ workoutHistory, plannedWorkouts, onUpdateP
               >
                 <option value="">Выберите программу</option>
                 {userPrograms.map((program) => (
+                  <option key={program.id} value={program.id}>
+                    {program.name}
+                  </option>
+                ))}
+                {SAMPLE_PROGRAMS.map((program) => (
                   <option key={program.id} value={program.id}>
                     {program.name}
                   </option>
@@ -743,87 +906,113 @@ export default function CalendarNew({ workoutHistory, plannedWorkouts, onUpdateP
           </div>
         )}
         
-        {/* Индикатор запланированной тренировки */}
-        {day.isPlanned && (
-          <div 
-            className="relative"
-            onMouseEnter={() => {
-              // Очищаем таймаут при наведении на блок тренировки
-              if (menuTimeoutRef.current) {
-                clearTimeout(menuTimeoutRef.current);
-                menuTimeoutRef.current = null;
-              }
+        {/* Индикаторы запланированных тренировок */}
+        {day.plannedWorkouts.length > 0 && (
+          <div className="space-y-0.5">
+            {day.plannedWorkouts.map((plannedWorkout, workoutIndex) => {
+              // Получаем время тренировки для отображения
+              const plannedDate = new Date(plannedWorkout.date);
+              const timeString = plannedDate.toLocaleTimeString('ru-RU', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: false 
+              });
               
-              // Устанавливаем активное меню
-              if (day.plannedWorkoutDetails?.id) {
-                setActiveMenu({
-                  dayIndex: index,
-                  workoutId: day.plannedWorkoutDetails.id
-                });
-              }
-            }}
-            onMouseLeave={() => {
-              // Отложенное скрытие меню при уходе курсора
-              menuTimeoutRef.current = setTimeout(() => {
-                setActiveMenu(null);
-              }, 300);
-            }}
-          >
-            <div 
-              className="bg-blue-500 text-white text-xs rounded p-0.5 md:p-1 overflow-hidden text-ellipsis text-[10px] md:text-xs"
-              onClick={(e) => {
-                // Только на мобильных устройствах показываем всплывающую информацию
-                if (window.innerWidth < 768) {
-                  handleMobilePlannedTap(e, day.plannedWorkoutDetails, 'planned');
-                }
-              }}
-            >
-              <span className="hidden md:inline">{day.plannedWorkoutDetails?.title || 'Запланировано'}</span>
-              <span className="md:hidden">⏰</span>
-            </div>
-            
-            {/* Всплывающее меню действий */}
-            {activeMenu && activeMenu.dayIndex === index && activeMenu.workoutId === day.plannedWorkoutDetails?.id && (
-              <div 
-                className="absolute flex flex-col bg-white shadow-lg rounded border p-2 z-10 right-0 mt-1 min-w-[120px]"
-                onMouseEnter={() => {
-                  // Очищаем таймаут при наведении на само меню
-                  if (menuTimeoutRef.current) {
-                    clearTimeout(menuTimeoutRef.current);
-                    menuTimeoutRef.current = null;
-                  }
-                }}
-                onMouseLeave={() => {
-                  // Скрываем меню при уходе с него
-                  menuTimeoutRef.current = setTimeout(() => {
-                    setActiveMenu(null);
-                  }, 300);
-                }}
-              >
-                <button 
-                  className="text-blue-600 hover:text-blue-800 text-xs md:text-sm whitespace-nowrap mb-1"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (day.plannedWorkoutDetails?.id) {
-                      startPlannedWorkout(day.plannedWorkoutDetails.id);
+              // Получаем иконку по типу тренировки
+              const workoutIcon = getWorkoutTypeIcon(plannedWorkout.workoutTypeId || (plannedWorkout.type === 'program' ? 'program' : 'custom'));
+              
+              // Получаем цвет по типу тренировки
+              const workoutColor = getWorkoutTypeColor(plannedWorkout.workoutTypeId || (plannedWorkout.type === 'program' ? 'program' : 'custom'));
+              
+              // Получаем сокращенное название тренировки для мобильных устройств
+              const shortTitle = shortenWorkoutTitle(plannedWorkout.title, 6);
+              
+              return (
+                <div 
+                  key={plannedWorkout.id}
+                  className="relative"
+                  onMouseEnter={() => {
+                    // Очищаем таймаут при наведении на блок тренировки
+                    if (menuTimeoutRef.current) {
+                      clearTimeout(menuTimeoutRef.current);
+                      menuTimeoutRef.current = null;
                     }
+                    
+                    // Устанавливаем активное меню
+                    setActiveMenu({
+                      dayIndex: index,
+                      workoutId: plannedWorkout.id
+                    });
+                  }}
+                  onMouseLeave={() => {
+                    // Отложенное скрытие меню при уходе курсора
+                    menuTimeoutRef.current = setTimeout(() => {
+                      setActiveMenu(null);
+                    }, 300); // Задержка 300мс
                   }}
                 >
-                  Начать тренировку
-                </button>
-                <button 
-                  className="text-red-600 hover:text-red-800 text-xs md:text-sm whitespace-nowrap"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (day.plannedWorkoutDetails?.id) {
-                      removePlannedWorkout(day.plannedWorkoutDetails.id);
-                    }
-                  }}
-                >
-                  Удалить
-                </button>
-              </div>
-            )}
+                  <div 
+                    className={`text-white text-xs rounded p-0.5 md:p-1 overflow-hidden text-ellipsis text-[9px] md:text-xs ${day.plannedWorkouts.length > 1 ? 'text-[8px]' : ''}`}
+                    style={{ backgroundColor: workoutColor }}
+                    onClick={(e) => {
+                      // Только на мобильных устройствах показываем всплывающую информацию
+                      if (window.innerWidth < 768) {
+                        handleMobilePlannedTap(e, plannedWorkout, 'planned');
+                      }
+                    }}
+                  >
+                    <span className="hidden md:inline">
+                      {timeString} {plannedWorkout.title || 'Запланировано'}
+                    </span>
+                    <span className="md:hidden flex items-center justify-between">
+                      <span>{timeString}</span>
+                      <span title={plannedWorkout.title}>
+                        {workoutIcon} {shortTitle}
+                      </span>
+                    </span>
+                  </div>
+                  
+                  {/* Всплывающее меню действий */}
+                  {activeMenu && activeMenu.dayIndex === index && activeMenu.workoutId === plannedWorkout.id && (
+                    <div 
+                      className="absolute flex flex-col bg-white shadow-lg rounded border p-2 z-10 right-0 mt-1 min-w-[120px]"
+                      onMouseEnter={() => {
+                        // Очищаем таймаут при наведении на само меню
+                        if (menuTimeoutRef.current) {
+                          clearTimeout(menuTimeoutRef.current);
+                          menuTimeoutRef.current = null;
+                        }
+                      }}
+                      onMouseLeave={() => {
+                        // Скрываем меню при уходе с него
+                        menuTimeoutRef.current = setTimeout(() => {
+                          setActiveMenu(null);
+                        }, 300);
+                      }}
+                    >
+                      <button 
+                        className="text-blue-600 hover:text-blue-800 text-xs md:text-sm whitespace-nowrap mb-1"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          startPlannedWorkout(plannedWorkout.id);
+                        }}
+                      >
+                        Начать тренировку
+                      </button>
+                      <button 
+                        className="text-red-600 hover:text-red-800 text-xs md:text-sm whitespace-nowrap"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removePlannedWorkout(plannedWorkout.id);
+                        }}
+                      >
+                        Удалить
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
@@ -834,6 +1023,20 @@ export default function CalendarNew({ workoutHistory, plannedWorkouts, onUpdateP
   function renderDayView(day: CalendarDay) {
     const isToday = day.date.toDateString() === new Date().toDateString();
     const hoursOfDay = Array.from({ length: 24 }, (_, i) => i);
+    
+    // Группируем тренировки по часам для отображения
+    const workoutsByHour: { [hour: number]: PlannedWorkout[] } = {};
+    
+    // Распределяем запланированные тренировки по часам
+    day.plannedWorkouts.forEach(workout => {
+      const workoutDate = new Date(workout.date);
+      const hour = workoutDate.getHours();
+      
+      if (!workoutsByHour[hour]) {
+        workoutsByHour[hour] = [];
+      }
+      workoutsByHour[hour].push(workout);
+    });
     
     return (
       <div className="p-4">
@@ -849,9 +1052,8 @@ export default function CalendarNew({ workoutHistory, plannedWorkouts, onUpdateP
             const hourEnd = new Date(hourDate);
             hourEnd.setHours(hour + 1, 0, 0, 0);
             
-            // Находим тренировки, запланированные на этот час
-            const isHourPlanned = day.isPlanned && day.plannedWorkoutDetails?.date && 
-              new Date(day.plannedWorkoutDetails.date).getHours() === hour;
+            // Определяем, имеются ли запланированные тренировки на этот час
+            const plannedWorkoutsForHour = workoutsByHour[hour] || [];
             
             // Определяем, имеет ли этот час выполненную тренировку
             const isHourWorkout = day.hasWorkout && day.workoutDetails?.date && 
@@ -875,7 +1077,7 @@ export default function CalendarNew({ workoutHistory, plannedWorkouts, onUpdateP
                   {`${hour}:00`}
                 </div>
                 
-                <div className="flex-1">
+                <div className="flex-1 space-y-2">
                   {isHourWorkout && (
                     <div className="bg-green-500 text-white rounded px-3 py-1 mb-1">
                       <div className="font-semibold">{day.workoutDetails?.exercises[0]?.name || 'Тренировка выполнена'}</div>
@@ -885,82 +1087,95 @@ export default function CalendarNew({ workoutHistory, plannedWorkouts, onUpdateP
                     </div>
                   )}
                   
-                  {isHourPlanned && (
-                    <div 
-                      className="relative"
-                      onMouseEnter={() => {
-                        // Очищаем таймаут при наведении
-                        if (menuTimeoutRef.current) {
-                          clearTimeout(menuTimeoutRef.current);
-                          menuTimeoutRef.current = null;
-                        }
-                        
-                        // Устанавливаем активное меню
-                        if (day.plannedWorkoutDetails?.id) {
+                  {/* Отображаем все запланированные тренировки за этот час */}
+                  {plannedWorkoutsForHour.map((plannedWorkout) => {
+                    const plannedDate = new Date(plannedWorkout.date);
+                    const timeString = plannedDate.toLocaleTimeString('ru-RU', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: false
+                    });
+                    
+                    // Получаем иконку по типу тренировки
+                    const workoutIcon = getWorkoutTypeIcon(plannedWorkout.workoutTypeId || (plannedWorkout.type === 'program' ? 'program' : 'custom'));
+                    
+                    // Получаем цвет по типу тренировки
+                    const workoutColor = getWorkoutTypeColor(plannedWorkout.workoutTypeId || (plannedWorkout.type === 'program' ? 'program' : 'custom'));
+                    
+                    return (
+                      <div 
+                        key={plannedWorkout.id}
+                        className="relative"
+                        onMouseEnter={() => {
+                          // Очищаем таймаут при наведении
+                          if (menuTimeoutRef.current) {
+                            clearTimeout(menuTimeoutRef.current);
+                            menuTimeoutRef.current = null;
+                          }
+                          
+                          // Устанавливаем активное меню
                           setActiveMenu({
                             dayIndex: 0, // В представлении дня всегда один день
-                            workoutId: day.plannedWorkoutDetails.id
+                            workoutId: plannedWorkout.id
                           });
-                        }
-                      }}
-                      onMouseLeave={() => {
-                        // Отложенное скрытие меню
-                        menuTimeoutRef.current = setTimeout(() => {
-                          setActiveMenu(null);
-                        }, 300);
-                      }}
-                    >
-                      <div className="bg-blue-500 text-white rounded px-3 py-1">
-                        <div className="font-semibold">{day.plannedWorkoutDetails?.title || 'Запланированная тренировка'}</div>
-                        <div className="text-xs text-blue-100">
-                          {day.plannedWorkoutDetails?.type === 'program' ? 'Из программы' : 'Своя тренировка'}
+                        }}
+                        onMouseLeave={() => {
+                          // Отложенное скрытие меню
+                          menuTimeoutRef.current = setTimeout(() => {
+                            setActiveMenu(null);
+                          }, 300);
+                        }}
+                      >
+                        <div className="text-white rounded px-3 py-1" style={{ backgroundColor: workoutColor }}>
+                          <div className="font-semibold">
+                            {timeString} - {workoutIcon} {plannedWorkout.title || 'Запланированная тренировка'}
+                          </div>
+                          <div className="text-xs text-white text-opacity-80">
+                            {plannedWorkout.type === 'program' ? 'Из программы' : 'Своя тренировка'}
+                          </div>
                         </div>
+                        
+                        {/* Всплывающее меню для запланированной тренировки */}
+                        {activeMenu && activeMenu.workoutId === plannedWorkout.id && (
+                          <div 
+                            className="absolute flex flex-col bg-white shadow-lg rounded border p-2 z-10 right-0 mt-1 min-w-[120px]"
+                            onMouseEnter={() => {
+                              // Очищаем таймаут при наведении на меню
+                              if (menuTimeoutRef.current) {
+                                clearTimeout(menuTimeoutRef.current);
+                                menuTimeoutRef.current = null;
+                              }
+                            }}
+                            onMouseLeave={() => {
+                              // Скрываем меню при уходе с него
+                              menuTimeoutRef.current = setTimeout(() => {
+                                setActiveMenu(null);
+                              }, 300);
+                            }}
+                          >
+                            <button 
+                              className="text-blue-600 hover:text-blue-800 text-sm whitespace-nowrap mb-1"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                startPlannedWorkout(plannedWorkout.id);
+                              }}
+                            >
+                              Начать тренировку
+                            </button>
+                            <button 
+                              className="text-red-600 hover:text-red-800 text-sm whitespace-nowrap"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removePlannedWorkout(plannedWorkout.id);
+                              }}
+                            >
+                              Удалить
+                            </button>
+                          </div>
+                        )}
                       </div>
-                      
-                      {/* Всплывающее меню для запланированной тренировки */}
-                      {activeMenu && activeMenu.workoutId === day.plannedWorkoutDetails?.id && (
-                        <div 
-                          className="absolute flex flex-col bg-white shadow-lg rounded border p-2 z-10 right-0 mt-1 min-w-[120px]"
-                          onMouseEnter={() => {
-                            // Очищаем таймаут при наведении на меню
-                            if (menuTimeoutRef.current) {
-                              clearTimeout(menuTimeoutRef.current);
-                              menuTimeoutRef.current = null;
-                            }
-                          }}
-                          onMouseLeave={() => {
-                            // Скрываем меню при уходе с него
-                            menuTimeoutRef.current = setTimeout(() => {
-                              setActiveMenu(null);
-                            }, 300);
-                          }}
-                        >
-                          <button 
-                            className="text-blue-600 hover:text-blue-800 text-sm whitespace-nowrap mb-1"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (day.plannedWorkoutDetails?.id) {
-                                startPlannedWorkout(day.plannedWorkoutDetails.id);
-                              }
-                            }}
-                          >
-                            Начать тренировку
-                          </button>
-                          <button 
-                            className="text-red-600 hover:text-red-800 text-sm whitespace-nowrap"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (day.plannedWorkoutDetails?.id) {
-                                removePlannedWorkout(day.plannedWorkoutDetails.id);
-                              }
-                            }}
-                          >
-                            Удалить
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                    );
+                  })}
                 </div>
               </div>
             );

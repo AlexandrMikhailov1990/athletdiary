@@ -79,4 +79,5 @@ export interface PlannedWorkout {
   type: 'custom' | 'program';
   programId?: string;
   notes?: string;
+  workoutTypeId?: string; // ID типа тренировки (strength, cardio, yoga и т.д.)
 } 
