@@ -65,9 +65,9 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-white shadow-md sticky top-0 z-50">
+    <nav className="bg-white sticky top-0 z-50 border-0">
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-16 border-0">
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center space-x-2">
               <span className="text-2xl font-bold text-blue-800">AthleteDiary</span>
@@ -96,20 +96,20 @@ export default function Navbar() {
             }`}>
               История
             </Link>
-            <Link href="/articles" className={`nav-link ${
-              router.pathname.startsWith('/articles') ? 'nav-link-active' : 'nav-link-default'
+            <Link href="/articles" className={`px-3 py-2 rounded-md hover:bg-gray-100 ${
+              router.pathname.startsWith('/articles') ? 'font-semibold text-blue-600' : 'text-gray-700'
             }`}>
               Статьи
             </Link>
             
-            {/* Скрываем кнопку админ-панели, так как функциональность не настроена */}
-            {/* {isAdminUser && (
-              <Link href="/admin/articles" className={`nav-link ${
-                router.pathname.startsWith('/admin') ? 'nav-link-active' : 'nav-link-default'
+            {/* Admin panel link for desktop - uncommented */}
+            {isAdminUser && (
+              <Link href="/admin/articles" className={`px-3 py-2 rounded-md hover:bg-gray-100 ${
+                router.pathname.startsWith('/admin') ? 'font-semibold text-blue-600' : 'text-gray-700'
               }`}>
                 Админ
               </Link>
-            )} */}
+            )}
             
             <Link href="/settings" className={`nav-link ${
               router.pathname === '/settings' ? 'nav-link-active' : 'nav-link-default'
@@ -258,22 +258,19 @@ export default function Navbar() {
                   Статьи
                 </Link>
                 
-                {/* Скрываем кнопку админ-панели в мобильном меню */}
-                {/* {isAdminUser && (
+                {/* Admin panel link for desktop - uncommented */}
+                {isAdminUser && (
                   <Link href="/admin/articles" className={`block p-2 rounded-md hover:bg-gray-100 ${
                     router.pathname.startsWith('/admin') ? 'font-semibold text-blue-600' : 'text-gray-700'
                   }`} onClick={closeMenu}>
                     Админ
                   </Link>
-                )} */}
+                )}
                 
                 <Link href="/settings" className={`block p-2 rounded-md hover:bg-gray-100 ${
-                  router.pathname === '/settings' ? 'font-semibold text-blue-600' : 'text-gray-700'
+                  router.pathname.startsWith('/settings') ? 'font-semibold text-blue-600' : 'text-gray-700'
                 }`} onClick={closeMenu}>
                   Настройки
-                  <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                    Новое
-                  </span>
                 </Link>
                 
                 {/* Кнопка продолжения тренировки в мобильном меню */}

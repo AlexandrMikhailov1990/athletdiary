@@ -1,4 +1,4 @@
-import '../styles/globals.css';
+import '@/styles/globals.css';
 import type { AppProps } from 'next/app';
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
@@ -10,10 +10,10 @@ import { addExtendedHomeExercises } from '../models/HomeExercisesExtended';
 import { addYogaBackExercises } from '../models/YogaExercises';
 import { addYogaBackProgram } from '../models/YogaProgram';
 import { addKettlebellProgramToUserPrograms } from '../models/KettlebellProgram';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 
-function MyApp({ Component, pageProps }: AppProps) {
+export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
 
   // Обработка 404 ошибок на Netlify
@@ -51,20 +51,23 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
       <Head>
-        <title>AthleteDiary</title>
-        <meta name="description" content="Трекер тренировок и фитнеса" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+        <title>AthleteDiary - Дневник спортсмена</title>
+        <meta name="description" content="AthleteDiary - приложение для отслеживания прогресса тренировок, планирования и анализа фитнес-результатов" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div className="min-h-screen flex flex-col bg-gray-100">
-        <Navbar />
-        <main className="flex-grow">
+      
+      <div className="app-wrapper">
+        <div className="navbar-container">
+          <Navbar />
+        </div>
+        
+        <div className="main-content-wrapper">
           <Component {...pageProps} />
-        </main>
+        </div>
+        
         <Footer />
       </div>
     </>
   );
-}
-
-export default MyApp; 
+} 
