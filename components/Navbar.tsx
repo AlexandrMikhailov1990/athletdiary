@@ -2,11 +2,30 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import ContinueWorkoutButton from './ContinueWorkoutButton';
+import { getUser, isAdmin, logout } from '@/utils/auth';
+import { User } from '@/models/User';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [isAdminUser, setIsAdminUser] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const userData = await getUser();
+        setUser(userData);
+        
+        const adminStatus = await isAdmin();
+        setIsAdminUser(adminStatus);
+      } catch (error) {
+        console.error('Ошибка при проверке авторизации:', error);
+      }
+    };
+    
+    checkAuth();
+  }, []);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -30,7 +49,9 @@ export default function Navbar() {
   }, [router.events]);
 
   const handleLogout = () => {
-    setIsLoggedIn(false);
+    logout();
+    setUser(null);
+    setIsAdminUser(false);
     router.push('/');
   };
 
@@ -81,6 +102,15 @@ export default function Navbar() {
               Статьи
             </Link>
             
+            {/* Скрываем кнопку админ-панели, так как функциональность не настроена */}
+            {/* {isAdminUser && (
+              <Link href="/admin/articles" className={`nav-link ${
+                router.pathname.startsWith('/admin') ? 'nav-link-active' : 'nav-link-default'
+              }`}>
+                Админ
+              </Link>
+            )} */}
+            
             <Link href="/settings" className={`nav-link ${
               router.pathname === '/settings' ? 'nav-link-active' : 'nav-link-default'
             }`}>
@@ -93,12 +123,19 @@ export default function Navbar() {
             {/* Кнопка продолжения тренировки */}
             <ContinueWorkoutButton className="py-1 px-2 text-sm" iconOnly={true} />
 
-            {isLoggedIn ? (
+            {user ? (
               <div className="relative">
                 <button 
                   className="nav-link nav-link-default flex items-center"
                   onClick={toggleMenu}
                 >
+                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 overflow-hidden mr-2">
+                    {user.profilePicture ? (
+                      <img src={user.profilePicture} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <span>{(user.firstName?.[0] || user.username?.[0] || '').toUpperCase()}</span>
+                    )}
+                  </div>
                   <span>Профиль</span>
                   <svg 
                     className={`ml-1 h-5 w-5 transition-transform ${isMenuOpen ? 'rotate-180' : ''}`} 
@@ -112,6 +149,9 @@ export default function Navbar() {
                 
                 {isMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 z-10">
+                    <Link href="/dashboard" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={closeMenu}>
+                      Личный кабинет
+                    </Link>
                     <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={closeMenu}>
                       Настройки профиля
                     </Link>
@@ -125,7 +165,7 @@ export default function Navbar() {
                 )}
               </div>
             ) : (
-              <div className="flex items-center space-x-4">
+              <div className="hidden">
                 <Link href="/login" className="nav-link nav-link-default">
                   Войти
                 </Link>
@@ -218,6 +258,15 @@ export default function Navbar() {
                   Статьи
                 </Link>
                 
+                {/* Скрываем кнопку админ-панели в мобильном меню */}
+                {/* {isAdminUser && (
+                  <Link href="/admin/articles" className={`block p-2 rounded-md hover:bg-gray-100 ${
+                    router.pathname.startsWith('/admin') ? 'font-semibold text-blue-600' : 'text-gray-700'
+                  }`} onClick={closeMenu}>
+                    Админ
+                  </Link>
+                )} */}
+                
                 <Link href="/settings" className={`block p-2 rounded-md hover:bg-gray-100 ${
                   router.pathname === '/settings' ? 'font-semibold text-blue-600' : 'text-gray-700'
                 }`} onClick={closeMenu}>
@@ -232,8 +281,32 @@ export default function Navbar() {
                   <ContinueWorkoutButton fullWidth={true} />
                 </div>
                 
-                {isLoggedIn ? (
+                {user ? (
                   <>
+                    {user.profilePicture ? (
+                      <div className="p-2 flex items-center">
+                        <div className="w-10 h-10 rounded-full overflow-hidden mr-3">
+                          <img src={user.profilePicture} alt="Аватар" className="w-full h-full object-cover" />
+                        </div>
+                        <div>
+                          <p className="font-medium">{user.firstName || user.username}</p>
+                          <p className="text-sm text-gray-500">{user.email}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-2 flex items-center">
+                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mr-3">
+                          <span className="text-lg font-medium">{(user.firstName?.[0] || user.username?.[0] || '').toUpperCase()}</span>
+                        </div>
+                        <div>
+                          <p className="font-medium">{user.firstName || user.username}</p>
+                          <p className="text-sm text-gray-500">{user.email}</p>
+                        </div>
+                      </div>
+                    )}
+                    <Link href="/dashboard" className="block p-2 rounded-md hover:bg-gray-100 text-gray-700" onClick={closeMenu}>
+                      Личный кабинет
+                    </Link>
                     <Link href="/profile" className="block p-2 rounded-md hover:bg-gray-100 text-gray-700" onClick={closeMenu}>
                       Настройки профиля
                     </Link>
@@ -245,14 +318,14 @@ export default function Navbar() {
                     </button>
                   </>
                 ) : (
-                  <>
+                  <div className="hidden">
                     <Link href="/login" className="block p-2 rounded-md hover:bg-gray-100 text-gray-700" onClick={closeMenu}>
                       Войти
                     </Link>
-                    <Link href="/register" className="block w-full p-2 rounded-md text-center font-medium bg-blue-600 text-white hover:bg-blue-700" onClick={closeMenu}>
+                    <Link href="/register" className="block p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" onClick={closeMenu}>
                       Регистрация
                     </Link>
-                  </>
+                  </div>
                 )}
               </div>
             </div>
