@@ -1,6 +1,5 @@
 import React from 'react';
 import Head from 'next/head';
-import Image from 'next/image';
 import Link from 'next/link';
 
 export default function GymBeginnersGuide() {
@@ -15,13 +14,6 @@ export default function GymBeginnersGuide() {
         <div className="container mx-auto px-4 max-w-4xl">
           <div className="bg-white rounded-xl shadow-md overflow-hidden">
             <div className="relative h-80 md:h-96">
-              <Image 
-                src="/images/articles/gym-beginner.jpg" 
-                alt="Человек перед тренажерным залом" 
-                layout="fill"
-                objectFit="cover"
-                priority
-              />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-6">
                 <div className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mb-4 w-auto max-w-[200px]">
                   Для начинающих
@@ -30,7 +22,7 @@ export default function GymBeginnersGuide() {
                   Как начать заниматься в тренажерном зале: 7 шагов для новичков
                 </h1>
                 <div className="flex items-center mt-4 text-white/90 text-sm">
-                  <span className="mr-4">20 июня 2023</span>
+                  <span className="mr-4">17 февраля 2025</span>
                   <span>8 минут чтения</span>
                 </div>
               </div>

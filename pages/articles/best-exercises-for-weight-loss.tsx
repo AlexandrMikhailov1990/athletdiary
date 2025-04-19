@@ -30,7 +30,7 @@ export default function BestExercisesForWeightLoss() {
                   Лучшие упражнения для похудения: научный подход
                 </h1>
                 <div className="flex items-center mt-4 text-white/90 text-sm">
-                  <span className="mr-4">15 июня 2023</span>
+                  <span className="mr-4">24 февраля 2025</span>
                   <span>10 минут чтения</span>
                 </div>
               </div>

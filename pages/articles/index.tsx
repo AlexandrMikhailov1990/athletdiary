@@ -17,12 +17,30 @@ interface Article {
 // Данные статей
 const articles: Article[] = [
   {
+    slug: 'healthy-eating-program',
+    title: 'Программа правильного питания на каждый день: принципы и готовое меню',
+    excerpt: 'Узнайте основные принципы правильного питания и получите готовое сбалансированное меню на неделю',
+    image: '/images/articles/healthy-eating.jpg',
+    category: 'Питание',
+    date: '3 февраля 2025',
+    readTime: '10 минут'
+  },
+  {
+    slug: 'recovery-after-workout',
+    title: 'Восстановление после тренировки: почему это важно и как делать правильно',
+    excerpt: 'Узнайте, почему восстановление после тренировки так же важно, как сама нагрузка, и как правильно восстанавливаться',
+    image: '/images/articles/recovery-workout.jpg',
+    category: 'Восстановление',
+    date: '10 февраля 2025',
+    readTime: '10 минут'
+  },
+  {
     slug: 'gym-beginners-guide',
     title: 'Как начать заниматься в тренажерном зале: 7 шагов для новичков',
     excerpt: 'Подробное руководство по началу тренировок в тренажерном зале для начинающих',
     image: '/images/articles/gym-beginner.jpg',
     category: 'Для начинающих',
-    date: '20 июня 2023',
+    date: '17 февраля 2025',
     readTime: '8 минут'
   },
   {
@@ -31,7 +49,7 @@ const articles: Article[] = [
     excerpt: 'Научно обоснованные упражнения для эффективного сжигания жира и похудения',
     image: '/images/articles/weight-loss-exercises.jpg',
     category: 'Фитнес',
-    date: '15 июня 2023',
+    date: '24 февраля 2025',
     readTime: '10 минут'
   },
   {
@@ -40,7 +58,7 @@ const articles: Article[] = [
     excerpt: 'Научно обоснованные принципы питания для устойчивого снижения веса',
     image: '/images/articles/nutrition.jpg',
     category: 'Питание',
-    date: '10 июня 2023',
+    date: '3 марта 2025',
     readTime: '8 минут'
   },
   {
@@ -49,17 +67,8 @@ const articles: Article[] = [
     excerpt: 'Сравнение эффективности разных видов тренировок для разных целей',
     image: '/images/articles/cardio-strength.jpg',
     category: 'Тренировки',
-    date: '5 июня 2023',
+    date: '10 марта 2025',
     readTime: '7 минут'
-  },
-  {
-    slug: 'recovery-importance',
-    title: 'Восстановление после тренировки: почему это важно',
-    excerpt: 'Как правильное восстановление влияет на результаты тренировок',
-    image: '/images/articles/recovery.jpg',
-    category: 'Восстановление',
-    date: '1 июня 2023',
-    readTime: '6 минут'
   }
 ];
 

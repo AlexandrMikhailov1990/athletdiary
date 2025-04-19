@@ -19,11 +19,12 @@ const NutritionForWeightLossArticle: NextPage = () => {
         <div className={styles.articleHeader}>
           <div className={styles.articleHeaderGradient}>
             <div className={styles.articleHeaderContent}>
-              <h1>Питание для похудения: что говорит наука?</h1>
-              <div className={styles.articleMeta}>
-                <span>12 июля 2023</span>
-                <span>•</span>
-                <span>10 минут чтения</span>
+              <h1 className="text-3xl md:text-4xl font-bold text-white">
+                Питание для похудения: что говорит наука?
+              </h1>
+              <div className="flex items-center mt-4 text-white/90 text-sm">
+                <span className="mr-4">3 марта 2025</span>
+                <span>8 минут чтения</span>
               </div>
             </div>
             <div className={styles.mainImageContainer}>

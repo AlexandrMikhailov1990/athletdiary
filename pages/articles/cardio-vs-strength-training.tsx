@@ -30,7 +30,7 @@ export default function CardioVsStrengthTraining() {
                   Кардио vs силовые тренировки: что выбрать для достижения ваших целей?
                 </h1>
                 <div className="flex items-center mt-4 text-white/90 text-sm">
-                  <span className="mr-4">5 июня 2023</span>
+                  <span className="mr-4">10 марта 2025</span>
                   <span>7 минут чтения</span>
                 </div>
               </div>
