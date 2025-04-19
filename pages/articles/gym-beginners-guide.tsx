@@ -75,17 +75,6 @@ export default function GymBeginnersGuide() {
                   </p>
                 </div>
 
-                <div className="relative overflow-hidden rounded-lg my-8">
-                  <div className="h-64 md:h-72 bg-gray-200 relative">
-                    <Image 
-                      src="/images/articles/training-plan.jpg" 
-                      alt="Блокнот с планом тренировок" 
-                      layout="fill"
-                      objectFit="cover"
-                    />
-                  </div>
-                </div>
-
                 <h2 id="choose-gym" className="text-2xl font-bold text-gray-800 mt-10 flex items-center">
                   <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white mr-3 text-sm">2</span>
                   Выберите «свой» зал
@@ -157,17 +146,6 @@ export default function GymBeginnersGuide() {
                   </table>
                 </div>
 
-                <div className="relative overflow-hidden rounded-lg my-8">
-                  <div className="h-64 md:h-72 bg-gray-200 relative">
-                    <Image 
-                      src="/images/articles/squat-exercise.jpg" 
-                      alt="Девушка выполняет приседания с гантелями" 
-                      layout="fill"
-                      objectFit="cover"
-                    />
-                  </div>
-                </div>
-
                 <h2 id="find-support" className="text-2xl font-bold text-gray-800 mt-10 flex items-center">
                   <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white mr-3 text-sm">4</span>
                   Найдите поддержку
@@ -229,17 +207,6 @@ export default function GymBeginnersGuide() {
                   </div>
                 </div>
 
-                <div className="relative overflow-hidden rounded-lg my-8">
-                  <div className="h-64 md:h-72 bg-gray-200 relative">
-                    <Image 
-                      src="/images/articles/trainer-instruction.jpg" 
-                      alt="Тренер объясняет технику упражнения" 
-                      layout="fill"
-                      objectFit="cover"
-                    />
-                  </div>
-                </div>
-
                 <h2 id="nutrition-recovery" className="text-2xl font-bold text-gray-800 mt-10 flex items-center">
                   <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white mr-3 text-sm">6</span>
                   Следите за питанием и восстановлением
@@ -249,31 +216,18 @@ export default function GymBeginnersGuide() {
                   Результаты тренировок на 70% зависят от того, что происходит за пределами зала. Уделите внимание:
                 </p>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="font-bold text-gray-800 mb-2">Питание</h3>
-                    <p className="text-gray-700 text-sm">
-                      Белок (курица, творог), сложные углеводы (гречка, овсянка), вода (1.5–2 л/день).
-                    </p>
-                  </div>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="font-bold text-gray-800 mb-2">Сон</h3>
-                    <p className="text-gray-700 text-sm">
-                      7–8 часов — без этого мышцы не растут и энергия не восстанавливается.
-                    </p>
-                  </div>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="font-bold text-gray-800 mb-2">Растяжка</h3>
-                    <p className="text-gray-700 text-sm">
-                      10 минут после тренировки снизят крепатуру и улучшат восстановление.
-                    </p>
-                  </div>
-                </div>
+                <ul className="list-disc pl-6 space-y-2">
+                  <li><strong>Белок:</strong> 1.6-2 г на кг веса для набора мышечной массы, 1.2-1.6 г для поддержания.</li>
+                  <li><strong>Углеводы:</strong> Основной источник энергии. Приоритет — цельнозерновые (овсянка, бурый рис).</li>
+                  <li><strong>Жиры:</strong> Необходимы для гормонального баланса. Выбирайте оливковое масло, авокадо, орехи.</li>
+                  <li><strong>Сон:</strong> 7-9 часов для полноценного восстановления мышц.</li>
+                  <li><strong>Гидратация:</strong> 30-40 мл на кг веса ежедневно.</li>
+                </ul>
 
-                <div className="bg-green-50 p-4 rounded-lg my-6">
-                  <h3 className="font-bold text-green-800 mb-2">Лайфхак:</h3>
+                <div className="bg-red-50 p-4 rounded-lg my-6">
+                  <h3 className="font-bold text-red-800 mb-2">Внимание!</h3>
                   <p className="text-gray-700">
-                    Используйте гео-ключи в рационе. Например, «доставка правильного питания в Москве».
+                    Избегайте чрезмерных ограничений в питании. Резкие диеты снижают эффективность тренировок и могут привести к срывам.
                   </p>
                 </div>
 
@@ -283,91 +237,84 @@ export default function GymBeginnersGuide() {
                 </h2>
 
                 <p>
-                  Измеряйте и фиксируйте свой прогресс. Это помогает увидеть изменения, которые могут быть неочевидны на первый взгляд:
+                  Фиксация результатов критически важна для долгосрочной мотивации. Используйте следующие методы:
                 </p>
 
-                <ul className="list-disc pl-6 space-y-2 my-4">
-                  <li><strong>Фото «до/после»</strong> — делайте снимки раз в месяц.</li>
-                  <li><strong>Замеры объемов</strong> — талия, бедра, грудь.</li>
-                  <li><strong>Дневник тренировок</strong> — отмечайте веса, подходы и самочувствие.</li>
+                <ul className="list-disc pl-6 space-y-2">
+                  <li><strong>Дневник тренировок:</strong> Записывайте веса, подходы и повторения.</li>
+                  <li><strong>Фото «до/после»:</strong> Делайте снимки каждые 4 недели в одинаковых условиях.</li>
+                  <li><strong>Замеры тела:</strong> Измеряйте объемы ключевых зон (грудь, талия, бедра).</li>
+                  <li><strong>Функциональные тесты:</strong> Количество отжиманий, время планки и т.д.</li>
                 </ul>
 
-                <div className="relative overflow-hidden rounded-lg my-8">
-                  <div className="h-64 md:h-72 bg-gray-200 relative">
-                    <Image 
-                      src="/images/articles/progress-tracking.jpg" 
-                      alt="График прогресса в приложении" 
-                      layout="fill"
-                      objectFit="cover"
-                    />
-                  </div>
-                </div>
-
-                <h2 id="faq" className="text-2xl font-bold text-gray-800 mt-10">
-                  FAQ — Часто задаваемые вопросы
-                </h2>
-
-                <div className="space-y-6 my-6">
-                  <div className="bg-gray-50 p-5 rounded-lg">
-                    <h3 className="font-bold text-gray-800 mb-2">Что делать, если нет результата?</h3>
-                    <p className="text-gray-700">
-                      Пересмотрите свою программу тренировок, проверьте питание и качество сна. Часто отсутствие результатов связано с неправильной техникой или недостаточной интенсивностью. Проконсультируйтесь с тренером для корректировки программы.
-                    </p>
-                  </div>
-                  <div className="bg-gray-50 p-5 rounded-lg">
-                    <h3 className="font-bold text-gray-800 mb-2">Как часто нужно тренироваться начинающим?</h3>
-                    <p className="text-gray-700">
-                      Для начинающих оптимально 2-3 тренировки в неделю с днями отдыха между ними. Это позволяет мышцам восстановиться и адаптироваться к нагрузкам.
-                    </p>
-                  </div>
-                  <div className="bg-gray-50 p-5 rounded-lg">
-                    <h3 className="font-bold text-gray-800 mb-2">Когда лучше тренироваться — утром или вечером?</h3>
-                    <p className="text-gray-700">
-                      Лучшее время для тренировок — то, которое вы можете соблюдать регулярно. С физиологической точки зрения, вечерние тренировки (16-20 часов) могут быть немного эффективнее из-за естественных пиков гормонов, но разница незначительна.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="my-8 p-6 bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg text-white">
-                  <h2 className="text-2xl font-bold mb-4">Заключение</h2>
-                  <p className="mb-4">
-                    Начало тренировок в тренажерном зале — это путешествие, а не спринт. Не стремитесь к идеальному результату сразу. Будьте последовательны, придерживайтесь плана и наслаждайтесь процессом.
-                  </p>
-                  <p className="font-bold">
-                    Помните: каждая тренировка приближает вас к цели, даже если вы не видите результатов сразу.
+                <div className="bg-blue-50 p-4 rounded-lg my-6">
+                  <p className="text-gray-700">
+                    <strong>Совет:</strong> Используйте мобильные приложения, такие как AthleteDiary (наше приложение), для удобного отслеживания всех показателей в одном месте.
                   </p>
                 </div>
 
-                <div className="flex flex-wrap gap-2 my-6">
-                  <span className="px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700">
-                    #тренажерныйзал
-                  </span>
-                  <span className="px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700">
-                    #дляначинающих
-                  </span>
-                  <span className="px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700">
-                    #фитнес
-                  </span>
-                  <span className="px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700">
-                    #тренировки
-                  </span>
-                  <span className="px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700">
-                    #мотивация
-                  </span>
+                <h2 id="conclusion" className="text-2xl font-bold text-gray-800 mt-10">Заключение</h2>
+
+                <p>
+                  Начать тренировки в тренажёрном зале может быть непросто, но следуя этим 7 шагам, вы значительно упростите процесс адаптации и увеличите свои шансы на успех. Помните, что регулярность важнее интенсивности, особенно на начальном этапе.
+                </p>
+
+                <p>
+                  Не сравнивайте себя с другими — у каждого свой путь и скорость прогресса. Сравнивайте себя только с собой вчерашним. И не забывайте главное: тренировки должны приносить не только результат, но и удовольствие.
+                </p>
+
+                <div className="my-8 p-4 bg-gray-50 rounded-lg">
+                  <h3 className="font-bold text-gray-800 mb-2">FAQ — Частые вопросы новичков</h3>
+                  
+                  <div className="space-y-4 mt-4">
+                    <div>
+                      <h4 className="font-medium">Как часто нужно тренироваться новичку?</h4>
+                      <p className="text-sm text-gray-700 mt-1">
+                        Начните с 2-3 раз в неделю с днями отдыха между тренировками. Это оптимальный баланс между стимуляцией мышц и восстановлением.
+                      </p>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-medium">Нужно ли делать кардио для похудения?</h4>
+                      <p className="text-sm text-gray-700 mt-1">
+                        Кардио ускоряет процесс, но снижение веса возможно и без него — через силовые тренировки и правильное питание. Оптимально комбинировать оба подхода.
+                      </p>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-medium">Что делать, если болят мышцы после тренировки?</h4>
+                      <p className="text-sm text-gray-700 mt-1">
+                        Легкая боль (крепатура) — нормальное явление, особенно для новичков. Помогут легкая разминка, растяжка, массаж, контрастный душ и достаточное потребление белка.
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
-                <hr className="my-8" />
+                <div className="mt-10 pt-6 border-t border-gray-200">
+                  <h3 className="text-lg font-bold text-gray-800 mb-4">Теги</h3>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">#новичок</span>
+                    <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">#тренажерный_зал</span>
+                    <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">#фитнес</span>
+                    <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">#тренировки</span>
+                    <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">#здоровье</span>
+                  </div>
+                </div>
 
-                <div className="bg-gray-50 p-6 rounded-lg">
-                  <h3 className="text-xl font-bold text-gray-800 mb-4">Рекомендуемые статьи</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Link href="/articles/best-exercises-for-weight-loss" className="block p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                      <h4 className="font-bold text-gray-800 mb-2">Лучшие упражнения для похудения: научный подход</h4>
-                      <p className="text-sm text-gray-600">Научно обоснованные упражнения для эффективного сжигания жира</p>
+                <div className="mt-10">
+                  <h3 className="text-xl font-bold text-gray-800 mb-4">Похожие статьи</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Link href="/articles/best-exercises-for-weight-loss" className="block group">
+                      <div className="bg-gray-50 p-4 rounded-lg transition-all group-hover:bg-gray-100">
+                        <h4 className="font-bold text-gray-800 mb-2 group-hover:text-blue-600">Лучшие упражнения для похудения: научный подход</h4>
+                        <p className="text-sm text-gray-600">Научно обоснованные упражнения для эффективного сжигания жира и похудения</p>
+                      </div>
                     </Link>
-                    <Link href="/articles/nutrition-for-gym-beginners" className="block p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                      <h4 className="font-bold text-gray-800 mb-2">Питание для начинающих: основы спортивной диеты</h4>
-                      <p className="text-sm text-gray-600">Как правильно питаться, чтобы получить максимум от тренировок</p>
+                    <Link href="/articles/nutrition-for-weight-loss" className="block group">
+                      <div className="bg-gray-50 p-4 rounded-lg transition-all group-hover:bg-gray-100">
+                        <h4 className="font-bold text-gray-800 mb-2 group-hover:text-blue-600">Питание для похудения: что говорит наука?</h4>
+                        <p className="text-sm text-gray-600">Научно обоснованные принципы питания для устойчивого снижения веса</p>
+                      </div>
                     </Link>
                   </div>
                 </div>
