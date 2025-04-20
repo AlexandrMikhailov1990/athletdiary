@@ -375,4 +375,194 @@ export const HOME_PROGRAM_BASIC: Program = {
       ]
     }
   ]
-}; 
+};
+
+// Новая программа с прыжками на скакалке и упражнениями с резиновыми лентами
+export const JUMP_ROPE_AND_RESISTANCE_PROGRAM = {
+  id: uuidv4(),
+  name: 'Программа с прыжками на скакалке и резиновыми лентами',
+  description: 'Комбинированная программа тренировок с использованием скакалки и резиновых лент для развития выносливости и силы',
+  level: 'intermediate',
+  durationWeeks: 4,
+  workoutsPerWeek: 3,
+  restBetweenExercises: 60,
+  workouts: [
+    {
+      id: uuidv4(),
+      programId: uuidv4(),
+      name: 'Тренировка на все тело',
+      exercises: [
+        // Базовые прыжки на скакалке (начало)
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Базовые прыжки на скакалке',
+            type: 'timed',
+            sets: 1,
+            duration: 300,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['cardio', 'calves'],
+            description: 'Базовые прыжки на скакалке для разогрева и кардио нагрузки',
+            equipment: ['jump rope']
+          },
+          1,
+          60,
+          { duration: 300 }
+        ),
+        // Подтягивания прямым хватом
+        createWorkoutExercise(
+          {
+            id: '11',
+            name: 'Подтягивания прямым хватом',
+            type: 'reps',
+            sets: 3,
+            reps: 10,
+            restTime: 60,
+            difficulty: 'intermediate',
+            muscleGroups: ['back', 'biceps'],
+            description: 'Классические подтягивания прямым хватом на ширине плеч',
+            equipment: ['pull-up bar']
+          },
+          3,
+          60,
+          { reps: 10 }
+        ),
+        // Тяга резиновой ленты к груди
+        createWorkoutExercise(
+          getExerciseByName('Тяга резиновой ленты к груди') || { 
+            id: 'rb-1',
+            name: 'Тяга резиновой ленты к груди',
+            type: 'reps',
+            sets: 3,
+            reps: 10,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['back', 'shoulders'],
+            description: 'Упражнение для развития мышц спины с использованием резиновой ленты',
+            equipment: ['resistance bands']
+          },
+          3,
+          60,
+          { reps: 10 }
+        ),
+        // Боковые подъемы рук с резиновой лентой
+        createWorkoutExercise(
+          getExerciseByName('Боковые подъемы рук с резиновой лентой') || {
+            id: 'rb-2',
+            name: 'Боковые подъемы рук с резиновой лентой',
+            type: 'reps',
+            sets: 3,
+            reps: 10,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['shoulders'],
+            description: 'Упражнение для развития плечевых мышц с использованием резиновой ленты',
+            equipment: ['resistance bands']
+          },
+          3,
+          60,
+          { reps: 10 }
+        ),
+        // Приседания с резиновой лентой
+        createWorkoutExercise(
+          getExerciseByName('Приседания с резиновой лентой') || {
+            id: 'rb-3',
+            name: 'Приседания с резиновой лентой',
+            type: 'reps',
+            sets: 3,
+            reps: 10,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['legs', 'glutes'],
+            description: 'Приседания с дополнительным сопротивлением резиновой ленты',
+            equipment: ['resistance bands']
+          },
+          3,
+          60,
+          { reps: 10 }
+        ),
+        // Сгибание рук на бицепс с резиновой лентой
+        createWorkoutExercise(
+          getExerciseByName('Сгибание рук на бицепс с резиновой лентой') || {
+            id: 'rb-4',
+            name: 'Сгибание рук на бицепс с резиновой лентой',
+            type: 'reps',
+            sets: 3,
+            reps: 10,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['biceps'],
+            description: 'Упражнение для развития бицепсов с использованием резиновой ленты',
+            equipment: ['resistance bands']
+          },
+          3,
+          60,
+          { reps: 10 }
+        ),
+        // Разгибание рук с резиновой лентой
+        createWorkoutExercise(
+          getExerciseByName('Разгибание рук с резиновой лентой') || {
+            id: 'rb-5',
+            name: 'Разгибание рук с резиновой лентой',
+            type: 'reps',
+            sets: 3,
+            reps: 10,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['triceps'],
+            description: 'Упражнение для развития трицепсов с использованием резиновой ленты',
+            equipment: ['resistance bands']
+          },
+          3,
+          60,
+          { reps: 10 }
+        ),
+        // Базовые прыжки на скакалке (конец)
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Базовые прыжки на скакалке',
+            type: 'timed',
+            sets: 1,
+            duration: 300,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['cardio', 'calves'],
+            description: 'Базовые прыжки на скакалке для завершающей кардио нагрузки',
+            equipment: ['jump rope']
+          },
+          1,
+          60,
+          { duration: 300 }
+        )
+      ]
+    }
+  ],
+  exercises: [] as WorkoutExercise[]
+};
+
+// Функция для добавления программы с прыжками на скакалке в локальное хранилище
+export function addJumpRopeAndResistanceProgramToUserPrograms(): void {
+  try {
+    const savedPrograms = localStorage.getItem('programs');
+    let userPrograms = savedPrograms ? JSON.parse(savedPrograms) : [];
+    
+    const programCopy = {...JUMP_ROPE_AND_RESISTANCE_PROGRAM};
+    if (!programCopy.exercises || programCopy.exercises.length === 0) {
+      programCopy.exercises = programCopy.workouts[0].exercises;
+    }
+    
+    const existingProgram = userPrograms.find((p: any) => p.name === programCopy.name);
+    
+    if (!existingProgram) {
+      userPrograms.push(programCopy);
+      localStorage.setItem('programs', JSON.stringify(userPrograms));
+      console.log('Программа с прыжками на скакалке и резиновыми лентами добавлена');
+    } else {
+      console.log('Программа с таким названием уже существует');
+    }
+  } catch (error) {
+    console.error('Ошибка при добавлении программы:', error);
+  }
+} 

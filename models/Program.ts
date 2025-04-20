@@ -120,12 +120,23 @@ export function getCompletedWorkoutsByProgramId(programId: string): CompletedWor
 export function initializePrograms(): void {
   if (typeof window === 'undefined') return;
   
-  const programs = localStorage.getItem('programs');
-  if (programs && JSON.parse(programs).length > 0) return;
-  
-  const demoPrograms: Program[] = [];
-  
-  localStorage.setItem('programs', JSON.stringify(demoPrograms));
+  try {
+    const programs = localStorage.getItem('programs');
+    let userPrograms = programs ? JSON.parse(programs) : [];
+    
+    // Добавляем программу с прыжками на скакалке
+    const { addJumpRopeAndResistanceProgramToUserPrograms } = require('./HomeExercises');
+    addJumpRopeAndResistanceProgramToUserPrograms();
+    
+    // Если программ нет, инициализируем пустым массивом
+    if (!programs) {
+      localStorage.setItem('programs', JSON.stringify([]));
+    }
+  } catch (error) {
+    console.error('Ошибка при инициализации программ:', error);
+    // В случае ошибки, убедимся что есть хотя бы пустой массив
+    localStorage.setItem('programs', JSON.stringify([]));
+  }
 }
 
 // Функция для миграции старых данных программ
