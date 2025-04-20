@@ -1,11 +1,11 @@
 import { Exercise } from '../models/Exercise';
 import { useState } from 'react';
-import { translateMuscleGroup, translateDifficulty } from '../models/Exercise';
+import { translateMuscleGroup, translateDifficulty, translateEquipment } from '../models/Exercise';
 
 interface ExerciseCardProps {
   exercise: Exercise;
   onSelect?: () => void;
-  onMoreInfo?: () => void;
+  onClick?: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
   selected?: boolean;
@@ -14,7 +14,7 @@ interface ExerciseCardProps {
 export default function ExerciseCard({ 
   exercise, 
   onSelect, 
-  onMoreInfo, 
+  onClick, 
   onEdit, 
   onDelete, 
   selected = false 
@@ -24,9 +24,9 @@ export default function ExerciseCard({
   };
 
   // Используем более удобный для кнопок метод
-  const handleMoreInfo = (e: React.MouseEvent) => {
+  const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (onMoreInfo) onMoreInfo();
+    if (onClick) onClick();
     else if (onSelect) onSelect(); // Для обратной совместимости
   };
 
@@ -42,10 +42,10 @@ export default function ExerciseCard({
 
   return (
     <div 
-      className={`bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full transform hover:-translate-y-1 ${onSelect || onMoreInfo ? 'cursor-pointer' : ''} ${selected ? 'ring-2 ring-blue-500' : ''}`}
+      className={`bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full transform hover:-translate-y-1 ${onClick || onSelect ? 'cursor-pointer' : ''} ${selected ? 'ring-2 ring-blue-500' : ''}`}
       role="article"
       aria-label={`Карточка упражнения: ${exercise.name}`}
-      onClick={onSelect || onMoreInfo ? (onSelect ? onSelect : onMoreInfo) : undefined}
+      onClick={onClick || onSelect ? (onClick ? onClick : onSelect) : undefined}
     >
       <div className="relative">
         {(onEdit || onDelete) && (
@@ -87,6 +87,14 @@ export default function ExerciseCard({
             {exercise.muscleGroups.map((muscle, idx) => (
               <span key={idx} className="inline-block bg-gray-100 text-gray-800 text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs">
                 {translateMuscleGroup(muscle)}
+              </span>
+            ))}
+          </div>
+          
+          <div className="flex flex-wrap gap-1 mb-2 sm:mb-3">
+            {exercise.equipment?.map((item, idx) => (
+              <span key={idx} className="inline-block bg-blue-50 text-blue-800 text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs">
+                {translateEquipment(item)}
               </span>
             ))}
           </div>
@@ -134,7 +142,7 @@ export default function ExerciseCard({
         <div className="mt-auto pt-2 sm:pt-4 border-t border-gray-100">
           <div className="flex justify-end">
             <button
-              onClick={handleMoreInfo}
+              onClick={handleClick}
               className="bg-blue-600 hover:bg-blue-700 text-white py-1 sm:py-2 px-2 sm:px-4 rounded-lg transition-colors duration-200 text-xs sm:text-sm font-medium"
               aria-label={`Подробнее о упражнении ${exercise.name}`}
             >

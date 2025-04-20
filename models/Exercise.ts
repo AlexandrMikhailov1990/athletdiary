@@ -111,7 +111,46 @@ export function translateDifficulty(difficulty: string): string {
 
 // Функция для перевода оборудования
 export function translateEquipment(equipment: string): string {
-  return equipmentTranslations[equipment] || equipment;
+  const translations: { [key: string]: string } = {
+    'bodyweight': 'Без инвентаря',
+    'none': 'Без инвентаря',
+    'dumbbell': 'Гантели',
+    'dumbbells': 'Гантели',
+    'barbell': 'Штанга',
+    'kettlebell': 'Гиря',
+    'resistance bands': 'Резиновые ленты',
+    'resistance band': 'Резиновая лента',
+    'pull-up bar': 'Турник',
+    'pullup bar': 'Турник',
+    'yoga mat': 'Коврик для йоги',
+    'bench': 'Скамья',
+    'jump rope': 'Скакалка',
+    'medicine ball': 'Медбол',
+    'foam roller': 'Валик для массажа',
+    'box': 'Плиометрический бокс',
+    'rings': 'Гимнастические кольца',
+    'parallettes': 'Параллетсы',
+    'weight': 'Отягощение',
+    'weight plate': 'Блины для штанги',
+    'cable machine': 'Тросовый тренажер',
+    'cable': 'Тросовый тренажер',
+    'smith machine': 'Машина Смита',
+    'power rack': 'Силовая рама',
+    'squat rack': 'Силовая рама',
+    'stability ball': 'Фитбол',
+    'treadmill': 'Беговая дорожка',
+    'exercise bike': 'Велотренажер',
+    'elliptical': 'Эллиптический тренажер',
+    'rowing machine': 'Гребной тренажер',
+    'machine': 'Тренажер',
+    'bands': 'Резиновые ленты',
+    'mat': 'Коврик',
+    'pull up bar': 'Турник',
+    'pull-ups': 'Турник',
+    'weights': 'Отягощения'
+  };
+
+  return translations[equipment.toLowerCase()] || equipment;
 }
 
 // Примеры упражнений
