@@ -139,7 +139,7 @@ const CreateProgram: React.FC = () => {
       reps: exercise.type === 'reps' ? 10 : undefined,
       duration: exercise.type === 'timed' ? 30 : undefined,
       weight: 0,
-      rest: 60,
+      restTime: 60,
       exerciseData: exercise
     });
   };
@@ -219,7 +219,7 @@ const CreateProgram: React.FC = () => {
       reps: ex.reps,
       weight: ex.weight,
       duration: ex.duration,
-      rest: ex.rest,
+      restTime: ex.restTime,
     }));
     
     // Создание и сохранение программы
@@ -319,7 +319,7 @@ const CreateProgram: React.FC = () => {
                       <div className="text-sm text-gray-600">
                         {ex.sets} подходов × {ex.exerciseData.type === 'reps' ? `${ex.reps} повторений` : `${ex.duration} сек`}
                         {ex.weight && ex.weight > 0 && ` • ${ex.weight} кг`}
-                        {` • ${ex.rest} сек отдыха`}
+                        {` • ${ex.restTime} сек отдыха`}
                       </div>
                     </div>
                     <div className="flex space-x-2">
@@ -533,8 +533,8 @@ const CreateProgram: React.FC = () => {
                     <label className="block mb-1">Отдых между подходами (секунд)</label>
                     <input
                       type="number"
-                      name="rest"
-                      value={exerciseDetails.rest}
+                      name="restTime"
+                      value={exerciseDetails.restTime}
                       onChange={handleExerciseDetailChange}
                       min="0"
                       max="300"

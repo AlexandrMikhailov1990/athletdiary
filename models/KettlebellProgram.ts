@@ -18,7 +18,7 @@ function getPullupExerciseByName(name: string): Exercise | undefined {
 function createWorkoutExercise(
   exercise: Exercise, 
   sets: number, 
-  rest: number, 
+  restTime: number, 
   options?: { reps?: number, duration?: number, weight?: number }
 ): WorkoutExercise {
   return {
@@ -26,7 +26,7 @@ function createWorkoutExercise(
     exerciseId: exercise.id,
     exercise,
     sets,
-    rest,
+    restTime,
     ...(options?.reps !== undefined ? { reps: options.reps } : {}),
     ...(options?.duration !== undefined ? { duration: options.duration } : {}),
     ...(options?.weight !== undefined ? { weight: options.weight } : {}),

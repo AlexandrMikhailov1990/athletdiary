@@ -30,7 +30,7 @@ interface WorkoutExercise {
   exercise: Exercise;
   completedSets: number;
   setDetails: WorkoutSet[];
-  rest?: number;
+  restTime?: number;
 }
 
 export default function Workout() {
@@ -280,7 +280,7 @@ export default function Workout() {
     // Проверяем, был ли это последний подход в упражнении
     if (currentExercise.completedSets < exerciseSets) {
       // Если не последний подход, запускаем таймер отдыха
-      const restTime = currentExercise.rest || currentExercise.exercise.restTime || 60;
+      const restTime = currentExercise.restTime || currentExercise.exercise.restTime || 60;
       setRestTimer(restTime);
       setIsResting(true);
     } else if (currentExerciseIndex + 1 < exercises.length) {
@@ -589,7 +589,7 @@ export default function Workout() {
             exercise: ex.exercise || NORMALIZED_SAMPLE_EXERCISES.find(e => e.id === ex.exerciseId) || ex,
             completedSets: 0,
             setDetails: [],
-            rest: ex.rest
+            restTime: ex.restTime
           }));
           
           setExercises(initializedExercises);
@@ -632,7 +632,7 @@ export default function Workout() {
                 exercise: ex.exercise || NORMALIZED_SAMPLE_EXERCISES.find(e => e.id === ex.exerciseId) || ex,
                 completedSets: savedExercise?.completedSets || 0,
                 setDetails: savedExercise?.setDetails || [],
-                rest: ex.rest
+                restTime: ex.restTime
               };
             });
             
@@ -649,7 +649,7 @@ export default function Workout() {
               exercise: ex.exercise || NORMALIZED_SAMPLE_EXERCISES.find(e => e.id === ex.exerciseId) || ex,
               completedSets: 0,
               setDetails: [],
-              rest: ex.rest
+              restTime: ex.restTime
             }));
             
             setExercises(initializedExercises);

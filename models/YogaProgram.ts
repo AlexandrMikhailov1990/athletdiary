@@ -15,7 +15,7 @@ function createWorkoutExercise(exerciseName: string): WorkoutExercise {
     exercise: exercise,
     sets: 1,
     duration: 30,
-    rest: 0,
+    restTime: 0,
     completed: false,
     completedSets: []
   };

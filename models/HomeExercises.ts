@@ -209,7 +209,7 @@ export function addHomeExercisesToUserExercises(): void {
 function createWorkoutExercise(
   exercise: Exercise, 
   sets: number, 
-  rest: number, 
+  restTime: number, 
   options?: { reps?: number; weight?: number; duration?: number }
 ) {
   return {
@@ -220,7 +220,7 @@ function createWorkoutExercise(
     reps: options?.reps,
     weight: options?.weight,
     duration: options?.duration,
-    rest: rest,
+    restTime: restTime,
   };
 }
 

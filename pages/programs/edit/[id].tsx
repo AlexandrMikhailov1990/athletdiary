@@ -202,7 +202,7 @@ const EditProgram: React.FC = () => {
       reps: exercise.type === 'reps' ? 10 : undefined,
       duration: exercise.type === 'timed' ? 30 : undefined,
       weight: 0,
-      rest: 60,
+      restTime: 60,
       exerciseData: exercise
     });
   };
@@ -279,7 +279,7 @@ const EditProgram: React.FC = () => {
       reps: ex.reps,
       weight: ex.weight,
       duration: ex.duration,
-      rest: ex.rest,
+      restTime: ex.restTime,
     }));
     
     // Создание и сохранение программы
@@ -523,14 +523,14 @@ const EditProgram: React.FC = () => {
                               
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                  Отдых (сек)
+                                  Отдых между подходами (сек)
                                 </label>
                                 <input
                                   type="number"
-                                  value={editingExercise.rest}
+                                  value={editingExercise.restTime}
                                   onChange={(e) => setEditingExercise(prev => prev ? {
                                     ...prev,
-                                    rest: parseInt(e.target.value)
+                                    restTime: parseInt(e.target.value)
                                   } : null)}
                                   min="0"
                                   className="w-full p-2 border border-gray-300 rounded"
@@ -588,8 +588,8 @@ const EditProgram: React.FC = () => {
                                 )}
                                 
                                 <div className="bg-gray-50 p-2 rounded">
-                                  <span className="text-xs text-gray-500 block">Отдых (сек)</span>
-                                  <span className="font-medium">{exercise.rest}</span>
+                                  <span className="text-xs text-gray-500 block">Отдых между подходами (сек)</span>
+                                  <span className="font-medium">{exercise.restTime}</span>
                                 </div>
                               </div>
                             </div>
@@ -848,14 +848,14 @@ const EditProgram: React.FC = () => {
                       )}
                       
                       <div>
-                        <label htmlFor="rest" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="restTime" className="block text-sm font-medium text-gray-700 mb-1">
                           Отдых между подходами (сек)
                         </label>
                         <input
                           type="number"
-                          id="rest"
-                          name="rest"
-                          value={exerciseDetails.rest}
+                          id="restTime"
+                          name="restTime"
+                          value={exerciseDetails.restTime}
                           onChange={handleExerciseDetailChange}
                           min="0"
                           className="w-full p-2 border border-gray-300 rounded"
