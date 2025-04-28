@@ -84,7 +84,14 @@ const EditProgram: React.FC = () => {
           exercisesToUse.forEach(ex => {
             programExercises.push({
               ...ex,
-              exerciseData: ex.exercise
+              exerciseData: ex.exercise || {
+                id: ex.exerciseId,
+                name: 'Неизвестное упражнение',
+                type: 'reps',
+                difficulty: 'beginner',
+                muscleGroups: [],
+                description: ''
+              }
             });
           });
         }
