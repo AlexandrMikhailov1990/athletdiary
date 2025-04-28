@@ -14,7 +14,8 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { SessionProvider } from "next-auth/react";
 
-export default function App({ Component, pageProps: { session, ...pageProps } }) {
+export default function App({ Component, pageProps }: AppProps) {
+  const { session, ...restPageProps } = pageProps as any;
   const router = useRouter();
 
   // Обработка 404 ошибок на Netlify
@@ -64,7 +65,7 @@ export default function App({ Component, pageProps: { session, ...pageProps } })
         </div>
         
         <div className="main-content-wrapper">
-          <Component {...pageProps} />
+          <Component {...restPageProps} />
         </div>
         
         <Footer />
