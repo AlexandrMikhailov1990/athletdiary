@@ -355,9 +355,9 @@ export default function ActiveProgram() {
                   <h3 className="text-lg font-medium text-gray-800">Упражнения в программе:</h3>
                   {program.exercises.map((exercise, index) => (
                     <div key={index} className="p-3 border rounded-lg bg-gray-50">
-                      <div className="font-medium">{exercise.exercise.name}</div>
+                      <div className="font-medium">{exercise.exercise?.name || 'Упражнение'}</div>
                       <div className="text-sm text-gray-600 mt-1">
-                        {exercise.sets} подходов × {exercise.exercise.type === 'reps' ? `${exercise.reps} повторений` : `${exercise.duration} сек`}
+                        {exercise.sets} подходов × {exercise.exercise?.type === 'reps' ? `${exercise.reps} повторений` : `${exercise.duration} сек`}
                         {exercise.weight && exercise.weight > 0 ? ` • ${exercise.weight} кг` : ''}
                         {` • ${exercise.restTime} сек отдыха`}
                       </div>

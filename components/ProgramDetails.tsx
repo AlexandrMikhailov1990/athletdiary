@@ -280,8 +280,8 @@ export default function ProgramDetails({ program, onClose, onStart, darkMode = f
                 <div className="space-y-4">
                   {exercises.map((exercise, index) => (
                     <div key={index} className={`p-4 rounded-lg ${borderColor} border`}>
-                      <h3 className="font-medium text-lg mb-2">{exercise.exercise.name}</h3>
-                      <p className="mb-2 text-sm">{exercise.exercise.description}</p>
+                      <h3 className="font-medium text-lg mb-2">{exercise.exercise?.name || 'Упражнение'}</h3>
+                      <p className="mb-2 text-sm">{exercise.exercise?.description || 'Нет описания'}</p>
                       
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
                         <div className={`p-2 rounded ${infoBlockBg}`}>
@@ -289,7 +289,7 @@ export default function ProgramDetails({ program, onClose, onStart, darkMode = f
                           <span className="font-medium">{exercise.sets}</span>
                         </div>
                         
-                        {exercise.exercise.type === 'reps' ? (
+                        {exercise.exercise?.type === 'reps' ? (
                           <>
                             <div className={`p-2 rounded ${infoBlockBg}`}>
                               <span className="block text-xs opacity-70">Повторения</span>
@@ -334,9 +334,9 @@ export default function ProgramDetails({ program, onClose, onStart, darkMode = f
                         {workout.exercises.map((exercise, exIndex) => (
                           <div key={exIndex} className={`p-3 ${infoBlockBg} rounded-lg`}>
                             <div className="flex justify-between items-center">
-                              <span className="font-medium">{exercise.exercise.name}</span>
+                              <span className="font-medium">{exercise.exercise?.name || 'Упражнение'}</span>
                               <span className="text-sm">
-                                {exercise.sets} × {exercise.exercise.type === 'reps' 
+                                {exercise.sets} × {exercise.exercise?.type === 'reps' 
                                   ? (exercise.reps || '-') + ' повт.' 
                                   : (exercise.duration || '-') + ' сек'}
                               </span>

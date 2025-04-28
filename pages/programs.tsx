@@ -203,7 +203,7 @@ export default function Programs() {
     
     program.workouts.forEach(workout => {
       workout.exercises.forEach(workoutExercise => {
-        workoutExercise.exercise.muscleGroups.forEach((muscle: string) => {
+        workoutExercise.exercise?.muscleGroups?.forEach((muscle: string) => {
           muscleGroups.add(muscle);
         });
       });

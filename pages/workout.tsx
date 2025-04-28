@@ -99,8 +99,8 @@ export default function Workout() {
             id: Date.now().toString(),
             date: new Date().toISOString(),
             exercises: exercises.map(ex => ({
-              id: ex.exercise.id,
-              name: ex.exercise.name,
+              id: ex.exercise?.id || '',
+              name: ex.exercise?.name || '',
               sets: ex.setDetails.map(set => ({
                 weight: set.weight,
                 reps: set.reps,
@@ -135,9 +135,9 @@ export default function Workout() {
         date: new Date().toISOString(),
         duration: Math.round((Date.now() - new Date(startTime).getTime()) / 60000),
         exercises: exercises.map(ex => ({
-          exerciseId: ex.exercise.id,
-          exercise: ex.exercise,
-          name: ex.exercise.name,
+          exerciseId: ex.exercise?.id || '',
+          exercise: ex.exercise || NORMALIZED_SAMPLE_EXERCISES.find(e => e.id === ex.exercise?.id) || ex,
+          name: ex.exercise?.name || '',
           sets: ex.setDetails.map(set => ({
             weight: set.weight && Number(set.weight) > 0 ? Number(set.weight) : null,
             reps: set.reps && Number(set.reps) > 0 ? Number(set.reps) : null,
@@ -185,7 +185,7 @@ export default function Workout() {
   // Функция для сброса таймера упражнения
   const resetExerciseTimer = useCallback(() => {
     const currentExercise = exercises[currentExerciseIndex].exercise;
-    if (currentExercise.type === 'timed') {
+    if (currentExercise && currentExercise.type === 'timed') {
       if (timerId) {
         clearInterval(timerId);
         setTimerId(null);
@@ -219,8 +219,8 @@ export default function Workout() {
         program.id,
         workoutId,
         exercises.map(ex => ({
-          id: ex.exercise.id,
-          exerciseId: ex.exercise.id,
+          id: ex.exercise?.id || '',
+          exerciseId: ex.exercise?.id || '',
           completedSets: ex.completedSets,
           setDetails: ex.setDetails
         }))
@@ -239,7 +239,7 @@ export default function Workout() {
 
     const updatedExercises = [...exercises];
     const currentExercise = updatedExercises[currentExerciseIndex];
-    const exerciseSets = currentExercise.exercise.sets || 1; // Устанавливаем значение по умолчанию, если sets не определено
+    const exerciseSets = currentExercise.exercise?.sets || 1; // Устанавливаем значение по умолчанию, если sets не определено
     
     // Проверяем, не выполнены ли уже все подходы для текущего упражнения
     if (currentExercise.completedSets >= exerciseSets) {
@@ -267,13 +267,13 @@ export default function Workout() {
     };
 
     // Для силовых упражнений добавляем вес и повторения
-    if (currentExercise.exercise.type === 'reps') {
+    if (currentExercise.exercise?.type === 'reps') {
       setDetails.weight = Number(currentWeight);
       setDetails.reps = Number(currentReps);
     } else {
       // Для временных упражнений добавляем фактическое время выполнения
       const exercise = currentExercise.exercise;
-      const targetDuration = exercise.duration || 60;
+      const targetDuration = exercise?.duration || 60;
       const actualDuration = completedDuration !== undefined ? targetDuration - completedDuration : targetDuration;
       setDetails.duration = actualDuration;
     }
@@ -294,7 +294,7 @@ export default function Workout() {
     // Проверяем, был ли это последний подход в упражнении
     if (currentExercise.completedSets < exerciseSets) {
       // Если не последний подход, запускаем таймер отдыха
-      const restTime = currentExercise.restTime || currentExercise.exercise.restTime || 60;
+      const restTime = currentExercise.restTime || currentExercise.exercise?.restTime || 60;
       setRestTimer(restTime);
       setIsResting(true);
     } else if (currentExerciseIndex + 1 < exercises.length) {
@@ -916,18 +916,18 @@ export default function Workout() {
                                 >
                                   <div className="flex justify-between items-center">
                                     <div>
-                                      <h4 className="font-medium text-gray-800">{ex.exercise.name}</h4>
-                                      <p className="text-sm text-gray-600 mt-1 line-clamp-2">{ex.exercise.description}</p>
+                                      <h4 className="font-medium text-gray-800">{ex.exercise?.name}</h4>
+                                      <p className="text-sm text-gray-600 mt-1 line-clamp-2">{ex.exercise?.description}</p>
                                     </div>
                                     <div className="flex flex-col items-end">
                                       <span className={`text-sm px-2 py-1 rounded-full ${
-                                        ex.completedSets >= (ex.exercise.sets || 1)
+                                        ex.completedSets >= (ex.exercise?.sets || 1)
                                           ? 'bg-green-100 text-green-800'
                                           : ex.completedSets > 0
                                           ? 'bg-yellow-100 text-yellow-800'
                                           : 'bg-gray-100 text-gray-800'
                                       }`}>
-                                        {ex.completedSets}/{ex.exercise.sets || 1}
+                                        {ex.completedSets}/{ex.exercise?.sets || 1}
                                       </span>
                                     </div>
                                   </div>
@@ -936,12 +936,12 @@ export default function Workout() {
                                   <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
                                     <div
                                       className={`h-1.5 rounded-full ${
-                                        ex.completedSets >= (ex.exercise.sets || 1)
+                                        ex.completedSets >= (ex.exercise?.sets || 1)
                                           ? 'bg-green-500'
                                           : 'bg-blue-500'
                                       }`}
                                       style={{
-                                        width: `${(ex.completedSets / (ex.exercise.sets || 1)) * 100}%`
+                                        width: `${(ex.completedSets / (ex.exercise?.sets || 1)) * 100}%`
                                       }}
                                     ></div>
                                   </div>

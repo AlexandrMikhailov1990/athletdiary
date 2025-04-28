@@ -279,13 +279,13 @@ export default function ProgramDetails() {
                 >
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="text-lg font-medium">{exercise.exercise.name}</h3>
-                      <p className="text-sm text-gray-600">{exercise.exercise.description}</p>
+                      <h3 className="text-lg font-medium">{exercise.exercise?.name || 'Упражнение'}</h3>
+                      <p className="text-sm text-gray-600">{exercise.exercise?.description || ''}</p>
                       <div className="mt-2">
                         <span className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs mr-2">
-                          {exercise.exercise.type === 'reps' ? 'Силовое' : 'Кардио'}
+                          {exercise.exercise?.type === 'reps' ? 'Силовое' : 'Кардио'}
                         </span>
-                        {exercise.exercise.muscleGroups?.map(muscle => (
+                        {exercise.exercise?.muscleGroups?.map(muscle => (
                           <span key={muscle} className="inline-block bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs mr-1 mb-1">
                             {translateMuscleGroup(muscle)}
                           </span>
@@ -307,7 +307,7 @@ export default function ProgramDetails() {
                       <span className="text-xs text-gray-500 block">Подходы</span>
                       <span className="font-medium">{exercise.sets}</span>
                     </div>
-                    {exercise.exercise.type === 'reps' && (
+                    {exercise.exercise?.type === 'reps' && (
                       <>
                         <div className="bg-gray-50 p-2 rounded">
                           <span className="text-xs text-gray-500 block">Повторения</span>
@@ -319,7 +319,7 @@ export default function ProgramDetails() {
                         </div>
                       </>
                     )}
-                    {exercise.exercise.type === 'timed' && (
+                    {exercise.exercise?.type === 'timed' && (
                       <div className="bg-gray-50 p-2 rounded">
                         <span className="text-xs text-gray-500 block">Длительность (мин)</span>
                         <span className="font-medium">{exercise.duration || '-'}</span>
@@ -351,19 +351,19 @@ export default function ProgramDetails() {
                   </div>
                   <div className="space-y-4">
                     {workout.exercises.map((exercise, exIndex) => (
-                      <div key={`${exercise.exercise.id}-${exIndex}`} className="bg-gray-50 p-4 rounded-lg">
-                        <h4 className="font-medium mb-2">{exercise.exercise.name}</h4>
+                      <div key={`${exercise.exercise?.id || exIndex}-${exIndex}`} className="bg-gray-50 p-4 rounded-lg">
+                        <h4 className="font-medium mb-2">{exercise.exercise?.name || 'Упражнение'}</h4>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           {exercise.sets.map((set, setIndex) => (
-                            <div key={`${exercise.exercise.id}-${setIndex}`} className="flex items-center gap-2">
+                            <div key={`${exercise.exercise?.id || exIndex}-${setIndex}`} className="flex items-center gap-2">
                               <span className="text-gray-500">Подход {setIndex + 1}:</span>
                               <span className="font-medium">
                                 {set.weight && Number(set.weight) > 0 && `${set.weight} кг`}
                                 {set.weight && Number(set.weight) > 0 && set.reps && Number(set.reps) > 0 && ' × '}
                                 {set.reps && Number(set.reps) > 0 && `${set.reps} повт`}
-                                {exercise.exercise.type === 'timed' && `${exercise.exercise.duration} сек`}
+                                {exercise.exercise?.type === 'timed' && `${exercise.exercise?.duration} сек`}
                                 {(!set.weight || Number(set.weight) <= 0) && (!set.reps || Number(set.reps) <= 0) && 
-                                 (!exercise.exercise.type || exercise.exercise.type !== 'timed') && 'Выполнено'}
+                                 (!exercise.exercise?.type || exercise.exercise?.type !== 'timed') && 'Выполнено'}
                               </span>
                             </div>
                           ))}
