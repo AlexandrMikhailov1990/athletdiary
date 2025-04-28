@@ -32,7 +32,7 @@ export default NextAuth({
   callbacks: {
     async session({ session, token }) {
       if (token && session.user) {
-        session.user.id = token.sub;
+        session.user.id = token.sub ?? "";
       }
       if (session.user?.email) {
         const dbUser = await prisma.user.findUnique({
