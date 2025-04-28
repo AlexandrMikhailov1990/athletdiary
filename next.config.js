@@ -2,8 +2,6 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  // Включаем статический экспорт для деплоя на Netlify
-  output: 'export',
   // Отключаем проверку ESLint при сборке
   eslint: {
     ignoreDuringBuilds: true,
