@@ -600,7 +600,14 @@ export default function Workout() {
         if (currentWorkout && currentWorkout.exercises) {
           // Создаем список упражнений с нуля
           const initializedExercises = currentWorkout.exercises.map(ex => ({
-            exercise: ex.exercise || NORMALIZED_SAMPLE_EXERCISES.find(e => e.id === ex.exerciseId) || ex,
+            exercise: (ex.exercise || NORMALIZED_SAMPLE_EXERCISES.find(e => e.id === ex.exerciseId) || {
+              id: ex.exerciseId,
+              name: 'Неизвестное упражнение',
+              type: 'reps',
+              difficulty: 'beginner',
+              muscleGroups: [],
+              description: ''
+            }) as Exercise,
             completedSets: 0,
             setDetails: [],
             restTime: ex.restTime
@@ -615,8 +622,8 @@ export default function Workout() {
               foundProgram.id,
               currentWorkout.id,
               initializedExercises.map(ex => ({
-                id: ex.exercise.id,
-                exerciseId: ex.exercise.id,
+                id: ex.exercise?.id || '',
+                exerciseId: ex.exercise?.id || '',
                 completedSets: 0,
                 setDetails: []
               }))
@@ -643,7 +650,14 @@ export default function Workout() {
               const savedExercise = workoutProgress.exercises.find(e => e.exerciseId === ex.exerciseId);
               
               return {
-                exercise: ex.exercise || NORMALIZED_SAMPLE_EXERCISES.find(e => e.id === ex.exerciseId) || ex,
+                exercise: (ex.exercise || NORMALIZED_SAMPLE_EXERCISES.find(e => e.id === ex.exerciseId) || {
+                  id: ex.exerciseId,
+                  name: 'Неизвестное упражнение',
+                  type: 'reps',
+                  difficulty: 'beginner',
+                  muscleGroups: [],
+                  description: ''
+                }) as Exercise,
                 completedSets: savedExercise?.completedSets || 0,
                 setDetails: savedExercise?.setDetails || [],
                 restTime: ex.restTime
@@ -660,7 +674,14 @@ export default function Workout() {
           
           if (currentWorkout && currentWorkout.exercises) {
             const initializedExercises = currentWorkout.exercises.map(ex => ({
-              exercise: ex.exercise || NORMALIZED_SAMPLE_EXERCISES.find(e => e.id === ex.exerciseId) || ex,
+              exercise: (ex.exercise || NORMALIZED_SAMPLE_EXERCISES.find(e => e.id === ex.exerciseId) || {
+                id: ex.exerciseId,
+                name: 'Неизвестное упражнение',
+                type: 'reps',
+                difficulty: 'beginner',
+                muscleGroups: [],
+                description: ''
+              }) as Exercise,
               completedSets: 0,
               setDetails: [],
               restTime: ex.restTime
@@ -674,8 +695,8 @@ export default function Workout() {
                 foundProgram.id,
                 currentWorkout.id,
                 initializedExercises.map(ex => ({
-                  id: ex.exercise.id,
-                  exerciseId: ex.exercise.id,
+                  id: ex.exercise?.id || '',
+                  exerciseId: ex.exercise?.id || '',
                   completedSets: 0,
                   setDetails: []
                 }))
