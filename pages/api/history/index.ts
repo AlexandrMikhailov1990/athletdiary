@@ -20,7 +20,6 @@ export default async function handler(
         userId: Number(session.user.id),
         date: new Date(date),
         workoutName,
-        duration,
         exercises,
         notes,
         rating,
