@@ -24,14 +24,34 @@ model User {
 }
 
 model WorkoutHistory {
-  id          String   @id @default(uuid())
+  id          String   @id @default(cuid())
   userId      Int
   date        DateTime
-  workoutName String
-  duration    Int
-  exercises   Json
+  programId   String?
+  programName String?
+  workoutId   String?
+  workoutName String?
+  exercises   WorkoutExercise[]
   notes       String?
   rating      Int?
+  createdAt   DateTime @default(now())
 
   user        User     @relation(fields: [userId], references: [id])
+}
+
+model WorkoutExercise {
+  id           String   @id @default(cuid())
+  workoutId    String
+  exerciseId   String?
+  name         String
+  sets         Int?
+  reps         Int?
+  weight       Float?
+  duration     Int?     // в секундах
+  restTime     Int?     // в секундах
+  muscleGroups String[] @default([])
+  note         String?
+  createdAt    DateTime @default(now())
+
+  workout      WorkoutHistory @relation(fields: [workoutId], references: [id], onDelete: Cascade)
 } 

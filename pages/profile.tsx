@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getPrograms, Program } from '../models/Program';
 import { useRouter } from 'next/router';
-import { fetchWorkoutHistory } from '../utils/historyApi';
+import { fetchWorkoutHistory, fetchFavoritePrograms, syncFavoritePrograms } from '../utils/historyApi';
 
 // Тип анкеты пользователя
 interface ProfileForm {
@@ -14,64 +14,6 @@ interface ProfileForm {
   city?: string;
   goals?: string;
   bio?: string;
-}
-
-// Получение завершённых упражнений
-function getCompletedExercises() {
-  if (typeof window === 'undefined') return [];
-  const completedWorkouts = JSON.parse(localStorage.getItem('workoutHistory') || '[]');
-  let allExercises: any[] = [];
-  completedWorkouts.forEach((workout: any) => {
-    workout.exercises.forEach((ex: any) => {
-      allExercises.push({
-        ...ex,
-        date: workout.date,
-        programId: workout.programId,
-        workoutId: workout.workoutId,
-      });
-    });
-  });
-  return allExercises;
-}
-
-function getUniqueExerciseNames(exercises: any[]) {
-  const names = new Set<string>();
-  exercises.forEach(ex => {
-    if (ex.exercise?.name) names.add(ex.exercise.name);
-    else if (ex.name) names.add(ex.name);
-  });
-  return Array.from(names);
-}
-
-function getTopExercises(exercises: any[], topN = 3) {
-  const freq: Record<string, number> = {};
-  exercises.forEach(ex => {
-    const name = ex.exercise?.name || ex.name || 'Упражнение';
-    freq[name] = (freq[name] || 0) + 1;
-  });
-  return Object.entries(freq)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, topN)
-    .map(([name, count]) => ({ name, count }));
-}
-
-function getCategoryStats(exercises: any[]) {
-  const stats: Record<string, number> = {};
-  exercises.forEach(ex => {
-    const cats = ex.exercise?.muscleGroups || ex.muscleGroups || [];
-    cats.forEach((cat: string) => {
-      stats[cat] = (stats[cat] || 0) + 1;
-    });
-  });
-  return Object.entries(stats)
-    .sort((a, b) => b[1] - a[1])
-    .map(([category, count]) => ({ category, count }));
-}
-
-// Получение завершённых тренировок
-function getCompletedWorkouts() {
-  if (typeof window === 'undefined') return [];
-  return JSON.parse(localStorage.getItem('workoutHistory') || '[]');
 }
 
 // Маппинг категорий мышц на русский
@@ -91,6 +33,43 @@ const muscleGroupMap: Record<string, string> = {
   triceps: 'Трицепсы',
 };
 
+// Получение уникальных имен упражнений
+function getUniqueExerciseNames(exercises: any[]) {
+  const names = new Set<string>();
+  exercises.forEach(ex => {
+    if (ex.exercise?.name) names.add(ex.exercise.name);
+    else if (ex.name) names.add(ex.name);
+  });
+  return Array.from(names);
+}
+
+// Получение самых частых упражнений
+function getTopExercises(exercises: any[], topN = 3) {
+  const freq: Record<string, number> = {};
+  exercises.forEach(ex => {
+    const name = ex.exercise?.name || ex.name || 'Упражнение';
+    freq[name] = (freq[name] || 0) + 1;
+  });
+  return Object.entries(freq)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, topN)
+    .map(([name, count]) => ({ name, count }));
+}
+
+// Получение статистики по категориям
+function getCategoryStats(exercises: any[]) {
+  const stats: Record<string, number> = {};
+  exercises.forEach(ex => {
+    const cats = ex.exercise?.muscleGroups || ex.muscleGroups || [];
+    cats.forEach((cat: string) => {
+      stats[cat] = (stats[cat] || 0) + 1;
+    });
+  });
+  return Object.entries(stats)
+    .sort((a, b) => b[1] - a[1])
+    .map(([category, count]) => ({ category, count }));
+}
+
 export default function Profile() {
   const { data: session, status, update } = useSession();
   const [editMode, setEditMode] = useState(false);
@@ -107,6 +86,7 @@ export default function Profile() {
   const [saveError, setSaveError] = useState('');
   const [saveSuccess, setSaveSuccess] = useState('');
   const [favoritePrograms, setFavoritePrograms] = useState<Program[]>([]);
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [completedExercises, setCompletedExercises] = useState<any[]>([]);
   const [completedWorkouts, setCompletedWorkouts] = useState<any[]>([]);
   const [isClientLoaded, setIsClientLoaded] = useState(false);
@@ -127,19 +107,40 @@ export default function Profile() {
     }
   }, [session, user]);
 
+  // Загружаем избранные программы
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const favorites = JSON.parse(localStorage.getItem('favoritePrograms') || '[]');
-      const allPrograms = getPrograms();
-      setFavoritePrograms(allPrograms.filter((p: any) => favorites.includes(p.id)));
+    async function loadFavorites() {
+      try {
+        // Получаем список избранных программ из API или localStorage
+        const favorites = await fetchFavoritePrograms();
+        setFavoriteIds(favorites);
+        
+        // Получаем полные данные программ из списка
+        const allPrograms = getPrograms();
+        setFavoritePrograms(allPrograms.filter((p: any) => favorites.includes(p.id)));
+      } catch (e) {
+        console.error('Error loading favorites:', e);
+        // Запасной вариант - локальное хранилище
+        if (typeof window !== 'undefined') {
+          const favorites = JSON.parse(localStorage.getItem('favoritePrograms') || '[]');
+          setFavoriteIds(favorites);
+          const allPrograms = getPrograms();
+          setFavoritePrograms(allPrograms.filter((p: any) => favorites.includes(p.id)));
+        }
+      }
+      setIsClientLoaded(true);
     }
+    
+    loadFavorites();
   }, []);
 
+  // Загружаем историю тренировок
   useEffect(() => {
     async function loadHistory() {
       try {
         const workouts = await fetchWorkoutHistory();
         setCompletedWorkouts(workouts);
+        
         // Собираем все упражнения из тренировок
         let allExercises: any[] = [];
         workouts.forEach((workout: any) => {
@@ -154,11 +155,13 @@ export default function Profile() {
         });
         setCompletedExercises(allExercises);
       } catch (e) {
+        console.error('Error loading history:', e);
         setCompletedWorkouts([]);
         setCompletedExercises([]);
       }
       setIsClientLoaded(true);
     }
+    
     loadHistory();
   }, []);
 
@@ -205,15 +208,22 @@ export default function Profile() {
   };
 
   // Удалить из избранного
-  const handleRemoveFavorite = (programId: string) => {
-    const favorites = JSON.parse(localStorage.getItem('favoritePrograms') || '[]');
-    const updated = favorites.filter((id: string) => id !== programId);
-    localStorage.setItem('favoritePrograms', JSON.stringify(updated));
-    const allPrograms = getPrograms();
-    setFavoritePrograms(allPrograms.filter((p: any) => updated.includes(p.id)));
+  const handleRemoveFavorite = async (programId: string) => {
+    try {
+      // Обновляем локальный список
+      const updatedFavorites = favoriteIds.filter(id => id !== programId);
+      setFavoriteIds(updatedFavorites);
+      const allPrograms = getPrograms();
+      setFavoritePrograms(allPrograms.filter((p: any) => updatedFavorites.includes(p.id)));
+      
+      // Синхронизируем с сервером
+      await syncFavoritePrograms(updatedFavorites);
+    } catch (error) {
+      console.error('Error removing favorite:', error);
+    }
   };
 
-  // Начать программу (копия из programs.tsx)
+  // Начать программу
   const handleStartProgram = (program: Program) => {
     try {
       import('../models/HomeExercises').then(module => {
