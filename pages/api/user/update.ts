@@ -18,8 +18,34 @@ export default async function handler(
 
   if (req.method === 'POST') {
     try {
+      if (!session.user.id) {
+        return res.status(400).json({ error: 'User ID is missing in session' });
+      }
+
+      let userId: number;
+      try {
+        userId = parseInt(session.user.id);
+        if (isNaN(userId)) {
+          throw new Error('Invalid ID format');
+        }
+      } catch (error) {
+        if (session.user.email) {
+          const user = await prisma.user.findUnique({
+            where: { email: session.user.email }
+          });
+          
+          if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+          }
+          
+          userId = user.id;
+        } else {
+          return res.status(400).json({ error: 'Cannot identify user' });
+        }
+      }
+
       const updatedUser = await prisma.user.update({
-        where: { id: Number(session.user.id) },
+        where: { id: userId },
         data: {
           name: req.body.name,
           birthDate: req.body.birthDate ? new Date(req.body.birthDate) : null,
