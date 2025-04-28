@@ -8,8 +8,10 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const session = await getServerSession(req, res, authOptions) as Session;
-  if (!session) return res.status(401).json({ error: "Not authenticated" });
+  const session = await getServerSession(req, res, authOptions);
+  if (!session || !session.user || !session.user.id) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
 
   if (req.method === "POST") {
     const { date, workoutName, duration, exercises, notes, rating } = req.body;
