@@ -15,6 +15,7 @@ import {
 } from '../models/WorkoutProgress';
 import { motion, AnimatePresence } from 'framer-motion';
 import Layout from '../components/Layout';
+import { saveWorkoutToHistory } from '../utils/historyApi';
 
 // Добавим константу WORKOUT_PROGRESS_KEY для прямого доступа
 const WORKOUT_PROGRESS_KEY = 'workoutProgress';
@@ -154,6 +155,19 @@ export default function Workout() {
       // Добавляем запись в историю и сохраняем
       workoutHistory.push(workoutRecord);
       localStorage.setItem('workoutHistory', JSON.stringify(workoutHistory));
+
+      // Отправляем данные на сервер через API
+      saveWorkoutToHistory(workoutRecord)
+        .then(success => {
+          if (success) {
+            console.log('История тренировки успешно сохранена на сервере');
+          } else {
+            console.error('Не удалось сохранить историю тренировки на сервере');
+          }
+        })
+        .catch(error => {
+          console.error('Ошибка при сохранении истории тренировки:', error);
+        });
 
       console.log('Сохранена история тренировки:', workoutRecord);
 

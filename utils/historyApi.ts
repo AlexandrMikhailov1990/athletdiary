@@ -43,13 +43,35 @@ export async function saveWorkoutToHistory(workout: any) {
     workouts.push(workout);
     localStorage.setItem('workoutHistory', JSON.stringify(workouts));
     
+    // Преобразуем формат данных для сервера
+    const serverWorkoutData = {
+      date: workout.date,
+      programId: workout.programId,
+      programName: workout.programName,
+      workoutId: workout.workoutId,
+      workoutName: workout.workoutName,
+      exercises: workout.exercises.map((ex: any) => ({
+        exerciseId: ex.exerciseId,
+        name: ex.name || ex.exercise?.name,
+        sets: ex.sets || ex.exercise?.sets || ex.setDetails?.length || 0,
+        reps: ex.reps || ex.exercise?.reps,
+        weight: ex.weight || ex.exercise?.weight,
+        duration: ex.duration || ex.exercise?.duration,
+        restTime: ex.restTime || ex.exercise?.restTime,
+        muscleGroups: ex.muscleGroups || ex.exercise?.muscleGroups || [],
+        note: ex.note || ''
+      })),
+      notes: workout.notes || '',
+      rating: workout.rating || 0
+    };
+    
     // Затем отправляем на сервер
     const res = await fetch('/api/user/history', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(workout)
+      body: JSON.stringify(serverWorkoutData)
     });
     
     if (!res.ok) {
