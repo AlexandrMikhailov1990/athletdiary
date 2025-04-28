@@ -60,108 +60,92 @@ export async function fetchWorkoutHistory() {
   }
 }
 
-// Сохранение тренировки в историю
-export async function saveWorkoutToHistory(workout: any) {
+// Сохранение записи тренировки в историю
+export const saveWorkoutToHistory = async (workoutRecord: any): Promise<boolean> => {
   try {
-    // Генерируем уникальный ID для тренировки, если его нет
-    const workoutToSave = {
-      ...workout,
-      id: workout.id || `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-    };
+    // Делаем запрос к API
+    const response = await fetch('/api/workout/history', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(workoutRecord),
+    });
+
+    const data = await response.json();
     
-    // Сперва сохраняем в локальное хранилище
-    const workouts = JSON.parse(localStorage.getItem('workoutHistory') || '[]');
-    
-    // Проверяем, не существует ли уже тренировка с таким ID
-    const existingIndex = workouts.findIndex((w: any) => w.id === workoutToSave.id);
-    if (existingIndex >= 0) {
-      // Заменяем существующую запись
-      workouts[existingIndex] = workoutToSave;
+    // Проверяем успешность запроса
+    if (response.ok && data.success) {
+      console.log('История тренировки успешно сохранена на сервере', data);
+      return true;
     } else {
-      // Добавляем новую запись
-      workouts.push(workoutToSave);
+      console.error('Ошибка при сохранении истории тренировки:', data.message);
+      return false;
     }
-    
-    // Сортируем по дате (от новых к старым)
-    workouts.sort((a: any, b: any) => 
-      new Date(b.date).getTime() - new Date(a.date).getTime()
-    );
-    
-    localStorage.setItem('workoutHistory', JSON.stringify(workouts));
-    
-    // Преобразуем формат данных для сервера
-    const serverWorkoutData = {
-      id: workoutToSave.id,
-      date: workoutToSave.date,
-      programId: workoutToSave.programId,
-      programName: workoutToSave.programName,
-      workoutId: workoutToSave.workoutId,
-      workoutName: workoutToSave.workoutName,
-      exercises: workoutToSave.exercises.map((ex: any) => ({
-        exerciseId: ex.exerciseId,
-        name: ex.name || ex.exercise?.name,
-        sets: ex.sets || ex.exercise?.sets || ex.setDetails?.length || 0,
-        reps: ex.reps || ex.exercise?.reps,
-        weight: ex.weight || ex.exercise?.weight,
-        duration: ex.duration || ex.exercise?.duration,
-        restTime: ex.restTime || ex.exercise?.restTime,
-        muscleGroups: ex.muscleGroups || ex.exercise?.muscleGroups || [],
-        note: ex.note || ''
-      })),
-      notes: workoutToSave.notes || '',
-      rating: workoutToSave.rating || 0
-    };
-    
-    // Затем отправляем на сервер с повторными попытками
-    let attempts = 0;
-    const maxAttempts = 3;
-    
-    while (attempts < maxAttempts) {
-      try {
-        const res = await fetch('/api/user/history', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(serverWorkoutData)
-        });
-        
-        if (res.ok) {
-          console.log('Тренировка успешно сохранена на сервере');
-          // После успешного сохранения на сервере возвращаем true
-          return true;
-        } else {
-          const errorData = await res.json().catch(() => ({ message: 'Unknown error' }));
-          console.error(`Попытка ${attempts + 1}/${maxAttempts}: Не удалось сохранить тренировку на сервере:`, errorData);
-          
-          // Если ошибка 401 (не авторизован), прекращаем попытки
-          if (res.status === 401) {
-            console.error('Пользователь не авторизован. Дальнейшие попытки не будут выполнены.');
-            break;
-          }
-        }
-      } catch (error) {
-        console.error(`Попытка ${attempts + 1}/${maxAttempts}: Ошибка при сохранении тренировки:`, error);
-      }
-      
-      // Увеличиваем счетчик попыток
-      attempts++;
-      
-      // Если это не последняя попытка, делаем паузу перед следующей
-      if (attempts < maxAttempts) {
-        // Экспоненциальное увеличение времени ожидания между попытками
-        await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempts)));
-      }
-    }
-    
-    // Даже если сохранение на сервере не удалось, возвращаем true
-    // поскольку данные сохранены локально
-    return true;
   } catch (error) {
-    console.error('Error saving workout history:', error);
+    console.error('Ошибка при отправке запроса на сохранение истории:', error);
     return false;
   }
-}
+};
+
+// Получение истории тренировок пользователя
+export const getWorkoutHistory = async (): Promise<any[]> => {
+  try {
+    // Делаем запрос к API
+    const response = await fetch('/api/workout/history', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      console.error('Ошибка при получении истории тренировок:', response.statusText);
+      return [];
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Ошибка при отправке запроса на получение истории тренировок:', error);
+    return [];
+  }
+};
+
+// Синхронизация истории тренировок между локальным хранилищем и сервером
+export const syncWorkoutHistory = async (): Promise<void> => {
+  try {
+    // Получаем историю тренировок с сервера
+    const serverHistory = await getWorkoutHistory();
+    
+    // Получаем локальную историю тренировок
+    const localHistory = JSON.parse(localStorage.getItem('workoutHistory') || '[]');
+    
+    // Создаем объединенную историю, удаляя дубликаты
+    const mergedHistory = [...serverHistory];
+    
+    // Проверяем локальные записи, которых нет на сервере
+    for (const localRecord of localHistory) {
+      // Проверяем, есть ли эта запись уже на сервере
+      const existsOnServer = serverHistory.some(
+        serverRecord => serverRecord.id === localRecord.id
+      );
+      
+      // Если записи нет на сервере - добавляем в список для сохранения
+      if (!existsOnServer) {
+        await saveWorkoutToHistory(localRecord);
+        mergedHistory.push(localRecord);
+      }
+    }
+    
+    // Обновляем локальное хранилище объединенной историей
+    localStorage.setItem('workoutHistory', JSON.stringify(mergedHistory));
+    
+    console.log('История тренировок успешно синхронизирована');
+  } catch (error) {
+    console.error('Ошибка при синхронизации истории тренировок:', error);
+  }
+};
 
 // Удаление тренировки из истории
 export async function deleteWorkoutFromHistory(workoutId: string | number) {

@@ -12,11 +12,17 @@ import { addYogaBackProgram } from '../models/YogaProgram';
 import { addKettlebellProgramToUserPrograms } from '../models/KettlebellProgram';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { SessionProvider } from "next-auth/react";
+import { SessionProvider, useSession } from "next-auth/react";
+import { syncWorkoutHistory } from '../utils/historyApi';
 
-export default function App({ Component, pageProps }: AppProps) {
-  const { session, ...restPageProps } = pageProps as any;
+type AppContentProps = {
+  Component: AppProps['Component'];
+  pageProps: any;
+};
+
+function AppContent({ Component, pageProps }: AppContentProps) {
   const router = useRouter();
+  const { data: session } = useSession();
 
   // Обработка 404 ошибок на Netlify
   useEffect(() => {
@@ -50,8 +56,17 @@ export default function App({ Component, pageProps }: AppProps) {
     addKettlebellProgramToUserPrograms();
   }, [router]);
 
+  // Синхронизация истории тренировок при загрузке
+  useEffect(() => {
+    if (session?.user) {
+      syncWorkoutHistory()
+        .then(() => console.log('История тренировок синхронизирована при загрузке приложения'))
+        .catch(error => console.error('Ошибка синхронизации истории:', error));
+    }
+  }, [session]);
+
   return (
-    <SessionProvider session={session}>
+    <>
       <Head>
         <title>AthleteDiary - Дневник спортсмена</title>
         <meta name="description" content="AthleteDiary - приложение для отслеживания прогресса тренировок, планирования и анализа фитнес-результатов" />
@@ -65,11 +80,21 @@ export default function App({ Component, pageProps }: AppProps) {
         </div>
         
         <div className="main-content-wrapper">
-          <Component {...restPageProps} />
+          <Component {...pageProps} />
         </div>
         
         <Footer />
       </div>
+    </>
+  );
+}
+
+export default function App({ Component, pageProps }: AppProps) {
+  const { session, ...restPageProps } = pageProps as any;
+  
+  return (
+    <SessionProvider session={session}>
+      <AppContent Component={Component} pageProps={restPageProps} />
     </SessionProvider>
   );
 } 

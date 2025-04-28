@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getPrograms, Program } from '../models/Program';
 import { useRouter } from 'next/router';
-import { fetchWorkoutHistory, fetchFavoritePrograms, syncFavoritePrograms } from '../utils/historyApi';
+import { fetchWorkoutHistory, fetchFavoritePrograms, syncFavoritePrograms, syncWorkoutHistory } from '../utils/historyApi';
 
 // Тип анкеты пользователя
 interface ProfileForm {
@@ -164,6 +164,20 @@ export default function Profile() {
     
     loadHistory();
   }, []);
+
+  // Эффект для синхронизации истории тренировок при загрузке страницы
+  useEffect(() => {
+    if (session?.user) {
+      // Синхронизация истории тренировок
+      syncWorkoutHistory()
+        .then(() => {
+          console.log('История тренировок успешно синхронизирована');
+        })
+        .catch(error => {
+          console.error('Ошибка при синхронизации истории тренировок:', error);
+        });
+    }
+  }, [session]);
 
   if (status === "loading") {
     return <div className="flex justify-center items-center h-screen">Загрузка...</div>;

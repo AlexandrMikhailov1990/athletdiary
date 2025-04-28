@@ -15,7 +15,7 @@ import {
 } from '../models/WorkoutProgress';
 import { motion, AnimatePresence } from 'framer-motion';
 import Layout from '../components/Layout';
-import { saveWorkoutToHistory } from '../utils/historyApi';
+import { saveWorkoutToHistory, syncWorkoutHistory } from '../utils/historyApi';
 
 // Добавим константу WORKOUT_PROGRESS_KEY для прямого доступа
 const WORKOUT_PROGRESS_KEY = 'workoutProgress';
@@ -161,6 +161,8 @@ export default function Workout() {
         .then(success => {
           if (success) {
             console.log('История тренировки успешно сохранена на сервере');
+            // Синхронизируем историю с сервером
+            return syncWorkoutHistory();
           } else {
             console.error('Не удалось сохранить историю тренировки на сервере');
           }

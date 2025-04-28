@@ -6,6 +6,8 @@ import type { WorkoutHistory } from '../models/WorkoutHistory';
 import ContinueWorkoutButton from '../components/ContinueWorkoutButton';
 import Link from 'next/link';
 import { Exercise, NORMALIZED_SAMPLE_EXERCISES } from '../models/Exercise';
+import { useSession } from 'next-auth/react';
+import { syncWorkoutHistory } from '../utils/historyApi';
 
 export default function ActiveProgram() {
   const router = useRouter();
@@ -16,6 +18,8 @@ export default function ActiveProgram() {
   const [program, setProgram] = useState<Program | null>(null);
   const [loading, setLoading] = useState(true);
   const [workoutHistory, setWorkoutHistory] = useState<WorkoutHistory[]>([]);
+  
+  const { data: session } = useSession();
   
   // Добавим переменную currentWorkout
   const currentWorkout = useMemo(() => {
@@ -185,6 +189,15 @@ export default function ActiveProgram() {
     
     loadActiveProgram();
   }, [router]);
+
+  // Синхронизация истории при загрузке страницы
+  useEffect(() => {
+    if (session?.user) {
+      syncWorkoutHistory()
+        .then(() => console.log('История тренировок синхронизирована'))
+        .catch(error => console.error('Ошибка синхронизации истории:', error));
+    }
+  }, [session]);
 
   // Функция для рендеринга деталей истории тренировки
   // Эта функция не использует хуки внутри, поэтому безопасна
