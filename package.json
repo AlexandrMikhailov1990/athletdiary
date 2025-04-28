@@ -7,8 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "touch node_modules/.metadata_never_index",
-    "netlify-build": "NODE_ENV=production next build && cp -r public/* out/"
+    "postinstall": "touch node_modules/.metadata_never_index"
   },
   "dependencies": {
     "@next-auth/prisma-adapter": "^1.0.7",

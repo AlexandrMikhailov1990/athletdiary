@@ -9,12 +9,6 @@
   NPM_VERSION = "9"
   NEXT_TELEMETRY_DISABLED = "1"
 
-# Простое правило для обработки всех запросов через next/router
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-
 # Заголовки безопасности для всех файлов
 [[headers]]
   for = "/*"
