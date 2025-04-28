@@ -12,7 +12,7 @@ function getExerciseByName(name: string): Exercise | undefined {
 function createWorkoutExercise(
   exercise: Exercise, 
   sets: number, 
-  rest: number, 
+  restTime: number, 
   options?: { reps?: number, duration?: number }
 ): WorkoutExercise {
   return {
@@ -20,7 +20,7 @@ function createWorkoutExercise(
     exerciseId: exercise.id,
     exercise,
     sets,
-    rest,
+    restTime,
     ...(options?.reps !== undefined ? { reps: options.reps } : {}),
     ...(options?.duration !== undefined ? { duration: options.duration } : {}),
   };
