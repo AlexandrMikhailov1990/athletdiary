@@ -19,7 +19,7 @@ export interface WorkoutExercise {
   reps?: number;
   weight?: number;
   duration?: number;
-  rest: number;
+  restTime?: number;
   completed?: boolean;
   completedSets?: {
     reps?: number;
