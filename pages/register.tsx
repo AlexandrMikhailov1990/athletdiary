@@ -2,20 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
 import { register } from '@/utils/auth';
+import { signIn } from 'next-auth/react';
 
 export default function Register() {
-  const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
-  });
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   useEffect(() => {
     // Проверяем, авторизован ли пользователь
@@ -27,49 +21,30 @@ export default function Register() {
   }, [router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
-    // Базовая валидация
-    if (formData.password !== formData.confirmPassword) {
-      setError('Пароли не совпадают');
-      return;
-    }
-    
-    if (formData.password.length < 6) {
-      setError('Пароль должен содержать минимум 6 символов');
-      return;
-    }
-    
-    setIsLoading(true);
-    
-    try {
-      // Регистрация пользователя
-      const { success, message, user } = await register(
-        formData.username,
-        formData.email,
-        formData.password
-      );
-
-      if (success && user) {
-        // Перенаправляем на дашборд после успешной регистрации
-        router.push('/dashboard');
-      } else {
-        setError(message || 'Ошибка при регистрации');
-      }
-    } catch (error) {
-      console.error('Ошибка при регистрации:', error);
-      setError('Произошла ошибка при регистрации. Пожалуйста, попробуйте позже.');
-    } finally {
-      setIsLoading(false);
+    setSuccess('');
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setSuccess('Регистрация успешна! Входим...');
+      // Автоматический вход через NextAuth
+      await signIn('credentials', {
+        redirect: false,
+        email: form.email,
+        password: form.password,
+      });
+      router.push('/profile');
+    } else {
+      setError(data.message || 'Ошибка регистрации');
     }
   };
 
@@ -79,8 +54,6 @@ export default function Register() {
         <title>Регистрация | AthleteDiary</title>
         <meta name="description" content="Регистрация в AthleteDiary для доступа к расширенным функциям" />
       </Head>
-
-      <Navbar />
 
       <main className="bg-gray-50 min-h-screen py-12">
         <div className="container mx-auto px-4 max-w-md">
@@ -93,16 +66,22 @@ export default function Register() {
               </div>
             )}
           
+            {success && (
+              <div className="mb-4 p-3 bg-green-100 border-l-4 border-green-500 text-green-700 rounded">
+                {success}
+              </div>
+            )}
+          
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
                   Имя пользователя
                 </label>
                 <input
-                  id="username"
-                  name="username"
+                  id="name"
+                  name="name"
                   type="text"
-                  value={formData.username}
+                  value={form.name}
                   onChange={handleChange}
                   className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   placeholder="Введите имя пользователя"
@@ -118,7 +97,7 @@ export default function Register() {
                   id="email"
                   name="email"
                   type="email"
-                  value={formData.email}
+                  value={form.email}
                   onChange={handleChange}
                   className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   placeholder="Введите ваш email"
@@ -134,7 +113,7 @@ export default function Register() {
                   id="password"
                   name="password"
                   type="password"
-                  value={formData.password}
+                  value={form.password}
                   onChange={handleChange}
                   className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   placeholder="Введите пароль"
@@ -143,22 +122,6 @@ export default function Register() {
                 <p className="text-xs text-gray-500 mt-1">
                   Минимум 6 символов
                 </p>
-              </div>
-            
-              <div className="mb-6">
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                  Подтвердите пароль
-                </label>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                  placeholder="Подтвердите пароль"
-                  required
-                />
               </div>
             
               <div className="mb-6">
@@ -176,12 +139,9 @@ export default function Register() {
             
               <button
                 type="submit"
-                className={`w-full py-2 px-4 rounded-md text-white font-medium ${
-                  isLoading ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'
-                } transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
-                disabled={isLoading}
+                className="w-full py-2 px-4 rounded-md text-white font-medium bg-blue-600 hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
-                {isLoading ? 'Регистрация...' : 'Зарегистрироваться'}
+                Зарегистрироваться
               </button>
             </form>
           
@@ -199,8 +159,6 @@ export default function Register() {
           </div>
         </div>
       </main>
-
-      <Footer />
     </>
   );
 } 

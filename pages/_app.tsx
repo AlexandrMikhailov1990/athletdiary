@@ -12,8 +12,9 @@ import { addYogaBackProgram } from '../models/YogaProgram';
 import { addKettlebellProgramToUserPrograms } from '../models/KettlebellProgram';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { SessionProvider } from "next-auth/react";
 
-export default function App({ Component, pageProps }: AppProps) {
+export default function App({ Component, pageProps: { session, ...pageProps } }) {
   const router = useRouter();
 
   // Обработка 404 ошибок на Netlify
@@ -49,7 +50,7 @@ export default function App({ Component, pageProps }: AppProps) {
   }, [router]);
 
   return (
-    <>
+    <SessionProvider session={session}>
       <Head>
         <title>AthleteDiary - Дневник спортсмена</title>
         <meta name="description" content="AthleteDiary - приложение для отслеживания прогресса тренировок, планирования и анализа фитнес-результатов" />
@@ -68,6 +69,6 @@ export default function App({ Component, pageProps }: AppProps) {
         
         <Footer />
       </div>
-    </>
+    </SessionProvider>
   );
 } 

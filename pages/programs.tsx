@@ -5,6 +5,7 @@ import { Program, getPrograms, SAMPLE_PROGRAMS } from '../models/Program';
 import { SAMPLE_ACTIVE_PROGRAM, ActiveProgram } from '../models/ActiveProgram';
 import { Exercise, translateMuscleGroup } from '../models/Exercise';
 import ContinueWorkoutButton from '../components/ContinueWorkoutButton';
+import ProgramCard from '../components/ProgramCard';
 
 export default function Programs() {
   const router = useRouter();
@@ -261,120 +262,13 @@ export default function Programs() {
         {/* Результаты */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredPrograms.map(program => (
-            <div key={program.id} className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col h-full">
-              <div className="p-6 flex flex-col h-full">
-                <div className="flex-grow">
-                  <h3 className="text-xl font-semibold text-blue-800 mb-4">{program.name}</h3>
-                  
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {countExercisesInProgram(program) > 0 && (
-                      <span className="inline-flex items-center px-3 py-1 bg-yellow-100 text-yellow-800 text-sm font-medium rounded-full">
-                        {countExercisesInProgram(program)} {
-                          countExercisesInProgram(program) === 1 ? 'упражнение' : 
-                          countExercisesInProgram(program) < 5 ? 'упражнения' : 'упражнений'
-                        }
-                      </span>
-                    )}
-                  </div>
-                  
-                  <p className="text-gray-600 mb-4 line-clamp-3 h-auto overflow-hidden">
-                    {program.description}
-                  </p>
-                  
-                  {/* Добавляем информацию о мышечных группах только если они есть */}
-                  {getMuscleGroupsInProgram(program).length > 0 && (
-                    <div className="mt-3 mb-4">
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">Целевые мышцы:</h4>
-                      <div className="flex flex-wrap gap-1.5">
-                        {getMuscleGroupsInProgram(program).map(muscle => (
-                          <span key={muscle} className="inline-flex items-center px-2.5 py-0.5 bg-gray-100 text-gray-800 text-xs font-medium rounded">
-                            {translateMuscleGroup(muscle)}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Добавляем краткую информацию о тренировках только если они есть */}
-                  {program.workouts && program.workouts.length > 0 && (
-                    <div className="mt-3">
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">Тренировки:</h4>
-                      <div className="space-y-2 max-h-32 overflow-y-auto pr-2">
-                        {program.workouts.map((workout, index) => (
-                          <div key={index} className="text-xs border border-gray-200 rounded p-2">
-                            <div className="font-medium">{workout.name}</div>
-                            <div className="text-gray-500 mt-1">
-                              {workout.exercises.length} {
-                                workout.exercises.length === 1 ? 'упражнение' : 
-                                workout.exercises.length < 5 ? 'упражнения' : 'упражнений'
-                              }
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-                
-                <div className="flex gap-1 sm:gap-2 mt-auto pt-4">
-                  <button 
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-2 sm:px-3 rounded-lg transition-colors duration-200 text-xs sm:text-sm text-center"
-                    onClick={() => viewProgramDetails(program.id)}
-                  >
-                    Подробнее
-                  </button>
-                  
-                  <button 
-                    className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-2 sm:px-3 rounded-lg transition-colors duration-200 text-xs sm:text-sm text-center"
-                    onClick={() => startProgram(program)}
-                  >
-                    Начать
-                  </button>
-
-                  {/* Кнопка редактирования программы */}
-                  <button 
-                    className="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-2 sm:px-3 rounded-lg transition-colors duration-200 flex items-center justify-center"
-                    onClick={() => router.push(`/programs/edit/${program.id}`)}
-                    title="Редактировать"
-                  >
-                    <svg 
-                      className="w-4 h-4" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round" 
-                        strokeWidth={2} 
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" 
-                      />
-                    </svg>
-                  </button>
-                  
-                  {/* Кнопка удаления программы */}
-                  <button 
-                    className="bg-red-600 hover:bg-red-700 text-white py-2 px-2 sm:px-3 rounded-lg transition-colors duration-200 flex items-center justify-center"
-                    onClick={() => deleteProgram(program.id)}
-                    title="Удалить"
-                  >
-                    <svg 
-                      className="w-4 h-4" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round" 
-                        strokeWidth={2} 
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" 
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
+            <ProgramCard
+              key={program.id}
+              program={program}
+              onStart={startProgram}
+              onEdit={() => router.push(`/programs/edit/${program.id}`)}
+              onDelete={deleteProgram}
+            />
           ))}
         </div>
         

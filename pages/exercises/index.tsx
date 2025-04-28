@@ -124,21 +124,15 @@ export default function Exercises() {
       // Фильтр по поисковому запросу
       const matchesSearch = exercise.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           exercise.description.toLowerCase().includes(searchTerm.toLowerCase());
-      
       // Фильтр по группе мышц
       const matchesMuscleGroup = selectedMuscleGroup === '' || 
                                exercise.muscleGroups.includes(selectedMuscleGroup);
-      
-      // Фильтр по типу упражнения
-      const matchesType = selectedType === '' || exercise.type === selectedType;
-
       // Фильтр по инвентарю
       const matchesEquipment = selectedEquipment.length === 0 || 
                               selectedEquipment.every(eq => exercise.equipment?.includes(eq));
-      
-      return matchesSearch && matchesMuscleGroup && matchesType && matchesEquipment;
+      return matchesSearch && matchesMuscleGroup && matchesEquipment;
     });
-  }, [exercises, searchTerm, selectedMuscleGroup, selectedType, selectedEquipment]);
+  }, [exercises, searchTerm, selectedMuscleGroup, selectedEquipment]);
 
   // Получение уникальных групп мышц
   const muscleGroups = useMemo(() => {
@@ -247,17 +241,6 @@ export default function Exercises() {
                 {translateMuscleGroup(group)}
               </option>
             ))}
-          </select>
-
-          <select
-            value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value)}
-            className="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="">Все типы</option>
-            <option value="strength">Силовые</option>
-            <option value="cardio">Кардио</option>
-            <option value="flexibility">Гибкость</option>
           </select>
 
           <ExerciseFilter
