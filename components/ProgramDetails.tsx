@@ -309,7 +309,7 @@ export default function ProgramDetails({ program, onClose, onStart, darkMode = f
                         
                         <div className={`p-2 rounded ${infoBlockBg}`}>
                           <span className="block text-xs opacity-70">Отдых (сек)</span>
-                          <span className="font-medium">{exercise.rest}</span>
+                          <span className="font-medium">{exercise.restTime}</span>
                         </div>
                       </div>
                     </div>

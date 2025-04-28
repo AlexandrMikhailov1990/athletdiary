@@ -359,7 +359,7 @@ export default function ActiveProgram() {
                       <div className="text-sm text-gray-600 mt-1">
                         {exercise.sets} подходов × {exercise.exercise.type === 'reps' ? `${exercise.reps} повторений` : `${exercise.duration} сек`}
                         {exercise.weight && exercise.weight > 0 ? ` • ${exercise.weight} кг` : ''}
-                        {` • ${exercise.rest} сек отдыха`}
+                        {` • ${exercise.restTime} сек отдыха`}
                       </div>
                     </div>
                   ))}

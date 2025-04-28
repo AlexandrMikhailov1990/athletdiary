@@ -327,7 +327,7 @@ export default function ProgramDetails() {
                     )}
                     <div className="bg-gray-50 p-2 rounded">
                       <span className="text-xs text-gray-500 block">Отдых (сек)</span>
-                      <span className="font-medium">{exercise.rest}</span>
+                      <span className="font-medium">{exercise.restTime}</span>
                     </div>
                   </div>
                 </div>
