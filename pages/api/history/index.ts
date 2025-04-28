@@ -15,13 +15,20 @@ export default async function handler(
 
   if (req.method === "POST") {
     const { date, workoutName, duration, exercises, notes, rating } = req.body;
+    
+    // Временное решение: добавим информацию о продолжительности в поле notes
+    let updatedNotes = notes || '';
+    if (duration) {
+      updatedNotes = `Продолжительность: ${duration} сек.\n${updatedNotes}`;
+    }
+    
     const history = await prisma.workoutHistory.create({
       data: {
         userId: Number(session.user.id),
         date: new Date(date),
         workoutName,
         exercises,
-        notes,
+        notes: updatedNotes,
         rating,
       },
     });
