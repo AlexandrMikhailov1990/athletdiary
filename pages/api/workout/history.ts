@@ -10,7 +10,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(401).json({ message: "Необходима авторизация" });
   }
   
-  const userId = session.user.id;
+  const userId = parseInt(session.user.id as string, 10);
 
   if (req.method === 'GET') {
     try {
