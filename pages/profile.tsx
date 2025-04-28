@@ -96,13 +96,13 @@ export default function Profile() {
   const [editMode, setEditMode] = useState(false);
   const user = session?.user as ProfileForm & { favorites?: string[] };
   const [form, setForm] = useState<ProfileForm>({
-    name: user?.name || '',
-    email: user?.email || '',
-    birthDate: user?.birthDate || '',
-    gender: user?.gender || '',
-    city: user?.city || '',
-    goals: user?.goals || '',
-    bio: user?.bio || '',
+    name: '',
+    email: '',
+    birthDate: '',
+    gender: '',
+    city: '',
+    goals: '',
+    bio: '',
   });
   const [saveError, setSaveError] = useState('');
   const [saveSuccess, setSaveSuccess] = useState('');
@@ -111,6 +111,21 @@ export default function Profile() {
   const [completedWorkouts, setCompletedWorkouts] = useState<any[]>([]);
   const [isClientLoaded, setIsClientLoaded] = useState(false);
   const router = useRouter();
+
+  // Обновляем форму, когда сессия становится доступной или изменяется
+  useEffect(() => {
+    if (session?.user) {
+      setForm({
+        name: user?.name || '',
+        email: user?.email || '',
+        birthDate: user?.birthDate || '',
+        gender: user?.gender || '',
+        city: user?.city || '',
+        goals: user?.goals || '',
+        bio: user?.bio || '',
+      });
+    }
+  }, [session, user]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -164,17 +179,28 @@ export default function Profile() {
     e.preventDefault();
     setSaveError('');
     setSaveSuccess('');
-    const res = await fetch('/api/user/update', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    });
-    if (res.ok) {
-      setEditMode(false);
-      setSaveSuccess('Профиль успешно обновлён!');
-      if (update) await update(); // обновить сессию NextAuth
-    } else {
-      setSaveError('Ошибка при сохранении профиля');
+    try {
+      console.log('Отправляемые данные:', form);
+      const res = await fetch('/api/user/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        console.log('Ответ сервера:', data);
+        setEditMode(false);
+        setSaveSuccess('Профиль успешно обновлён!');
+        if (update) await update(); // обновить сессию NextAuth
+      } else {
+        const errorData = await res.json().catch(() => null);
+        console.error('Ошибка сервера:', errorData || res.statusText);
+        setSaveError(`Ошибка при сохранении профиля: ${errorData?.error || res.statusText}`);
+      }
+    } catch (error) {
+      console.error('Ошибка запроса:', error);
+      setSaveError('Произошла ошибка при отправке запроса');
     }
   };
 
