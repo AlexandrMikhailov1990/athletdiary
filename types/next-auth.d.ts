@@ -9,7 +9,12 @@ declare module "next-auth" {
       name?: string | null;
       email?: string | null;
       image?: string | null;
-      // любые другие поля
+      birthDate?: string | null;
+      gender?: string | null;
+      city?: string | null;
+      goals?: string | null;
+      bio?: string | null;
+      favorites?: string[];
     }
   }
   interface User {
@@ -17,5 +22,11 @@ declare module "next-auth" {
     name?: string | null;
     email?: string | null;
     image?: string | null;
+    birthDate?: string | null;
+    gender?: string | null;
+    city?: string | null;
+    goals?: string | null;
+    bio?: string | null;
+    favorites?: string[];
   }
 } 
