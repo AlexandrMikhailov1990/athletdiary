@@ -1,12 +1,14 @@
-import NextAuth from "next-auth";
+import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { JWT } from "next-auth/jwt";
+import { Session } from "next-auth";
 
 const prisma = new PrismaClient();
 
-export default NextAuth({
+export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
   providers: [
@@ -28,17 +30,25 @@ export default NextAuth({
   ],
   pages: {
     signIn: "/login",
+    signOut: "/login",
   },
   callbacks: {
-    async session({ session, token }) {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
+    async session({ session, token }: { session: Session; token: JWT }) {
       if (token && session.user) {
-        session.user.id = token.sub ?? "";
+        session.user.id = token.id as string || token.sub || "";
       }
       if (session.user?.email) {
         const dbUser = await prisma.user.findUnique({
           where: { email: session.user.email },
         });
         if (dbUser) {
+          session.user.id = String(dbUser.id);
           session.user.name = dbUser.name;
           session.user.birthDate = dbUser.birthDate ? dbUser.birthDate.toISOString().split('T')[0] : null;
           session.user.gender = dbUser.gender;
@@ -51,4 +61,7 @@ export default NextAuth({
       return session;
     },
   },
-}); 
+  secret: process.env.NEXTAUTH_SECRET,
+};
+
+export default NextAuth(authOptions); 
