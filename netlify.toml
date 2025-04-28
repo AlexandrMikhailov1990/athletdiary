@@ -1,7 +1,7 @@
 # Основные настройки сборки
 [build]
-  command = "npm run netlify-build"
-  publish = "out"
+  command = "npm run build"
+  publish = ".next"
 
 # Переменные окружения для сборки
 [build.environment]
