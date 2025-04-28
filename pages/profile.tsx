@@ -331,15 +331,29 @@ export default function Profile() {
             </div>
             <button onClick={() => setEditMode(true)} className="bg-blue-600 text-white py-2 px-4 rounded mb-4">Редактировать анкету</button>
             <Link href="/settings" className="inline-block bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded mb-4 ml-2 transition">Настройки</Link>
+            {saveError && (
+              <div className="mt-2 mb-2">
+                <div className="text-red-600">{saveError}</div>
+                <button
+                  onClick={async () => { if (update) await update(); }}
+                  className="mt-1 bg-green-600 text-white py-1 px-3 rounded text-sm"
+                >
+                  Обновить сессию
+                </button>
+                <div className="mt-1 text-xs text-gray-500">
+                  ID: {session?.user?.id || 'Отсутствует'}
+                </div>
+              </div>
+            )}
           </>
         )}
-        <button
-          onClick={() => signOut({ callbackUrl: "/login" })}
-          className="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded transition mt-2"
-        >
-          Выйти
-        </button>
       </div>
+      <button
+        onClick={() => signOut({ callbackUrl: "/login" })}
+        className="w-full max-w-xl bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded transition mb-8"
+      >
+        Выйти
+      </button>
 
       {/* Избранные программы */}
       {favoritePrograms.length > 0 && (
