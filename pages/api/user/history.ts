@@ -110,7 +110,7 @@ export default async function handler(
       // Проверяем, что тренировка принадлежит пользователю
       const workout = await prisma.workoutHistory.findFirst({
         where: { 
-          id: parseInt(id),
+          id: id,
           userId: user.id 
         }
       });
@@ -121,7 +121,7 @@ export default async function handler(
       
       // Удаляем тренировку
       await prisma.workoutHistory.delete({
-        where: { id: parseInt(id) }
+        where: { id: id }
       });
       
       return res.status(200).json({ 
