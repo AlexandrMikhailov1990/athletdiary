@@ -297,10 +297,6 @@ export default function Profile() {
                 <input name="name" value={form.name} onChange={handleChange} className="w-full p-2 border rounded" required />
               </div>
               <div>
-                <label className="block text-sm font-medium">Email</label>
-                <input name="email" value={form.email} onChange={handleChange} className="w-full p-2 border rounded" required />
-              </div>
-              <div>
                 <label className="block text-sm font-medium">Дата рождения</label>
                 <input name="birthDate" type="date" value={form.birthDate || ''} onChange={handleChange} className="w-full p-2 border rounded" />
               </div>
@@ -321,10 +317,10 @@ export default function Profile() {
                 <label className="block text-sm font-medium">Цели</label>
                 <input name="goals" value={form.goals || ''} onChange={handleChange} className="w-full p-2 border rounded" />
               </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium">О себе</label>
-              <textarea name="bio" value={form.bio || ''} onChange={handleChange} className="w-full p-2 border rounded" rows={3} />
+              <div>
+                <label className="block text-sm font-medium">О себе</label>
+                <input name="bio" value={form.bio || ''} onChange={handleChange} className="w-full p-2 border rounded" />
+              </div>
             </div>
             {saveError && <div className="text-red-600">{saveError}</div>}
             {saveSuccess && <div className="text-green-600">{saveSuccess}</div>}
@@ -348,10 +344,9 @@ export default function Profile() {
               <div>
                 <span className="text-gray-500">Цели:</span> {user?.goals || '—'}
               </div>
-            </div>
-            <div className="mb-4">
-              <span className="text-gray-500">О себе:</span>
-              <div className="whitespace-pre-line">{user?.bio || '—'}</div>
+              <div>
+                <span className="text-gray-500">О себе:</span> {user?.bio || '—'}
+              </div>
             </div>
             <button onClick={() => setEditMode(true)} className="bg-blue-600 text-white py-2 px-4 rounded mb-4">Редактировать анкету</button>
             <Link href="/settings" className="inline-block bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded mb-4 ml-2 transition">Настройки</Link>
