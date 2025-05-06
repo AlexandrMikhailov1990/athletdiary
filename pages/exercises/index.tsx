@@ -74,9 +74,14 @@ export default function Exercises() {
       const savedExercises = localStorage.getItem('userExercises');
       const parsedExercises = savedExercises 
         ? JSON.parse(savedExercises) 
-        : NORMALIZED_SAMPLE_EXERCISES;
-      
-      setExercises(parsedExercises);
+        : [];
+      // Объединяем пользовательские и предустановленные, избегая дубликатов по id
+      const allIds = new Set(parsedExercises.map((ex: Exercise) => ex.id));
+      const merged = [
+        ...parsedExercises,
+        ...NORMALIZED_SAMPLE_EXERCISES.filter(ex => !allIds.has(ex.id))
+      ];
+      setExercises(merged);
     } catch (error) {
       console.error('Ошибка при загрузке упражнений:', error);
       setExercises(NORMALIZED_SAMPLE_EXERCISES);
@@ -95,18 +100,6 @@ export default function Exercises() {
     
     initExercises();
   }, [addAllExerciseSets, loadExercises]);
-
-  // Загрузка сохраненных фильтров при монтировании компонента
-  useEffect(() => {
-    const savedFilters = localStorage.getItem('exerciseFilters');
-    if (savedFilters) {
-      const { searchTerm, muscleGroup, difficulty, equipment } = JSON.parse(savedFilters);
-      setSearchTerm(searchTerm);
-      setSelectedMuscleGroup(muscleGroup);
-      setSelectedType(difficulty);
-      setSelectedEquipment(equipment || []);
-    }
-  }, []);
 
   // Сохранение фильтров при их изменении
   useEffect(() => {
@@ -184,6 +177,13 @@ export default function Exercises() {
       setExercises(NORMALIZED_SAMPLE_EXERCISES);
     }
   };
+
+  useEffect(() => {
+    setSearchTerm('');
+    setSelectedMuscleGroup('');
+    setSelectedType('');
+    setSelectedEquipment([]);
+  }, []);
 
   if (isLoading) {
     return (
