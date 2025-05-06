@@ -70,6 +70,14 @@ function getCategoryStats(exercises: any[]) {
     .map(([category, count]) => ({ category, count }));
 }
 
+// Функция для перевода пола на русский
+function translateGender(gender?: string) {
+  if (gender === 'male') return 'Мужской';
+  if (gender === 'female') return 'Женский';
+  if (gender === 'other') return 'Другое';
+  return '—';
+}
+
 export default function Profile() {
   const { data: session, status, update } = useSession();
   const [editMode, setEditMode] = useState(false);
@@ -336,7 +344,7 @@ export default function Profile() {
                 <span className="text-gray-500">Дата рождения:</span> {user?.birthDate ? new Date(user.birthDate).toLocaleDateString() : '—'}
               </div>
               <div>
-                <span className="text-gray-500">Пол:</span> {user?.gender || '—'}
+                <span className="text-gray-500">Пол:</span> {translateGender(user?.gender)}
               </div>
               <div>
                 <span className="text-gray-500">Город:</span> {user?.city || '—'}
