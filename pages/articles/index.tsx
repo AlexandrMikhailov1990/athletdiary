@@ -103,7 +103,9 @@ const DifficultyBadge = ({ difficulty }: { difficulty: Article['difficulty'] }) 
     'Начинающий': 'bg-green-100 text-green-800',
     'Средний': 'bg-yellow-100 text-yellow-800',
     'Продвинутый': 'bg-red-100 text-red-800'
-  };
+  } as const;
+
+  if (!difficulty) return null;
 
   return (
     <span className={`px-2 py-1 rounded-full text-xs font-medium ${colors[difficulty]}`}>
