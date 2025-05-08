@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
 import Image from 'next/image';
+import Layout from '@/components/Layout';
 
 // Импортируем интерфейс и данные статей из основной страницы статей
 interface Article {
@@ -112,10 +113,61 @@ export default function CategoryPage() {
   });
 
   return (
-    <>
+    <Layout 
+      title={`${categoryName} - Статьи | AthleteDiary`}
+      description={`Полезные статьи в категории ${categoryName} - экспертные советы, научно обоснованные рекомендации и практические руководства для достижения ваших фитнес-целей.`}
+      keywords={`${typeof categoryName === 'string' ? categoryName.toLowerCase() : categoryName}, фитнес, тренировки, спорт, здоровый образ жизни, фитнес-советы, спортивные статьи, фитнес-рекомендации`}
+    >
       <Head>
         <title>{categoryName} - Статьи | AthleteDiary</title>
         <meta name="description" content={`Статьи в категории ${categoryName} - полезная информация, советы и рекомендации`} />
+        
+        {/* Open Graph разметка для соц. сетей */}
+        <meta property="og:title" content={`${categoryName} - Статьи | AthleteDiary`} />
+        <meta property="og:description" content={`Полезные статьи в категории ${categoryName} - экспертные советы и научно обоснованные рекомендации.`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={`https://athletdiary.com/articles/category/${category}`} />
+        
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={`${categoryName} - Статьи | AthleteDiary`} />
+        <meta name="twitter:description" content={`Полезные статьи в категории ${categoryName} - экспертные советы и научно обоснованные рекомендации.`} />
+        
+        {/* Структурированные данные для SEO */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "CollectionPage",
+              "name": `${categoryName} - Статьи`,
+              "description": `Полезные статьи в категории ${categoryName}`,
+              "url": `https://athletdiary.com/articles/category/${category}`,
+              "publisher": {
+                "@type": "Organization",
+                "name": "AthleteDiary",
+                "logo": {
+                  "@type": "ImageObject",
+                  "url": "https://athletdiary.com/logo.png"
+                }
+              },
+              "mainEntity": {
+                "@type": "ItemList",
+                "itemListElement": articles.map((article, index) => ({
+                  "@type": "ListItem",
+                  "position": index + 1,
+                  "item": {
+                    "@type": "Article",
+                    "headline": article.title,
+                    "description": article.excerpt,
+                    "url": `https://athletdiary.com/articles/${article.slug}`,
+                    "datePublished": article.date
+                  }
+                }))
+              }
+            })
+          }}
+        />
       </Head>
 
       <main className="bg-gray-50 min-h-screen py-8">
@@ -213,6 +265,6 @@ export default function CategoryPage() {
           </div>
         </div>
       </main>
-    </>
+    </Layout>
   );
 } 

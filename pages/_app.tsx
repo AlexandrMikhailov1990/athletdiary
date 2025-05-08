@@ -68,10 +68,52 @@ function AppContent({ Component, pageProps }: AppContentProps) {
   return (
     <>
       <Head>
-        <title>AthleteDiary - Дневник спортсмена</title>
-        <meta name="description" content="AthleteDiary - приложение для отслеживания прогресса тренировок, планирования и анализа фитнес-результатов" />
+        <title>AthleteDiary - Ваш персональный дневник тренировок</title>
+        <meta name="description" content="AthleteDiary - современное приложение для отслеживания тренировок, планирования и анализа фитнес-результатов. Ведите дневник тренировок, следите за прогрессом и достигайте своих целей." />
+        <meta name="keywords" content="дневник тренировок, фитнес, спорт, тренировки, отслеживание прогресса, фитнес-приложение, здоровый образ жизни" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
+        
+        {/* Open Graph разметка для соц. сетей */}
+        <meta property="og:title" content="AthleteDiary - Ваш персональный дневник тренировок" />
+        <meta property="og:description" content="Современное приложение для отслеживания тренировок, планирования и анализа фитнес-результатов" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://athletdiary.com" />
+        <meta property="og:site_name" content="AthleteDiary" />
+        
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="AthleteDiary - Ваш персональный дневник тренировок" />
+        <meta name="twitter:description" content="Современное приложение для отслеживания тренировок, планирования и анализа фитнес-результатов" />
+        
+        {/* Структурированные данные для SEO */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              "name": "AthleteDiary",
+              "description": "Персональный дневник тренировок для отслеживания прогресса и достижения фитнес-целей",
+              "url": "https://athletdiary.com",
+              "applicationCategory": "HealthApplication",
+              "operatingSystem": "Web",
+              "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "RUB"
+              },
+              "publisher": {
+                "@type": "Organization",
+                "name": "AthleteDiary",
+                "logo": {
+                  "@type": "ImageObject",
+                  "url": "https://athletdiary.com/logo.png"
+                }
+              }
+            })
+          }}
+        />
       </Head>
       
       <div className="app-wrapper">

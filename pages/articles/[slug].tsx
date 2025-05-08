@@ -91,6 +91,24 @@ const formatDate = (dateString: string): string => {
   });
 };
 
+// Функция для генерации оглавления
+const generateTableOfContents = (content: string) => {
+  const headings = content.match(/<h[2-3][^>]*>.*?<\/h[2-3]>/g) || [];
+  return headings.map(heading => {
+    const text = heading.replace(/<[^>]+>/g, '');
+    const id = text.toLowerCase().replace(/[^а-яёa-z0-9]+/g, '-');
+    return { text, id };
+  });
+};
+
+// Функция для добавления ID к заголовкам
+const addIdsToHeadings = (content: string) => {
+  return content.replace(/<h([2-3])([^>]*)>(.*?)<\/h\1>/g, (match, level, attrs, text) => {
+    const id = text.toLowerCase().replace(/[^а-яёa-z0-9]+/g, '-');
+    return `<h${level}${attrs} id="${id}">${text}</h${level}>`;
+  });
+};
+
 export default function ArticlePage() {
   const router = useRouter();
   const { slug } = router.query;
@@ -121,17 +139,56 @@ export default function ArticlePage() {
     );
   }
 
+  // Генерируем оглавление
+  const tableOfContents = generateTableOfContents(article.content);
+  
+  // Добавляем ID к заголовкам
+  const contentWithIds = addIdsToHeadings(article.content);
+
+  // Формируем ключевые слова на основе тегов и заголовка
+  const keywords = [
+    ...article.tags,
+    'фитнес',
+    'тренировки',
+    'спорт',
+    'здоровый образ жизни',
+    article.title.toLowerCase()
+  ].join(', ');
+
   return (
-    <Layout title={`${article.title} | AthleteDiary`}>
+    <Layout 
+      title={`${article.title} | Статья о фитнесе | AthleteDiary`}
+      description={article.description}
+      keywords={keywords}
+    >
       <Head>
-        <meta name="description" content={article.description} />
-        <meta name="keywords" content={article.tags.join(', ')} />
+        {/* Канонический URL */}
+        <link rel="canonical" href={`https://athletdiary.com/articles/${article.slug}`} />
+        
         {/* Open Graph разметка для соц. сетей */}
         <meta property="og:title" content={article.title} />
         <meta property="og:description" content={article.description} />
         <meta property="og:type" content="article" />
         <meta property="og:url" content={`https://athletdiary.com/articles/${article.slug}`} />
         <meta property="og:image" content={article.imageUrl} />
+        <meta property="article:published_time" content={article.date} />
+        <meta property="article:modified_time" content={article.date} />
+        <meta property="article:section" content="Фитнес и здоровье" />
+        <meta property="article:tag" content={article.tags.join(', ')} />
+        <meta property="og:site_name" content="AthleteDiary" />
+        <meta property="og:locale" content="ru_RU" />
+        
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={article.title} />
+        <meta name="twitter:description" content={article.description} />
+        <meta name="twitter:image" content={article.imageUrl} />
+        
+        {/* Дополнительные мета-теги */}
+        <meta name="robots" content="index, follow" />
+        <meta name="author" content="AthleteDiary" />
+        <meta name="language" content="Russian" />
+        
         {/* Структурированные данные для SEO */}
         <script
           type="application/ld+json"
@@ -143,10 +200,29 @@ export default function ArticlePage() {
               "description": article.description,
               "image": article.imageUrl,
               "datePublished": article.date,
+              "dateModified": article.date,
               "author": {
                 "@type": "Organization",
-                "name": "AthleteDiary"
-              }
+                "name": "AthleteDiary",
+                "url": "https://athletdiary.com"
+              },
+              "publisher": {
+                "@type": "Organization",
+                "name": "AthleteDiary",
+                "logo": {
+                  "@type": "ImageObject",
+                  "url": "https://athletdiary.com/logo.png"
+                }
+              },
+              "mainEntityOfPage": {
+                "@type": "WebPage",
+                "@id": `https://athletdiary.com/articles/${article.slug}`
+              },
+              "keywords": keywords,
+              "articleSection": "Фитнес и здоровье",
+              "inLanguage": "ru-RU",
+              "wordCount": article.content.split(' ').length,
+              "timeRequired": `PT${article.readTime.split(' ')[0]}M`
             })
           }}
         />
@@ -156,7 +232,7 @@ export default function ArticlePage() {
         <div className="container mx-auto px-4">
           {/* Навигационные ссылки */}
           <div className="mb-6">
-            <nav className="flex text-sm text-gray-500">
+            <nav className="flex text-sm text-gray-500" aria-label="Хлебные крошки">
               <Link href="/" className="hover:text-blue-600">Главная</Link>
               <span className="mx-2">/</span>
               <Link href="/articles" className="hover:text-blue-600">Статьи</Link>
@@ -173,7 +249,7 @@ export default function ArticlePage() {
                 {article.title}
               </h1>
               <div className="flex flex-wrap items-center text-sm text-gray-500 mb-4">
-                <span>{formatDate(article.date)}</span>
+                <time dateTime={article.date}>{formatDate(article.date)}</time>
                 <span className="mx-2">•</span>
                 <span>{article.readTime}</span>
                 <span className="mx-2">•</span>
@@ -192,35 +268,54 @@ export default function ArticlePage() {
               </div>
             </div>
             
+            {/* Оглавление */}
+            {tableOfContents.length > 0 && (
+              <div className="p-6 md:p-8 border-b border-gray-100 bg-gray-50">
+                <h2 className="text-xl font-semibold mb-4">Содержание статьи</h2>
+                <nav aria-label="Оглавление статьи">
+                  <ul className="space-y-2">
+                    {tableOfContents.map(({ text, id }) => (
+                      <li key={id}>
+                        <a 
+                          href={`#${id}`}
+                          className="text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                          {text}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+              </div>
+            )}
+            
             {/* Изображение статьи */}
             <div className="relative h-64 md:h-96 w-full">
-              <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
-                <span className="text-gray-400">Изображение статьи</span>
-              </div>
-              {/* Заглушка для изображения */}
-              {/* <Image 
+              <Image 
                 src={article.imageUrl} 
-                alt={article.title} 
+                alt={article.title}
                 fill 
                 className="object-cover"
-              /> */}
+                priority
+              />
             </div>
             
             {/* Содержание статьи */}
-            <div 
+            <article 
               className="prose prose-lg max-w-none p-6 md:p-8"
-              dangerouslySetInnerHTML={{ __html: article.content }}
+              dangerouslySetInnerHTML={{ __html: contentWithIds }}
             />
             
             {/* Блок "Поделиться" */}
             <div className="p-6 md:p-8 border-t border-gray-100">
-              <h3 className="text-xl font-semibold mb-4">Поделиться статьей</h3>
+              <h2 className="text-xl font-semibold mb-4">Поделиться статьей</h2>
               <div className="flex space-x-4">
                 <a 
                   href={`https://vk.com/share.php?url=https://athletdiary.com/articles/${article.slug}`} 
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
+                  aria-label="Поделиться в ВКонтакте"
                 >
                   VK
                 </a>
@@ -229,6 +324,7 @@ export default function ArticlePage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-2 bg-blue-400 text-white rounded-full hover:bg-blue-500 transition-colors"
+                  aria-label="Поделиться в Telegram"
                 >
                   Telegram
                 </a>
@@ -237,6 +333,7 @@ export default function ArticlePage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors"
+                  aria-label="Поделиться в WhatsApp"
                 >
                   WhatsApp
                 </a>
@@ -245,7 +342,7 @@ export default function ArticlePage() {
             
             {/* Блок "Читайте также" */}
             <div className="p-6 md:p-8 border-t border-gray-100">
-              <h3 className="text-xl font-semibold mb-4">Читайте также</h3>
+              <h2 className="text-xl font-semibold mb-4">Читайте также</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {SAMPLE_ARTICLES.filter(a => a.id !== article.id).slice(0, 2).map(relatedArticle => (
                   <Link 
@@ -253,20 +350,19 @@ export default function ArticlePage() {
                     href={`/articles/${relatedArticle.slug}`}
                     className="flex bg-gray-50 rounded-lg overflow-hidden hover:bg-gray-100 transition-colors"
                   >
-                    <div className="relative w-1/3 min-h-full bg-gray-200">
-                      {/* Заглушка для изображения */}
-                      {/* <Image 
+                    <div className="relative w-1/3 min-h-full">
+                      <Image 
                         src={relatedArticle.imageUrl} 
-                        alt={relatedArticle.title} 
+                        alt={relatedArticle.title}
                         fill 
                         className="object-cover"
-                      /> */}
+                      />
                     </div>
                     <div className="w-2/3 p-4">
-                      <h4 className="font-medium text-gray-900 line-clamp-2 mb-1">
+                      <h3 className="font-medium text-gray-900 line-clamp-2 mb-1">
                         {relatedArticle.title}
-                      </h4>
-                      <p className="text-sm text-gray-500">{formatDate(relatedArticle.date)}</p>
+                      </h3>
+                      <time className="text-sm text-gray-500">{formatDate(relatedArticle.date)}</time>
                     </div>
                   </Link>
                 ))}
