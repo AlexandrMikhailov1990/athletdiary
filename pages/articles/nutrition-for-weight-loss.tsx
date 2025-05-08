@@ -3,31 +3,80 @@ import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
-import styles from '@/styles/Articles.module.css';
+import Layout from '@/components/Layout';
 
 const NutritionForWeightLossArticle: NextPage = () => {
   const [showTOC, setShowTOC] = useState(false);
   
   return (
-    <>
+    <Layout 
+      title="Питание для похудения: что говорит наука? | AthleteDiary"
+      description="Научно обоснованный подход к питанию для похудения: калорийный дефицит, макроэлементы, гормоны и практические советы"
+      keywords="питание для похудения, научный подход к похудению, калорийный дефицит, макроэлементы, гормоны, интервальное голодание, микробиом, пищевые добавки"
+    >
       <Head>
-        <title>Питание для похудения: что говорит наука? | AthleDiary</title>
-        <meta name="description" content="Научно обоснованный подход к питанию для похудения: калорийный дефицит, макроэлементы, гормоны и практические советы" />
+        {/* Канонический URL */}
+        <link rel="canonical" href="https://athletdiary.com/articles/nutrition-for-weight-loss" />
+        
+        {/* Open Graph разметка */}
+        <meta property="og:title" content="Питание для похудения: что говорит наука?" />
+        <meta property="og:description" content="Научно обоснованный подход к питанию для похудения: калорийный дефицит, макроэлементы, гормоны и практические советы" />
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content="https://athletdiary.com/articles/nutrition-for-weight-loss" />
+        <meta property="og:image" content="https://athletdiary.com/images/articles/nutrition-science.jpg" />
+        <meta property="article:published_time" content="2024-03-20" />
+        <meta property="article:modified_time" content="2024-03-20" />
+        <meta property="article:section" content="Питание" />
+        <meta property="article:tag" content="питание, похудение, диета, здоровье" />
+        
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Питание для похудения: что говорит наука?" />
+        <meta name="twitter:description" content="Научно обоснованный подход к питанию для похудения: калорийный дефицит, макроэлементы, гормоны и практические советы" />
+        <meta name="twitter:image" content="https://athletdiary.com/images/articles/nutrition-science.jpg" />
+        
+        {/* Структурированные данные */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Article",
+              "headline": "Питание для похудения: что говорит наука?",
+              "description": "Научно обоснованный подход к питанию для похудения: калорийный дефицит, макроэлементы, гормоны и практические советы",
+              "image": "https://athletdiary.com/images/articles/nutrition-science.jpg",
+              "datePublished": "2024-03-20",
+              "dateModified": "2024-03-20",
+              "author": {
+                "@type": "Organization",
+                "name": "AthleteDiary",
+                "url": "https://athletdiary.com"
+              },
+              "publisher": {
+                "@type": "Organization",
+                "name": "AthleteDiary",
+                "logo": {
+                  "@type": "ImageObject",
+                  "url": "https://athletdiary.com/logo.png"
+                }
+              },
+              "mainEntityOfPage": {
+                "@type": "WebPage",
+                "@id": "https://athletdiary.com/articles/nutrition-for-weight-loss"
+              },
+              "keywords": "питание для похудения, научный подход к похудению, калорийный дефицит, макроэлементы, гормоны, интервальное голодание, микробиом, пищевые добавки",
+              "articleSection": "Питание",
+              "inLanguage": "ru-RU"
+            })
+          }}
+        />
       </Head>
 
-      <main className={styles.articleContainer}>
-        <div className={styles.articleHeader}>
-          <div className={styles.articleHeaderGradient}>
-            <div className={styles.articleHeaderContent}>
-              <h1 className="text-3xl md:text-4xl font-bold text-white">
-                Питание для похудения: что говорит наука?
-              </h1>
-              <div className="flex items-center mt-4 text-white/90 text-sm">
-                <span className="mr-4">3 марта 2025</span>
-                <span>8 минут чтения</span>
-              </div>
-            </div>
-            <div className={styles.mainImageContainer}>
+      <main className="bg-gray-50 min-h-screen py-8">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="bg-white rounded-xl shadow-md overflow-hidden">
+            {/* Шапка */}
+            <div className="relative h-80 md:h-96">
               <Image
                 src="/images/articles/nutrition-science.jpg"
                 alt="Здоровое питание для похудения"
@@ -35,281 +84,299 @@ const NutritionForWeightLossArticle: NextPage = () => {
                 objectFit="cover"
                 priority
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-6">
+                <div className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mb-4 w-auto max-w-[200px]">
+                  Питание
+                </div>
+                <h1 className="text-3xl md:text-4xl font-bold text-white">
+                  Питание для похудения: что говорит наука?
+                </h1>
+                <div className="flex items-center mt-4 text-white/90 text-sm">
+                  <span className="mr-4">20 марта 2024</span>
+                  <span>8 минут чтения</span>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
-        <div className={styles.articleContent}>
-          <div className={styles.tocContainer}>
-            <button 
-              className={styles.tocToggle}
-              onClick={() => setShowTOC(!showTOC)}
-            >
-              Содержание {showTOC ? '▲' : '▼'}
-            </button>
-            
-            {showTOC && (
-              <ul className={styles.toc}>
-                <li><a href="#intro">Введение</a></li>
-                <li><a href="#calories">Калорийный дефицит</a></li>
-                <li><a href="#macros">Баланс макроэлементов</a></li>
-                <li><a href="#hormones">Гормональные влияния</a></li>
-                <li><a href="#fasting">Интервальное голодание</a></li>
-                <li><a href="#microbiome">Микробиом кишечника</a></li>
-                <li><a href="#supplements">Пищевые добавки</a></li>
-                <li><a href="#practical">Практические советы</a></li>
-                <li><a href="#conclusion">Заключение</a></li>
-              </ul>
-            )}
-          </div>
+            <div className="p-6 md:p-8">
+              {/* Вступление */}
+              <p className="lead text-xl text-gray-700 mb-8">
+                В мире, где диетические тренды меняются быстрее, чем времена года, легко запутаться в том, что действительно работает для здорового и устойчивого снижения веса. В этой статье мы обратимся к научным данным, чтобы разобраться, какие принципы питания действительно эффективны для похудения, а какие представляют собой маркетинговые мифы.
+              </p>
 
-          <div className={styles.keyPoints}>
-            <h2>Ключевые выводы</h2>
-            <ul>
-              <li>Калорийный дефицит — основной научный принцип похудения.</li>
-              <li>Белки играют критическую роль в сохранении мышц и ускорении метаболизма.</li>
-              <li>Гормональный баланс влияет на эффективность снижения веса.</li>
-              <li>Интервальное голодание может быть эффективным для некоторых людей.</li>
-              <li>Качество питания и постепенные изменения важнее строгих ограничений.</li>
-            </ul>
-          </div>
+              {/* Что вы узнаете */}
+              <div className="my-8 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+                <h2 className="text-blue-800 text-lg font-medium mb-2">Что вы узнаете из этой статьи</h2>
+                <ul className="space-y-1 text-sm">
+                  <li>Почему калорийный дефицит — главный принцип похудения</li>
+                  <li>Как сбалансировать белки, жиры и углеводы для максимального результата</li>
+                  <li>Влияние гормонов и микробиома на вес</li>
+                  <li>Реальные плюсы и минусы интервального голодания</li>
+                  <li>Какие добавки действительно работают</li>
+                  <li>Практические советы для устойчивого снижения веса</li>
+                </ul>
+              </div>
 
-          <section id="intro">
-            <p>В мире, где диетические тренды меняются быстрее, чем времена года, легко запутаться в том, что действительно работает для здорового и устойчивого снижения веса. В этой статье мы обратимся к научным данным, чтобы разобраться, какие принципы питания действительно эффективны для похудения, а какие представляют собой маркетинговые мифы.</p>
-          </section>
+              {/* 1. Калорийный дефицит */}
+              <h2 id="calories" className="text-2xl font-bold text-gray-800 mt-10 flex items-center">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white mr-3 text-sm">1</span>
+                Калорийный дефицит: фундаментальный принцип
+              </h2>
+              <p className="mt-4">
+                Первый закон термодинамики неумолим: чтобы похудеть, необходимо потреблять меньше калорий, чем вы тратите. Исследования последовательно показывают, что независимо от типа диеты, снижение веса происходит только при наличии калорийного дефицита.
+              </p>
+              <div className="bg-gray-50 border-l-4 border-blue-500 p-4 my-6">
+                <p className="italic text-gray-700">
+                  "Несмотря на популяризацию диет с различными соотношениями макронутриентов, энергетический баланс остается фундаментальным фактором регуляции веса тела" — исследование New England Journal of Medicine
+                </p>
+              </div>
+              <p>
+                Однако важно понимать, что не все калории равнозначны с точки зрения их влияния на организм. 100 калорий из курицы и 100 калорий из печенья оказывают разное воздействие на сытость, метаболизм и гормональный фон.
+              </p>
 
-          <section id="calories">
-            <h2>1. Калорийный дефицит: фундаментальный принцип</h2>
-            <p>Первый закон термодинамики неумолим: чтобы похудеть, необходимо потреблять меньше калорий, чем вы тратите. Исследования последовательно показывают, что независимо от типа диеты, снижение веса происходит только при наличии калорийного дефицита.</p>
-            
-            <div className={styles.articleQuote}>
-              "Несмотря на популяризацию диет с различными соотношениями макронутриентов, энергетический баланс остается фундаментальным фактором регуляции веса тела" — исследование New England Journal of Medicine
-            </div>
-            
-            <p>Однако важно понимать, что не все калории равнозначны с точки зрения их влияния на организм. 100 калорий из курицы и 100 калорий из печенья оказывают разное воздействие на сытость, метаболизм и гормональный фон.</p>
-          </section>
+              {/* 2. Баланс макроэлементов */}
+              <h2 id="macros" className="text-2xl font-bold text-gray-800 mt-10 flex items-center">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white mr-3 text-sm">2</span>
+                Баланс макроэлементов: белки, жиры, углеводы
+              </h2>
+              <div className="relative w-full h-[300px] md:h-[400px] mb-8 mt-4">
+                <Image
+                  src="/images/articles/balanced-nutrition.jpg"
+                  alt="Сбалансированное питание с правильным соотношением макроэлементов"
+                  layout="fill"
+                  objectFit="cover"
+                  className="rounded-lg"
+                />
+                <p className="absolute bottom-4 left-4 text-sm text-white bg-black/50 px-3 py-1 rounded">
+                  Сбалансированный рацион с оптимальным соотношением белков, жиров и углеводов
+                </p>
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 mt-6">Белки</h3>
+              <div className="bg-blue-50 p-4 rounded-lg my-4">
+                <ul className="list-disc pl-6 text-sm text-gray-700">
+                  <li>Сохраняют мышечную массу при похудении</li>
+                  <li>Повышают чувство сытости</li>
+                  <li>Стимулируют метаболизм</li>
+                </ul>
+              </div>
+              <p>Исследования показывают, что потребление 1.6-2.2 г белка на кг веса оптимально для сохранения мышц при снижении веса.</p>
+              <h3 className="text-xl font-bold text-gray-800 mt-6">Жиры</h3>
+              <div className="bg-blue-50 p-4 rounded-lg my-4">
+                <ul className="list-disc pl-6 text-sm text-gray-700">
+                  <li>Участвуют в производстве гормонов</li>
+                  <li>Улучшают усвоение жирорастворимых витаминов</li>
+                  <li>Повышают чувство насыщения</li>
+                </ul>
+              </div>
+              <p>Оптимальное потребление — 20-35% от общей калорийности, с акцентом на ненасыщенные жиры.</p>
+              <h3 className="text-xl font-bold text-gray-800 mt-6">Углеводы</h3>
+              <div className="bg-blue-50 p-4 rounded-lg my-4">
+                <ul className="list-disc pl-6 text-sm text-gray-700">
+                  <li>Содержат больше питательных веществ и клетчатки</li>
+                  <li>Медленнее влияют на уровень сахара в крови</li>
+                  <li>Обеспечивают более длительное насыщение</li>
+                </ul>
+              </div>
+              <p>Цельные, необработанные источники предпочтительнее рафинированных углеводов.</p>
 
-          <section id="macros">
-            <h2>2. Баланс макроэлементов: белки, жиры, углеводы</h2>
-            
-            <h3>Белки</h3>
-            <p>Белки имеют наибольший термический эффект (20-30% их энергетической ценности расходуется на их переваривание). Высокобелковая диета помогает:</p>
-            <ul>
-              <li>Сохранять мышечную массу при похудении</li>
-              <li>Повышать чувство сытости</li>
-              <li>Стимулировать метаболизм</li>
-            </ul>
-            <p>Исследования показывают, что потребление 1.6-2.2 грамма белка на килограмм веса оптимально для сохранения мышечной массы при снижении веса, особенно при регулярных физических нагрузках.</p>
-            
-            <h3>Жиры</h3>
-            <p>Диетические жиры необходимы для здоровья и не являются врагом похудения. Они:</p>
-            <ul>
-              <li>Участвуют в производстве гормонов</li>
-              <li>Улучшают усвоение жирорастворимых витаминов</li>
-              <li>Повышают чувство насыщения</li>
-            </ul>
-            <p>Оптимальное потребление составляет 20-35% от общей калорийности, с акцентом на ненасыщенные жиры из оливкового масла, авокадо, орехов и рыбы.</p>
-            
-            <h3>Углеводы</h3>
-            <p>Качество углеводов важнее их количества. Цельные, необработанные источники (овощи, фрукты, бобовые, цельные злаки) предпочтительнее рафинированных углеводов, так как они:</p>
-            <ul>
-              <li>Содержат больше питательных веществ и клетчатки</li>
-              <li>Медленнее влияют на уровень сахара в крови</li>
-              <li>Обеспечивают более длительное насыщение</li>
-            </ul>
-          </section>
+              {/* 3. Гормональные влияния */}
+              <h2 id="hormones" className="text-2xl font-bold text-gray-800 mt-10 flex items-center">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white mr-3 text-sm">3</span>
+                Гормональные влияния на вес
+              </h2>
+              <p className="mt-4">Гормоны играют значительную роль в регуляции веса. Ключевые гормональные факторы включают:</p>
+              <h3 className="text-xl font-bold text-gray-800 mt-6">Инсулин</h3>
+              <div className="bg-blue-50 p-4 rounded-lg my-4">
+                <ul className="list-disc pl-6 text-sm text-gray-700">
+                  <li>Ограничение рафинированных углеводов и сахара</li>
+                  <li>Регулярное питание небольшими порциями</li>
+                  <li>Физическая активность</li>
+                </ul>
+              </div>
+              <p>Стабилизация уровня инсулина способствует более эффективному снижению веса.</p>
+              <h3 className="text-xl font-bold text-gray-800 mt-6">Лептин и грелин</h3>
+              <div className="bg-blue-50 p-4 rounded-lg my-4">
+                <ul className="list-disc pl-6 text-sm text-gray-700">
+                  <li>Достаточный сон (7-9 часов) критически важен для нормализации этих гормонов</li>
+                  <li>Высокое потребление белка помогает контролировать грелин</li>
+                  <li>Регулярное питание стабилизирует их уровни</li>
+                </ul>
+              </div>
+              <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 my-6">
+                <p className="text-yellow-800">
+                  <strong>Важно:</strong> Хронический стресс повышает уровень кортизола, что может вызывать накопление жира в области живота и усиливать тягу к высококалорийной пище.
+                </p>
+              </div>
 
-          <div className={styles.imageContainer}>
-            <Image
-              src="/images/articles/balanced-nutrition.jpg"
-              alt="Сбалансированное питание с правильным соотношением макроэлементов"
-              width={800}
-              height={500}
-              objectFit="cover"
-            />
-            <p className={styles.imageCaption}>Сбалансированный рацион с оптимальным соотношением белков, жиров и углеводов</p>
-          </div>
+              {/* 4. Интервальное голодание */}
+              <h2 id="fasting" className="text-2xl font-bold text-gray-800 mt-10 flex items-center">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white mr-3 text-sm">4</span>
+                Интервальное голодание: наука и практика
+              </h2>
+              <p className="mt-4">Интервальное голодание (ИГ) привлекло значительное внимание исследователей. Научные данные указывают на его потенциальные преимущества:</p>
+              <div className="bg-blue-50 p-4 rounded-lg my-4">
+                <ul className="list-disc pl-6 text-sm text-gray-700">
+                  <li>Улучшение чувствительности к инсулину</li>
+                  <li>Стимуляция аутофагии (клеточное очищение)</li>
+                  <li>Снижение воспаления</li>
+                  <li>Возможное продление продолжительности жизни</li>
+                </ul>
+              </div>
+              <p>Популярные протоколы ИГ: 16/8, 5:2, ОМАД. Важно: ИГ подходит не всем, особенно при определённых медицинских состояниях.</p>
 
-          <section id="hormones">
-            <h2>3. Гормональные влияния на вес</h2>
-            <p>Гормоны играют значительную роль в регуляции веса. Ключевые гормональные факторы включают:</p>
-            
-            <h3>Инсулин</h3>
-            <p>Высокий уровень инсулина способствует накоплению жира и препятствует его расщеплению. Стабилизация уровня инсулина через:</p>
-            <ul>
-              <li>Ограничение рафинированных углеводов и сахара</li>
-              <li>Регулярное питание небольшими порциями</li>
-              <li>Физическую активность</li>
-            </ul>
-            <p>может способствовать более эффективному снижению веса.</p>
-            
-            <h3>Лептин и грелин</h3>
-            <p>Лептин (гормон сытости) и грелин (гормон голода) напрямую влияют на аппетит. Нарушение их баланса может затруднять похудение. Научные данные показывают, что:</p>
-            <ul>
-              <li>Достаточный сон (7-9 часов) критически важен для нормализации этих гормонов</li>
-              <li>Высокое потребление белка помогает контролировать грелин</li>
-              <li>Регулярное питание стабилизирует их уровни</li>
-            </ul>
-            
-            <div className={styles.articleNote}>
-              <strong>Важно:</strong> Хронический стресс повышает уровень кортизола, что может вызывать накопление жира в области живота и усиливать тягу к высококалорийной пище.
-            </div>
-          </section>
+              {/* 5. Микробиом кишечника */}
+              <h2 id="microbiome" className="text-2xl font-bold text-gray-800 mt-10 flex items-center">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white mr-3 text-sm">5</span>
+                Микробиом кишечника и вес
+              </h2>
+              <p className="mt-4">Здоровая кишечная микрофлора может улучшать обмен веществ, снижать воспаление и регулировать аппетит.</p>
+              <div className="bg-blue-50 p-4 rounded-lg my-4">
+                <ul className="list-disc pl-6 text-sm text-gray-700">
+                  <li>Разнообразное потребление растительной пищи (30+ видов в неделю)</li>
+                  <li>Регулярное употребление пребиотиков и ферментированных продуктов</li>
+                  <li>Ограничение искусственных подсластителей</li>
+                </ul>
+              </div>
 
-          <section id="fasting">
-            <h2>4. Интервальное голодание: наука и практика</h2>
-            <p>Интервальное голодание (ИГ) привлекло значительное внимание исследователей. Научные данные указывают на его потенциальные преимущества:</p>
-            <ul>
-              <li>Улучшение чувствительности к инсулину</li>
-              <li>Стимуляция аутофагии (клеточное очищение)</li>
-              <li>Снижение воспаления</li>
-              <li>Возможное продление продолжительности жизни</li>
-            </ul>
-            
-            <p>Популярные протоколы ИГ включают:</p>
-            <ul>
-              <li>16/8 (16 часов голодания, 8 часов приема пищи)</li>
-              <li>5:2 (5 дней обычного питания, 2 дня с ограничением калорий)</li>
-              <li>Один приём пищи в день (ОМАД)</li>
-            </ul>
-            
-            <p>Важно отметить, что интервальное голодание может не подходить для всех, особенно для людей с определенными медицинскими состояниями, беременных женщин или тех, кто имеет историю расстройств пищевого поведения.</p>
-          </section>
+              {/* 6. Пищевые добавки */}
+              <h2 id="supplements" className="text-2xl font-bold text-gray-800 mt-10 flex items-center">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white mr-3 text-sm">6</span>
+                Пищевые добавки: что действительно работает?
+              </h2>
+              <div className="bg-blue-50 p-4 rounded-lg my-4">
+                <h3 className="font-bold mb-2">С доказанной эффективностью:</h3>
+                <ul className="list-disc pl-6 text-sm text-gray-700">
+                  <li>Протеиновые добавки — увеличивают потребление белка и чувство сытости</li>
+                  <li>Клетчатка — улучшает насыщение и регулирует аппетит</li>
+                  <li>Кофеин — умеренно повышает расход энергии</li>
+                  <li>Зеленый чай — катехины ускоряют метаболизм</li>
+                </ul>
+                <h3 className="font-bold mt-4 mb-2">С неубедительными доказательствами:</h3>
+                <ul className="list-disc pl-6 text-sm text-gray-700">
+                  <li>CLA, гарциния, расторопша, L-карнитин</li>
+                </ul>
+              </div>
+              <div className="bg-red-50 border-l-4 border-red-500 p-4 my-6">
+                <p className="text-red-800">
+                  <strong>Важно!</strong> Добавки не регулируются так же строго, как лекарства. Всегда консультируйтесь с врачом перед началом приема любых добавок.
+                </p>
+              </div>
 
-          <section id="microbiome">
-            <h2>5. Микробиом кишечника и вес</h2>
-            <p>Растущий объем исследований указывает на тесную связь между микробиомом кишечника и регуляцией веса. Здоровая кишечная микрофлора может:</p>
-            <ul>
-              <li>Улучшать обмен веществ</li>
-              <li>Снижать воспаление</li>
-              <li>Регулировать аппетит и накопление жира</li>
-            </ul>
-            
-            <p>Для поддержки здорового микробиома рекомендуется:</p>
-            <ul>
-              <li>Разнообразное потребление растительной пищи (стремитесь к 30+ различным растительным продуктам в неделю)</li>
-              <li>Регулярное употребление пребиотиков (лук, чеснок, бананы, овсянка)</li>
-              <li>Включение ферментированных продуктов (йогурт, кефир, квашеная капуста)</li>
-              <li>Ограничение искусственных подсластителей, которые могут нарушать баланс микробиома</li>
-            </ul>
-          </section>
+              {/* 7. Практические советы */}
+              <h2 id="practical" className="text-2xl font-bold text-gray-800 mt-10 flex items-center">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white mr-3 text-sm">7</span>
+                Практические советы для устойчивого снижения веса
+              </h2>
+              <div className="bg-blue-50 p-4 rounded-lg my-4">
+                <ul className="list-disc pl-6 text-sm text-gray-700">
+                  <li>Составляйте недельное меню заранее</li>
+                  <li>Готовьте еду дома, контролируя ингредиенты</li>
+                  <li>Держите здоровые перекусы под рукой</li>
+                  <li>Используйте тарелки меньшего размера</li>
+                  <li>Пейте воду перед приемами пищи</li>
+                  <li>Практикуйте осознанное питание</li>
+                  <li>Ведите дневник питания</li>
+                </ul>
+              </div>
+              <div className="bg-green-50 border-l-4 border-green-500 p-4 my-6">
+                <p className="text-green-800">
+                  Исследования показывают, что люди, ведущие дневник питания, теряют в 2 раза больше веса, чем те, кто этого не делает.
+                </p>
+              </div>
 
-          <section id="supplements">
-            <h2>6. Пищевые добавки: что действительно работает?</h2>
-            <p>Несмотря на обилие маркетинговых обещаний, лишь немногие добавки имеют научное подтверждение эффективности для снижения веса:</p>
-            
-            <h3>С доказанной эффективностью:</h3>
-            <ul>
-              <li><strong>Протеиновые добавки</strong> — помогают увеличить потребление белка и чувство сытости</li>
-              <li><strong>Клетчатка</strong> — улучшает насыщение и регулирует аппетит</li>
-              <li><strong>Кофеин</strong> — умеренно повышает расход энергии и мобилизацию жира</li>
-              <li><strong>Зеленый чай</strong> — содержит катехины, которые могут ускорять метаболизм</li>
-            </ul>
-            
-            <h3>С неубедительными доказательствами:</h3>
-            <ul>
-              <li><strong>CLA (конъюгированная линолевая кислота)</strong></li>
-              <li><strong>Гарциния камбоджийская</strong></li>
-              <li><strong>Расторопша</strong></li>
-              <li><strong>L-карнитин</strong></li>
-            </ul>
-            
-            <div className={styles.articleWarning}>
-              <p><strong>Важно!</strong> Добавки не регулируются так же строго, как лекарства. Всегда консультируйтесь с врачом перед началом приема любых добавок, особенно если у вас есть сопутствующие заболевания.</p>
-            </div>
-          </section>
+              {/* Итоговый цветной блок */}
+              <div className="my-8 p-6 bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg text-white">
+                <h2 className="text-2xl font-bold mb-4">Итог: наука и практика</h2>
+                <p className="mb-4">
+                  Наука о питании для похудения постоянно развивается, но фундаментальные принципы остаются неизменными. Самый эффективный план питания — тот, которого вы можете придерживаться долгосрочно. Постепенные, устойчивые изменения в привычках питания принесут больше пользы, чем радикальные краткосрочные диеты.
+                </p>
+                <p className="font-bold">
+                  Помните: питание — лишь один из компонентов здорового снижения веса. Физическая активность, качественный сон и управление стрессом также важны для результата.
+                </p>
+              </div>
 
-          <section id="practical">
-            <h2>7. Практические советы для устойчивого снижения веса</h2>
-            
-            <h3>Планирование питания</h3>
-            <ul>
-              <li>Составляйте недельное меню заранее</li>
-              <li>Готовьте еду дома, контролируя ингредиенты</li>
-              <li>Держите здоровые перекусы под рукой</li>
-            </ul>
-            
-            <h3>Размер порций</h3>
-            <ul>
-              <li>Используйте тарелки меньшего размера</li>
-              <li>Практикуйте осознанное питание, ешьте медленно</li>
-              <li>Следуйте правилу "пол-тарелки овощей"</li>
-            </ul>
-            
-            <h3>Водный режим</h3>
-            <ul>
-              <li>Пейте воду перед приемами пищи</li>
-              <li>Замените высококалорийные напитки водой или несладким чаем</li>
-              <li>Стремитесь к 30 мл воды на кг веса тела ежедневно</li>
-            </ul>
-            
-            <h3>Психологические стратегии</h3>
-            <ul>
-              <li>Практикуйте осознанное питание</li>
-              <li>Ведите дневник питания</li>
-              <li>Избегайте эмоционального переедания через практики релаксации</li>
-              <li>Создавайте здоровые ритуалы вместо диетических ограничений</li>
-            </ul>
-            
-            <div className={styles.articleTip}>
-              <p>Исследования показывают, что люди, ведущие дневник питания, теряют в 2 раза больше веса, чем те, кто этого не делает.</p>
-            </div>
-          </section>
+              {/* Теги */}
+              <div className="flex flex-wrap gap-2 my-6">
+                <span className="px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700">#питание</span>
+                <span className="px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700">#похудение</span>
+                <span className="px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700">#здоровье</span>
+                <span className="px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700">#наука</span>
+                <span className="px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700">#калории</span>
+              </div>
 
-          <section id="conclusion">
-            <h2>Заключение</h2>
-            <p>Наука о питании для похудения постоянно развивается, но фундаментальные принципы остаются неизменными. Важно понимать, что не существует универсального подхода, и стратегия питания должна учитывать индивидуальные особенности, предпочтения и образ жизни.</p>
-            
-            <p>Самый эффективный план питания — тот, которого вы можете придерживаться долгосрочно. Постепенные, устойчивые изменения в привычках питания принесут больше пользы, чем радикальные краткосрочные диеты. Сосредоточьтесь на качестве пищи, регулярности питания и осознанном отношении к еде.</p>
-            
-            <p>Помните, что питание — лишь один из компонентов здорового снижения веса. Физическая активность, качественный сон и управление стрессом также играют важную роль в достижении и поддержании здорового веса.</p>
-          </section>
+              {/* Рекомендуемые статьи и поделиться — оставить как есть */}
+              <div className="mt-12 pt-8 border-t border-gray-200">
+                <h3 className="text-xl font-bold text-gray-800 mb-6">Рекомендуемые статьи</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Link href="/articles/nutrition-for-weight-loss" className="group block">
+                    <div className="relative h-48 mb-4 rounded-lg overflow-hidden">
+                      <Image 
+                        src="/images/articles/gym-beginner.jpg"
+                        alt="Начало тренировок в зале"
+                        layout="fill"
+                        objectFit="cover"
+                        className="group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                    <h4 className="text-lg font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
+                      Как начать заниматься в тренажерном зале: 7 шагов для новичков
+                    </h4>
+                  </Link>
+                  <Link href="/articles/best-exercises-for-weight-loss" className="group block">
+                    <div className="relative h-48 mb-4 rounded-lg overflow-hidden">
+                      <Image 
+                        src="/images/articles/exercises-weight-loss.jpg"
+                        alt="Упражнения для похудения"
+                        layout="fill"
+                        objectFit="cover"
+                        className="group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                    <h4 className="text-lg font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
+                      Лучшие упражнения для похудения: научный подход
+                    </h4>
+                  </Link>
+                </div>
+              </div>
 
-          <div className={styles.articleTags}>
-            <h3>Теги:</h3>
-            <div>
-              <span>#питание</span>
-              <span>#похудение</span>
-              <span>#здоровье</span>
-              <span>#наука</span>
-              <span>#калории</span>
-            </div>
-          </div>
-
-          <div className={styles.recommendedArticles}>
-            <h3>Рекомендуемые статьи</h3>
-            <div className={styles.recommendedGrid}>
-              <Link href="/articles/nutrition-for-weight-loss">
-                <a className={styles.recommendedCard}>
-                  <div className={styles.recommendedImageContainer}>
-                    <Image 
-                      src="/images/articles/gym-beginner.jpg"
-                      alt="Начало тренировок в зале"
-                      layout="fill"
-                      objectFit="cover"
-                    />
-                  </div>
-                  <h4>Как начать заниматься в тренажерном зале: 7 шагов для новичков</h4>
-                </a>
-              </Link>
-              <Link href="/articles/best-exercises-for-weight-loss">
-                <a className={styles.recommendedCard}>
-                  <div className={styles.recommendedImageContainer}>
-                    <Image 
-                      src="/images/articles/exercises-weight-loss.jpg"
-                      alt="Упражнения для похудения"
-                      layout="fill"
-                      objectFit="cover"
-                    />
-                  </div>
-                  <h4>Лучшие упражнения для похудения: научный подход</h4>
-                </a>
-              </Link>
+              {/* Блок "Поделиться" */}
+              <div className="mt-12 pt-8 border-t border-gray-200">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">Поделиться статьей</h3>
+                <div className="flex space-x-4">
+                  <a 
+                    href={`https://vk.com/share.php?url=https://athletdiary.com/articles/nutrition-for-weight-loss`} 
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
+                    aria-label="Поделиться в ВКонтакте"
+                  >
+                    VK
+                  </a>
+                  <a 
+                    href={`https://t.me/share/url?url=https://athletdiary.com/articles/nutrition-for-weight-loss`} 
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 bg-blue-400 text-white rounded-full hover:bg-blue-500 transition-colors"
+                    aria-label="Поделиться в Telegram"
+                  >
+                    Telegram
+                  </a>
+                  <a 
+                    href={`https://wa.me/?text=Питание для похудения: что говорит наука? https://athletdiary.com/articles/nutrition-for-weight-loss`} 
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors"
+                    aria-label="Поделиться в WhatsApp"
+                  >
+                    WhatsApp
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </main>
-    </>
+    </Layout>
   );
 };
 

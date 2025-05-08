@@ -13,10 +13,34 @@ interface Article {
   category: string;
   date: string;
   readTime: string;
+  difficulty?: 'Начинающий' | 'Средний' | 'Продвинутый';
+  tags?: string[];
 }
 
 // Данные статей
 const articles: Article[] = [
+  {
+    slug: 'kak-sohranit-motivaciyu',
+    title: 'Как сохранить мотивацию: научные методы и лайфхаки для регулярных тренировок',
+    excerpt: 'Узнайте научно обоснованные методы сохранения мотивации к тренировкам. Практические советы, психологические техники и реальные истории успеха.',
+    image: '/images/articles/motivation.jpg',
+    category: 'Мотивация',
+    date: '20 марта 2024',
+    readTime: '10 минут',
+    difficulty: 'Средний',
+    tags: ['мотивация', 'психология', 'регулярные тренировки', 'выгорание']
+  },
+  {
+    slug: 'domashnie-trenirovki',
+    title: 'Домашние тренировки без оборудования: программа на 4 недели для любого уровня',
+    excerpt: 'Эффективная программа домашних тренировок без специального оборудования. Подробные планы для начинающих и продвинутых, техника выполнения упражнений.',
+    image: '/images/articles/home-workout.jpg',
+    category: 'Тренировки',
+    date: '20 марта 2024',
+    readTime: '12 минут',
+    difficulty: 'Начинающий',
+    tags: ['домашние тренировки', 'без оборудования', 'для начинающих', 'программа тренировок']
+  },
   {
     slug: 'healthy-eating-program',
     title: 'Программа правильного питания на каждый день: принципы и готовое меню',
@@ -72,6 +96,32 @@ const articles: Article[] = [
     readTime: '7 минут'
   }
 ];
+
+// Компонент для отображения сложности
+const DifficultyBadge = ({ difficulty }: { difficulty: Article['difficulty'] }) => {
+  const colors = {
+    'Начинающий': 'bg-green-100 text-green-800',
+    'Средний': 'bg-yellow-100 text-yellow-800',
+    'Продвинутый': 'bg-red-100 text-red-800'
+  };
+
+  return (
+    <span className={`px-2 py-1 rounded-full text-xs font-medium ${colors[difficulty]}`}>
+      {difficulty}
+    </span>
+  );
+};
+
+// Компонент для отображения тегов
+const TagsList = ({ tags }: { tags: string[] }) => (
+  <div className="flex flex-wrap gap-2 mt-2">
+    {tags.map(tag => (
+      <span key={tag} className="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs">
+        {tag}
+      </span>
+    ))}
+  </div>
+);
 
 export default function Articles() {
   const featuredArticle = articles[0];
@@ -190,26 +240,37 @@ export default function Articles() {
                       objectFit="cover"
                       priority
                     />
+                    <div className="absolute top-4 left-4 flex gap-2">
+                      <div className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                        {featuredArticle.category}
+                      </div>
+                      {featuredArticle.difficulty && (
+                        <DifficultyBadge difficulty={featuredArticle.difficulty} />
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div className="md:w-1/2 p-6 md:p-8 flex flex-col justify-center">
-                  <div className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mb-4">
-                    {featuredArticle.category}
-                  </div>
                   <h3 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4">
                     {featuredArticle.title}
                   </h3>
                   <p className="text-gray-600 mb-4">
                     {featuredArticle.excerpt}
                   </p>
-                  <div className="flex items-center text-gray-500 text-sm mb-6">
+                  {featuredArticle.tags && <TagsList tags={featuredArticle.tags} />}
+                  <div className="flex items-center text-gray-500 text-sm mt-4">
                     <time dateTime={featuredArticle.date} className="mr-4">{featuredArticle.date}</time>
-                    <span>{featuredArticle.readTime} чтения</span>
+                    <span className="flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      {featuredArticle.readTime} чтения
+                    </span>
                   </div>
                   <Link href={`/articles/${featuredArticle.slug}`} 
-                    className="text-blue-600 hover:text-blue-800 font-medium inline-flex items-center">
+                    className="mt-6 text-blue-600 hover:text-blue-800 font-medium inline-flex items-center">
                     Читать статью
-                    <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </Link>
@@ -225,35 +286,46 @@ export default function Articles() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {otherArticles.map((article) => (
-                <article key={article.slug} className="bg-white rounded-xl shadow-md overflow-hidden flex flex-col h-full">
-                  <div className="relative aspect-square">
+                <article key={article.slug} className="bg-white rounded-xl shadow-md overflow-hidden flex flex-col h-full hover:shadow-lg transition-shadow">
+                  <div className="relative aspect-[16/9]">
                     <Image 
                       src={article.image} 
                       alt={article.title} 
                       layout="fill"
                       objectFit="cover"
                     />
-                    <div className="absolute top-3 left-3">
+                    <div className="absolute top-3 left-3 flex gap-2">
                       <div className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                         {article.category}
                       </div>
+                      {article.difficulty && (
+                        <DifficultyBadge difficulty={article.difficulty} />
+                      )}
                     </div>
                   </div>
                   <div className="p-5 flex flex-col flex-grow">
-                    <h3 className="text-xl font-bold text-gray-800 mb-3">
+                    <h3 className="text-xl font-bold text-gray-800 mb-3 line-clamp-2">
                       {article.title}
                     </h3>
-                    <p className="text-gray-600 text-sm mb-4 flex-grow">
+                    <p className="text-gray-600 text-sm mb-4 flex-grow line-clamp-3">
                       {article.excerpt}
                     </p>
-                    <div className="flex items-center justify-between mt-auto">
-                      <div className="text-gray-500 text-xs">
-                        <time dateTime={article.date}>{article.date}</time> • {article.readTime} чтения
+                    {article.tags && <TagsList tags={article.tags} />}
+                    <div className="flex items-center justify-between mt-4">
+                      <div className="text-gray-500 text-xs flex items-center">
+                        <time dateTime={article.date}>{article.date}</time>
+                        <span className="mx-2">•</span>
+                        <span className="flex items-center">
+                          <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          {article.readTime}
+                        </span>
                       </div>
                       <Link href={`/articles/${article.slug}`} 
                         className="text-blue-600 hover:text-blue-800 text-sm font-medium inline-flex items-center">
                         Читать
-                        <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
                       </Link>
@@ -271,23 +343,37 @@ export default function Articles() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {Object.entries(articlesByCategory).map(([category, categoryArticles]) => (
-                <div key={category} className="bg-white rounded-xl shadow-md p-6">
-                  <h3 className="text-xl font-bold text-gray-800 mb-4">
+                <div key={category} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
+                  <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <span className="w-2 h-2 bg-blue-600 rounded-full mr-2"></span>
                     {category}
                   </h3>
-                  <ul className="space-y-3">
+                  <ul className="space-y-4">
                     {categoryArticles.map(article => (
                       <li key={article.slug}>
                         <Link 
                           href={`/articles/${article.slug}`}
-                          className="flex items-start hover:bg-gray-50 p-2 rounded-lg transition-colors"
+                          className="flex items-start hover:bg-gray-50 p-3 rounded-lg transition-colors group"
                         >
                           <div className="flex-1">
-                            <h4 className="font-medium text-gray-900 mb-1">
+                            <h4 className="font-medium text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">
                               {article.title}
                             </h4>
-                            <div className="text-sm text-gray-500">
-                              <time dateTime={article.date}>{article.date}</time> • {article.readTime} чтения
+                            <div className="flex items-center text-sm text-gray-500">
+                              <time dateTime={article.date}>{article.date}</time>
+                              <span className="mx-2">•</span>
+                              <span className="flex items-center">
+                                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                {article.readTime}
+                              </span>
+                              {article.difficulty && (
+                                <>
+                                  <span className="mx-2">•</span>
+                                  <DifficultyBadge difficulty={article.difficulty} />
+                                </>
+                              )}
                             </div>
                           </div>
                         </Link>
@@ -301,28 +387,23 @@ export default function Articles() {
 
           {/* Популярные теги */}
           <section aria-labelledby="tags-heading" className="bg-white rounded-xl shadow-md p-6">
-            <h2 id="tags-heading" className="text-xl font-bold text-gray-800 mb-4">
+            <h2 id="tags-heading" className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+              <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
               Популярные теги
             </h2>
             <div className="flex flex-wrap gap-3">
-              <Link href="/articles/category/beginners" className="px-4 py-2 bg-gray-100 text-gray-800 rounded-full hover:bg-gray-200 transition-colors">
-                Для начинающих
-              </Link>
-              <Link href="/articles/category/fitness" className="px-4 py-2 bg-gray-100 text-gray-800 rounded-full hover:bg-gray-200 transition-colors">
-                Фитнес
-              </Link>
-              <Link href="/articles/category/nutrition" className="px-4 py-2 bg-gray-100 text-gray-800 rounded-full hover:bg-gray-200 transition-colors">
-                Питание
-              </Link>
-              <Link href="/articles/category/training" className="px-4 py-2 bg-gray-100 text-gray-800 rounded-full hover:bg-gray-200 transition-colors">
-                Тренировки
-              </Link>
-              <Link href="/articles/category/recovery" className="px-4 py-2 bg-gray-100 text-gray-800 rounded-full hover:bg-gray-200 transition-colors">
-                Восстановление
-              </Link>
-              <Link href="/articles/category/motivation" className="px-4 py-2 bg-gray-100 text-gray-800 rounded-full hover:bg-gray-200 transition-colors">
-                Мотивация
-              </Link>
+              {Array.from(new Set(articles.flatMap(article => article.tags || []))).map(tag => (
+                <Link 
+                  key={tag}
+                  href={`/articles/tag/${tag}`} 
+                  className="px-4 py-2 bg-gray-100 text-gray-800 rounded-full hover:bg-gray-200 transition-colors flex items-center"
+                >
+                  <span className="w-2 h-2 bg-blue-600 rounded-full mr-2"></span>
+                  {tag}
+                </Link>
+              ))}
             </div>
           </section>
         </div>
