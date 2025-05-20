@@ -163,13 +163,13 @@ export default function ArticlePage() {
     >
       <Head>
         {/* Канонический URL */}
-        <link rel="canonical" href={`https://athletdiary.com/articles/${article.slug}`} />
+        <link rel="canonical" href={`https://athletdiary.ru/articles/${article.slug}`} />
         
         {/* Open Graph разметка для соц. сетей */}
         <meta property="og:title" content={article.title} />
         <meta property="og:description" content={article.description} />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content={`https://athletdiary.com/articles/${article.slug}`} />
+        <meta property="og:url" content={`https://athletdiary.ru/articles/${article.slug}`} />
         <meta property="og:image" content={article.imageUrl} />
         <meta property="article:published_time" content={article.date} />
         <meta property="article:modified_time" content={article.date} />
@@ -204,19 +204,19 @@ export default function ArticlePage() {
               "author": {
                 "@type": "Organization",
                 "name": "AthleteDiary",
-                "url": "https://athletdiary.com"
+                "url": "https://athletdiary.ru"
               },
               "publisher": {
                 "@type": "Organization",
                 "name": "AthleteDiary",
                 "logo": {
                   "@type": "ImageObject",
-                  "url": "https://athletdiary.com/logo.png"
+                  "url": "https://athletdiary.ru/logo.png"
                 }
               },
               "mainEntityOfPage": {
                 "@type": "WebPage",
-                "@id": `https://athletdiary.com/articles/${article.slug}`
+                "@id": `https://athletdiary.ru/articles/${article.slug}`
               },
               "keywords": keywords,
               "articleSection": "Фитнес и здоровье",
@@ -311,7 +311,7 @@ export default function ArticlePage() {
               <h2 className="text-xl font-semibold mb-4">Поделиться статьей</h2>
               <div className="flex space-x-4">
                 <a 
-                  href={`https://vk.com/share.php?url=https://athletdiary.com/articles/${article.slug}`} 
+                  href={`https://vk.com/share.php?url=https://athletdiary.ru/articles/${article.slug}`} 
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
@@ -320,7 +320,7 @@ export default function ArticlePage() {
                   VK
                 </a>
                 <a 
-                  href={`https://t.me/share/url?url=https://athletdiary.com/articles/${article.slug}&text=${article.title}`} 
+                  href={`https://t.me/share/url?url=https://athletdiary.ru/articles/${article.slug}&text=${article.title}`} 
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-2 bg-blue-400 text-white rounded-full hover:bg-blue-500 transition-colors"
@@ -329,7 +329,7 @@ export default function ArticlePage() {
                   Telegram
                 </a>
                 <a 
-                  href={`https://wa.me/?text=${article.title} https://athletdiary.com/articles/${article.slug}`} 
+                  href={`https://wa.me/?text=${article.title} https://athletdiary.ru/articles/${article.slug}`} 
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors"

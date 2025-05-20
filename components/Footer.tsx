@@ -46,11 +46,11 @@ export default function Footer() {
             <p className="text-gray-300 text-sm">
               Если у вас есть вопросы или предложения, свяжитесь с нами
             </p>
-            <a 
-              href="mailto:contact@athletdiary.com" 
-              className="text-blue-400 hover:text-blue-300 text-sm mt-2 block"
+            <a
+              href="mailto:athletediary@yandex.ru"
+              className="text-gray-400 hover:text-white transition-colors"
             >
-              contact@athletdiary.com
+              athletediary@yandex.ru
             </a>
           </div>
         </div>

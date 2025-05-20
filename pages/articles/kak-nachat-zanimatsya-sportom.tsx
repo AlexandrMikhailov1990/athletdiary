@@ -34,7 +34,7 @@ export default function KakNachatZanimatsyaSportomArticle() {
         <meta property="og:title" content={articleInfo.title} />
         <meta property="og:description" content={articleInfo.description} />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content={`https://athletdiary.com/articles/${articleInfo.slug}`} />
+        <meta property="og:url" content={`https://athletdiary.ru/articles/${articleInfo.slug}`} />
         <meta property="og:image" content="/images/articles/fitness-beginner.jpg" />
         {/* Структурированные данные для SEO */}
         <script
@@ -279,7 +279,7 @@ export default function KakNachatZanimatsyaSportomArticle() {
               <h3 className="text-xl font-semibold mb-4">Поделиться статьей</h3>
               <div className="flex space-x-4">
                 <a 
-                  href={`https://vk.com/share.php?url=https://athletdiary.com/articles/${articleInfo.slug}`} 
+                  href={`https://vk.com/share.php?url=https://athletdiary.ru/articles/${articleInfo.slug}`} 
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
@@ -287,7 +287,7 @@ export default function KakNachatZanimatsyaSportomArticle() {
                   VK
                 </a>
                 <a 
-                  href={`https://t.me/share/url?url=https://athletdiary.com/articles/${articleInfo.slug}&text=${articleInfo.title}`} 
+                  href={`https://t.me/share/url?url=https://athletdiary.ru/articles/${articleInfo.slug}&text=${articleInfo.title}`} 
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-2 bg-blue-400 text-white rounded-full hover:bg-blue-500 transition-colors"
@@ -295,7 +295,7 @@ export default function KakNachatZanimatsyaSportomArticle() {
                   Telegram
                 </a>
                 <a 
-                  href={`https://wa.me/?text=${articleInfo.title} https://athletdiary.com/articles/${articleInfo.slug}`} 
+                  href={`https://wa.me/?text=${articleInfo.title} https://athletdiary.ru/articles/${articleInfo.slug}`} 
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors"

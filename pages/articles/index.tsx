@@ -146,14 +146,14 @@ export default function Articles() {
     >
       <Head>
         {/* Канонический URL */}
-        <link rel="canonical" href="https://athletdiary.com/articles" />
+        <link rel="canonical" href="https://athletdiary.ru/articles" />
         
         {/* Open Graph разметка для соц. сетей */}
         <meta property="og:title" content="Статьи о фитнесе и тренировках | AthleteDiary" />
         <meta property="og:description" content="Экспертные статьи о фитнесе, тренировках и здоровом образе жизни. Практические советы и научно обоснованные рекомендации." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://athletdiary.com/articles" />
-        <meta property="og:image" content="https://athletdiary.com/images/articles/og-image.jpg" />
+        <meta property="og:url" content="https://athletdiary.ru/articles" />
+        <meta property="og:image" content="https://athletdiary.ru/images/articles/og-image.jpg" />
         <meta property="og:site_name" content="AthleteDiary" />
         <meta property="og:locale" content="ru_RU" />
         
@@ -161,7 +161,7 @@ export default function Articles() {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Статьи о фитнесе и тренировках | AthleteDiary" />
         <meta name="twitter:description" content="Экспертные статьи о фитнесе, тренировках и здоровом образе жизни. Практические советы и научно обоснованные рекомендации." />
-        <meta name="twitter:image" content="https://athletdiary.com/images/articles/og-image.jpg" />
+        <meta name="twitter:image" content="https://athletdiary.ru/images/articles/og-image.jpg" />
         
         {/* Дополнительные мета-теги */}
         <meta name="robots" content="index, follow" />
@@ -177,13 +177,13 @@ export default function Articles() {
               "@type": "CollectionPage",
               "name": "Статьи о фитнесе и тренировках",
               "description": "Экспертные статьи о фитнесе, тренировках и здоровом образе жизни",
-              "url": "https://athletdiary.com/articles",
+              "url": "https://athletdiary.ru/articles",
               "publisher": {
                 "@type": "Organization",
                 "name": "AthleteDiary",
                 "logo": {
                   "@type": "ImageObject",
-                  "url": "https://athletdiary.com/logo.png"
+                  "url": "https://athletdiary.ru/logo.png"
                 }
               },
               "mainEntity": {
@@ -195,7 +195,7 @@ export default function Articles() {
                     "@type": "Article",
                     "headline": article.title,
                     "description": article.excerpt,
-                    "url": `https://athletdiary.com/articles/${article.slug}`,
+                    "url": `https://athletdiary.ru/articles/${article.slug}`,
                     "datePublished": article.date,
                     "author": {
                       "@type": "Organization",
@@ -206,7 +206,7 @@ export default function Articles() {
                       "name": "AthleteDiary",
                       "logo": {
                         "@type": "ImageObject",
-                        "url": "https://athletdiary.com/logo.png"
+                        "url": "https://athletdiary.ru/logo.png"
                       }
                     }
                   }

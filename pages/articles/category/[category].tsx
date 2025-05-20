@@ -126,7 +126,7 @@ export default function CategoryPage() {
         <meta property="og:title" content={`${categoryName} - Статьи | AthleteDiary`} />
         <meta property="og:description" content={`Полезные статьи в категории ${categoryName} - экспертные советы и научно обоснованные рекомендации.`} />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content={`https://athletdiary.com/articles/category/${category}`} />
+        <meta property="og:url" content={`https://athletdiary.ru/articles/category/${category}`} />
         
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
@@ -142,13 +142,13 @@ export default function CategoryPage() {
               "@type": "CollectionPage",
               "name": `${categoryName} - Статьи`,
               "description": `Полезные статьи в категории ${categoryName}`,
-              "url": `https://athletdiary.com/articles/category/${category}`,
+              "url": `https://athletdiary.ru/articles/category/${category}`,
               "publisher": {
                 "@type": "Organization",
                 "name": "AthleteDiary",
                 "logo": {
                   "@type": "ImageObject",
-                  "url": "https://athletdiary.com/logo.png"
+                  "url": "https://athletdiary.ru/logo.png"
                 }
               },
               "mainEntity": {
@@ -160,7 +160,7 @@ export default function CategoryPage() {
                     "@type": "Article",
                     "headline": article.title,
                     "description": article.excerpt,
-                    "url": `https://athletdiary.com/articles/${article.slug}`,
+                    "url": `https://athletdiary.ru/articles/${article.slug}`,
                     "datePublished": article.date
                   }
                 }))

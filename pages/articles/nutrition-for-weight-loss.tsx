@@ -16,14 +16,14 @@ const NutritionForWeightLossArticle: NextPage = () => {
     >
       <Head>
         {/* Канонический URL */}
-        <link rel="canonical" href="https://athletdiary.com/articles/nutrition-for-weight-loss" />
+        <link rel="canonical" href="https://athletdiary.ru/articles/nutrition-for-weight-loss" />
         
         {/* Open Graph разметка */}
         <meta property="og:title" content="Питание для похудения: что говорит наука?" />
         <meta property="og:description" content="Научно обоснованный подход к питанию для похудения: калорийный дефицит, макроэлементы, гормоны и практические советы" />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content="https://athletdiary.com/articles/nutrition-for-weight-loss" />
-        <meta property="og:image" content="https://athletdiary.com/images/articles/nutrition-science.jpg" />
+        <meta property="og:url" content="https://athletdiary.ru/articles/nutrition-for-weight-loss" />
+        <meta property="og:image" content="https://athletdiary.ru/images/articles/nutrition-science.jpg" />
         <meta property="article:published_time" content="2024-03-20" />
         <meta property="article:modified_time" content="2024-03-20" />
         <meta property="article:section" content="Питание" />
@@ -33,7 +33,7 @@ const NutritionForWeightLossArticle: NextPage = () => {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Питание для похудения: что говорит наука?" />
         <meta name="twitter:description" content="Научно обоснованный подход к питанию для похудения: калорийный дефицит, макроэлементы, гормоны и практические советы" />
-        <meta name="twitter:image" content="https://athletdiary.com/images/articles/nutrition-science.jpg" />
+        <meta name="twitter:image" content="https://athletdiary.ru/images/articles/nutrition-science.jpg" />
         
         {/* Структурированные данные */}
         <script
@@ -44,25 +44,25 @@ const NutritionForWeightLossArticle: NextPage = () => {
               "@type": "Article",
               "headline": "Питание для похудения: что говорит наука?",
               "description": "Научно обоснованный подход к питанию для похудения: калорийный дефицит, макроэлементы, гормоны и практические советы",
-              "image": "https://athletdiary.com/images/articles/nutrition-science.jpg",
+              "image": "https://athletdiary.ru/images/articles/nutrition-science.jpg",
               "datePublished": "2024-03-20",
               "dateModified": "2024-03-20",
               "author": {
                 "@type": "Organization",
                 "name": "AthleteDiary",
-                "url": "https://athletdiary.com"
+                "url": "https://athletdiary.ru"
               },
               "publisher": {
                 "@type": "Organization",
                 "name": "AthleteDiary",
                 "logo": {
                   "@type": "ImageObject",
-                  "url": "https://athletdiary.com/logo.png"
+                  "url": "https://athletdiary.ru/logo.png"
                 }
               },
               "mainEntityOfPage": {
                 "@type": "WebPage",
-                "@id": "https://athletdiary.com/articles/nutrition-for-weight-loss"
+                "@id": "https://athletdiary.ru/articles/nutrition-for-weight-loss"
               },
               "keywords": "питание для похудения, научный подход к похудению, калорийный дефицит, макроэлементы, гормоны, интервальное голодание, микробиом, пищевые добавки",
               "articleSection": "Питание",
@@ -344,7 +344,7 @@ const NutritionForWeightLossArticle: NextPage = () => {
                 <h3 className="text-xl font-bold text-gray-800 mb-4">Поделиться статьей</h3>
                 <div className="flex space-x-4">
                   <a 
-                    href={`https://vk.com/share.php?url=https://athletdiary.com/articles/nutrition-for-weight-loss`} 
+                    href={`https://vk.com/share.php?url=https://athletdiary.ru/articles/nutrition-for-weight-loss`} 
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
@@ -353,7 +353,7 @@ const NutritionForWeightLossArticle: NextPage = () => {
                     VK
                   </a>
                   <a 
-                    href={`https://t.me/share/url?url=https://athletdiary.com/articles/nutrition-for-weight-loss`} 
+                    href={`https://t.me/share/url?url=https://athletdiary.ru/articles/nutrition-for-weight-loss`} 
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-2 bg-blue-400 text-white rounded-full hover:bg-blue-500 transition-colors"
@@ -362,7 +362,7 @@ const NutritionForWeightLossArticle: NextPage = () => {
                     Telegram
                   </a>
                   <a 
-                    href={`https://wa.me/?text=Питание для похудения: что говорит наука? https://athletdiary.com/articles/nutrition-for-weight-loss`} 
+                    href={`https://wa.me/?text=Питание для похудения: что говорит наука? https://athletdiary.ru/articles/nutrition-for-weight-loss`} 
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors"

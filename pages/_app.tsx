@@ -78,7 +78,7 @@ function AppContent({ Component, pageProps }: AppContentProps) {
         <meta property="og:title" content="AthleteDiary - Ваш персональный дневник тренировок" />
         <meta property="og:description" content="Современное приложение для отслеживания тренировок, планирования и анализа фитнес-результатов" />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://athletdiary.com" />
+        <meta property="og:url" content="https://athletdiary.ru" />
         <meta property="og:site_name" content="AthleteDiary" />
         
         {/* Twitter Card */}
@@ -95,7 +95,7 @@ function AppContent({ Component, pageProps }: AppContentProps) {
               "@type": "WebApplication",
               "name": "AthleteDiary",
               "description": "Персональный дневник тренировок для отслеживания прогресса и достижения фитнес-целей",
-              "url": "https://athletdiary.com",
+              "url": "https://athletdiary.ru",
               "applicationCategory": "HealthApplication",
               "operatingSystem": "Web",
               "offers": {
@@ -108,7 +108,7 @@ function AppContent({ Component, pageProps }: AppContentProps) {
                 "name": "AthleteDiary",
                 "logo": {
                   "@type": "ImageObject",
-                  "url": "https://athletdiary.com/logo.png"
+                  "url": "https://athletdiary.ru/logo.png"
                 }
               }
             })

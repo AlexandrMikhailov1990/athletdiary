@@ -13,14 +13,14 @@ export default function HomeWorkoutArticle() {
     >
       <Head>
         {/* Канонический URL */}
-        <link rel="canonical" href="https://athletdiary.com/articles/domashnie-trenirovki" />
+        <link rel="canonical" href="https://athletdiary.ru/articles/domashnie-trenirovki" />
         
         {/* Open Graph разметка для соц. сетей */}
         <meta property="og:title" content="Домашние тренировки без оборудования: программа на 4 недели" />
         <meta property="og:description" content="Эффективная программа домашних тренировок без специального оборудования. Подробные планы для начинающих и продвинутых, техника выполнения упражнений и советы по прогрессии." />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content="https://athletdiary.com/articles/domashnie-trenirovki" />
-        <meta property="og:image" content="https://athletdiary.com/images/articles/home-workout.jpg" />
+        <meta property="og:url" content="https://athletdiary.ru/articles/domashnie-trenirovki" />
+        <meta property="og:image" content="https://athletdiary.ru/images/articles/home-workout.jpg" />
         <meta property="article:published_time" content="2024-03-20" />
         <meta property="article:modified_time" content="2024-03-20" />
         <meta property="article:section" content="Тренировки" />
@@ -30,7 +30,7 @@ export default function HomeWorkoutArticle() {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Домашние тренировки без оборудования: программа на 4 недели" />
         <meta name="twitter:description" content="Эффективная программа домашних тренировок без специального оборудования. Подробные планы для начинающих и продвинутых, техника выполнения упражнений и советы по прогрессии." />
-        <meta name="twitter:image" content="https://athletdiary.com/images/articles/home-workout.jpg" />
+        <meta name="twitter:image" content="https://athletdiary.ru/images/articles/home-workout.jpg" />
         
         {/* Структурированные данные для SEO */}
         <script
@@ -41,25 +41,25 @@ export default function HomeWorkoutArticle() {
               "@type": "Article",
               "headline": "Домашние тренировки без оборудования: программа на 4 недели",
               "description": "Эффективная программа домашних тренировок без специального оборудования. Подробные планы для начинающих и продвинутых, техника выполнения упражнений и советы по прогрессии.",
-              "image": "https://athletdiary.com/images/articles/home-workout.jpg",
+              "image": "https://athletdiary.ru/images/articles/home-workout.jpg",
               "datePublished": "2024-03-20",
               "dateModified": "2024-03-20",
               "author": {
                 "@type": "Organization",
                 "name": "AthleteDiary",
-                "url": "https://athletdiary.com"
+                "url": "https://athletdiary.ru"
               },
               "publisher": {
                 "@type": "Organization",
                 "name": "AthleteDiary",
                 "logo": {
                   "@type": "ImageObject",
-                  "url": "https://athletdiary.com/logo.png"
+                  "url": "https://athletdiary.ru/logo.png"
                 }
               },
               "mainEntityOfPage": {
                 "@type": "WebPage",
-                "@id": "https://athletdiary.com/articles/domashnie-trenirovki"
+                "@id": "https://athletdiary.ru/articles/domashnie-trenirovki"
               },
               "keywords": "домашние тренировки, тренировки без оборудования, программа тренировок, упражнения дома, фитнес дома, тренировки для начинающих, домашний фитнес, упражнения с собственным весом",
               "articleSection": "Тренировки",
@@ -239,7 +239,7 @@ export default function HomeWorkoutArticle() {
                 <h2 className="text-xl font-semibold mb-4">Поделиться статьей</h2>
                 <div className="flex space-x-4">
                   <a 
-                    href={`https://vk.com/share.php?url=https://athletdiary.com/articles/domashnie-trenirovki`} 
+                    href={`https://vk.com/share.php?url=https://athletdiary.ru/articles/domashnie-trenirovki`} 
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
@@ -248,7 +248,7 @@ export default function HomeWorkoutArticle() {
                     VK
                   </a>
                   <a 
-                    href={`https://t.me/share/url?url=https://athletdiary.com/articles/domashnie-trenirovki`} 
+                    href={`https://t.me/share/url?url=https://athletdiary.ru/articles/domashnie-trenirovki`} 
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-2 bg-blue-400 text-white rounded-full hover:bg-blue-500 transition-colors"
@@ -257,7 +257,7 @@ export default function HomeWorkoutArticle() {
                     Telegram
                   </a>
                   <a 
-                    href={`https://wa.me/?text=Домашние тренировки без оборудования https://athletdiary.com/articles/domashnie-trenirovki`} 
+                    href={`https://wa.me/?text=Домашние тренировки без оборудования https://athletdiary.ru/articles/domashnie-trenirovki`} 
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors"

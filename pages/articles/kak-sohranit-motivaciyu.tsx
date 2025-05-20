@@ -13,14 +13,14 @@ export default function MotivationArticle() {
     >
       <Head>
         {/* Канонический URL */}
-        <link rel="canonical" href="https://athletdiary.com/articles/kak-sohranit-motivaciyu" />
+        <link rel="canonical" href="https://athletdiary.ru/articles/kak-sohranit-motivaciyu" />
         
         {/* Open Graph разметка для соц. сетей */}
         <meta property="og:title" content="Как сохранить мотивацию к тренировкам: научные методы и лайфхаки" />
         <meta property="og:description" content="Узнайте научно обоснованные методы сохранения мотивации к тренировкам. Практические советы и психологические техники для регулярных занятий спортом." />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content="https://athletdiary.com/articles/kak-sohranit-motivaciyu" />
-        <meta property="og:image" content="https://athletdiary.com/images/articles/motivation.jpg" />
+        <meta property="og:url" content="https://athletdiary.ru/articles/kak-sohranit-motivaciyu" />
+        <meta property="og:image" content="https://athletdiary.ru/images/articles/motivation.jpg" />
         <meta property="article:published_time" content="2024-03-20" />
         <meta property="article:modified_time" content="2024-03-20" />
         <meta property="article:section" content="Мотивация" />
@@ -30,7 +30,7 @@ export default function MotivationArticle() {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Как сохранить мотивацию к тренировкам: научные методы и лайфхаки" />
         <meta name="twitter:description" content="Узнайте научно обоснованные методы сохранения мотивации к тренировкам. Практические советы и психологические техники для регулярных занятий спортом." />
-        <meta name="twitter:image" content="https://athletdiary.com/images/articles/motivation.jpg" />
+        <meta name="twitter:image" content="https://athletdiary.ru/images/articles/motivation.jpg" />
         
         {/* Структурированные данные для SEO */}
         <script
@@ -41,25 +41,25 @@ export default function MotivationArticle() {
               "@type": "Article",
               "headline": "Как сохранить мотивацию к тренировкам: научные методы и лайфхаки",
               "description": "Узнайте научно обоснованные методы сохранения мотивации к тренировкам. Практические советы и психологические техники для регулярных занятий спортом.",
-              "image": "https://athletdiary.com/images/articles/motivation.jpg",
+              "image": "https://athletdiary.ru/images/articles/motivation.jpg",
               "datePublished": "2024-03-20",
               "dateModified": "2024-03-20",
               "author": {
                 "@type": "Organization",
                 "name": "AthleteDiary",
-                "url": "https://athletdiary.com"
+                "url": "https://athletdiary.ru"
               },
               "publisher": {
                 "@type": "Organization",
                 "name": "AthleteDiary",
                 "logo": {
                   "@type": "ImageObject",
-                  "url": "https://athletdiary.com/logo.png"
+                  "url": "https://athletdiary.ru/logo.png"
                 }
               },
               "mainEntityOfPage": {
                 "@type": "WebPage",
-                "@id": "https://athletdiary.com/articles/kak-sohranit-motivaciyu"
+                "@id": "https://athletdiary.ru/articles/kak-sohranit-motivaciyu"
               },
               "keywords": "мотивация к тренировкам, как не бросить спорт, психология тренировок, поддержание мотивации, фитнес-мотивация, регулярные тренировки, спортивная мотивация, как начать тренироваться",
               "articleSection": "Мотивация",
@@ -217,7 +217,7 @@ export default function MotivationArticle() {
                 <h2 className="text-xl font-semibold mb-4">Поделиться статьей</h2>
                 <div className="flex space-x-4">
                   <a 
-                    href={`https://vk.com/share.php?url=https://athletdiary.com/articles/kak-sohranit-motivaciyu`} 
+                    href={`https://vk.com/share.php?url=https://athletdiary.ru/articles/kak-sohranit-motivaciyu`} 
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
@@ -226,7 +226,7 @@ export default function MotivationArticle() {
                     VK
                   </a>
                   <a 
-                    href={`https://t.me/share/url?url=https://athletdiary.com/articles/kak-sohranit-motivaciyu`} 
+                    href={`https://t.me/share/url?url=https://athletdiary.ru/articles/kak-sohranit-motivaciyu`} 
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-2 bg-blue-400 text-white rounded-full hover:bg-blue-500 transition-colors"
@@ -235,7 +235,7 @@ export default function MotivationArticle() {
                     Telegram
                   </a>
                   <a 
-                    href={`https://wa.me/?text=Как сохранить мотивацию к тренировкам https://athletdiary.com/articles/kak-sohranit-motivaciyu`} 
+                    href={`https://wa.me/?text=Как сохранить мотивацию к тренировкам https://athletdiary.ru/articles/kak-sohranit-motivaciyu`} 
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors"
