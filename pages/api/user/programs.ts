@@ -31,10 +31,18 @@ export default async function handler(
   // GET: получить все программы пользователя
   if (req.method === 'GET') {
     try {
+      console.log('Fetching programs...');
       const programs = await prisma.program.findMany({
         where: { isPublic: true },
-        include: { workouts: true }
+        include: { 
+          workouts: { 
+            include: { 
+              workoutExercise: true
+            }
+          }
+        }
       });
+      console.log('Found programs:', programs);
       return res.status(200).json(programs);
     } catch (error) {
       console.error('Error fetching programs:', error);

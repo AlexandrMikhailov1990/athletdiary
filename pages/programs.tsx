@@ -14,10 +14,14 @@ export default function Programs() {
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Загрузка программ
-  const loadPrograms = () => {
+  const loadPrograms = async () => {
     try {
-      // Получаем программы из localStorage
-      const savedPrograms = getPrograms();
+      // Получаем программы из API
+      const response = await fetch('/api/user/programs');
+      if (!response.ok) {
+        throw new Error('Failed to fetch programs');
+      }
+      const apiPrograms = await response.json();
       
       // Получаем ID удаленных стандартных программ
       const deletedSampleProgramIds = JSON.parse(localStorage.getItem('deletedSamplePrograms') || '[]');
@@ -27,11 +31,18 @@ export default function Programs() {
         program => !deletedSampleProgramIds.includes(program.id)
       );
       
-      // Объединяем пользовательские и доступные стандартные программы
-      setPrograms([...filteredSamplePrograms, ...savedPrograms]);
+      // Объединяем программы из API и доступные стандартные программы
+      setPrograms([...filteredSamplePrograms, ...apiPrograms]);
       setIsLoaded(true);
     } catch (error) {
       console.error('Ошибка при загрузке программ:', error);
+      // В случае ошибки API, используем локальные данные
+      const savedPrograms = getPrograms();
+      const deletedSampleProgramIds = JSON.parse(localStorage.getItem('deletedSamplePrograms') || '[]');
+      const filteredSamplePrograms = SAMPLE_PROGRAMS.filter(
+        program => !deletedSampleProgramIds.includes(program.id)
+      );
+      setPrograms([...filteredSamplePrograms, ...savedPrograms]);
       setIsLoaded(true);
     }
   };

@@ -55,7 +55,7 @@ model Workout {
   name            String
   order           Int
   program         Program           @relation(fields: [programId], references: [id])
-  WorkoutExercise WorkoutExercise[]
+  workoutExercise WorkoutExercise[]
 }
 
 model WorkoutExercise {
@@ -68,5 +68,5 @@ model WorkoutExercise {
   duration  Int?
   restTime  Int?
   order     Int
-  Workout   Workout @relation(fields: [workoutId], references: [id])
+  workout   Workout @relation(fields: [workoutId], references: [id])
 }
