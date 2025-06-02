@@ -584,4 +584,1128 @@ export function addJumpRopeAndResistanceProgramToUserPrograms(): void {
   } catch (error) {
     console.error('Ошибка при добавлении программы:', error);
   }
-} 
+}
+
+// Программа для похудения
+export const WEIGHT_LOSS_PROGRAM: Program = {
+  id: uuidv4(),
+  name: 'Программа для похудения',
+  description: 'Эффективная программа тренировок для снижения веса, сочетающая кардио и силовые нагрузки',
+  createdBy: 'system',
+  isPublic: true,
+  isSample: true,
+  category: 'weight-loss',
+  difficulty: 2,
+  weeks: 4,
+  restBetweenSets: 60,
+  restBetweenExercises: 90,
+  workouts: [
+    // День 1: Кардио + Верхняя часть тела
+    {
+      id: uuidv4(),
+      programId: uuidv4(),
+      name: 'День 1: Кардио + Верхняя часть тела',
+      exercises: [
+        // Разминка - прыжки на скакалке
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Прыжки на скакалке',
+            type: 'timed',
+            sets: 1,
+            duration: 300,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['cardio'],
+            description: 'Разминка с помощью прыжков на скакалке',
+            equipment: ['jump rope']
+          },
+          1,
+          60,
+          { duration: 300 }
+        ),
+        // Отжимания
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Отжимания',
+            type: 'reps',
+            sets: 3,
+            reps: 15,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['chest', 'triceps', 'shoulders'],
+            description: 'Базовое упражнение для верхней части тела',
+            equipment: ['bodyweight']
+          },
+          3,
+          60,
+          { reps: 15 }
+        ),
+        // Планка
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Планка',
+            type: 'timed',
+            sets: 3,
+            duration: 45,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['core'],
+            description: 'Статическое упражнение для мышц кора',
+            equipment: ['bodyweight']
+          },
+          3,
+          60,
+          { duration: 45 }
+        ),
+        // Бёрпи
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Бёрпи',
+            type: 'reps',
+            sets: 3,
+            reps: 10,
+            restTime: 60,
+            difficulty: 'intermediate',
+            muscleGroups: ['full-body', 'cardio'],
+            description: 'Комплексное упражнение для всего тела',
+            equipment: ['bodyweight']
+          },
+          3,
+          60,
+          { reps: 10 }
+        ),
+        // Завершающее кардио
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Прыжки на скакалке',
+            type: 'timed',
+            sets: 1,
+            duration: 300,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['cardio'],
+            description: 'Завершающее кардио',
+            equipment: ['jump rope']
+          },
+          1,
+          60,
+          { duration: 300 }
+        )
+      ]
+    },
+    // День 2: Кардио + Нижняя часть тела
+    {
+      id: uuidv4(),
+      programId: uuidv4(),
+      name: 'День 2: Кардио + Нижняя часть тела',
+      exercises: [
+        // Разминка - бег на месте
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Бег на месте',
+            type: 'timed',
+            sets: 1,
+            duration: 300,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['cardio'],
+            description: 'Разминка с помощью бега на месте',
+            equipment: ['bodyweight']
+          },
+          1,
+          60,
+          { duration: 300 }
+        ),
+        // Приседания
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Приседания',
+            type: 'reps',
+            sets: 3,
+            reps: 20,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['legs', 'glutes'],
+            description: 'Базовое упражнение для ног',
+            equipment: ['bodyweight']
+          },
+          3,
+          60,
+          { reps: 20 }
+        ),
+        // Выпады
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Выпады',
+            type: 'reps',
+            sets: 3,
+            reps: 15,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['legs', 'glutes'],
+            description: 'Упражнение для ног и ягодиц',
+            equipment: ['bodyweight']
+          },
+          3,
+          60,
+          { reps: 15 }
+        ),
+        // Прыжки с приседанием
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Прыжки с приседанием',
+            type: 'reps',
+            sets: 3,
+            reps: 15,
+            restTime: 60,
+            difficulty: 'intermediate',
+            muscleGroups: ['legs', 'cardio'],
+            description: 'Взрывное упражнение для ног',
+            equipment: ['bodyweight']
+          },
+          3,
+          60,
+          { reps: 15 }
+        ),
+        // Завершающее кардио
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Бег на месте',
+            type: 'timed',
+            sets: 1,
+            duration: 300,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['cardio'],
+            description: 'Завершающее кардио',
+            equipment: ['bodyweight']
+          },
+          1,
+          60,
+          { duration: 300 }
+        )
+      ]
+    },
+    // День 3: Интервальная тренировка
+    {
+      id: uuidv4(),
+      programId: uuidv4(),
+      name: 'День 3: Интервальная тренировка',
+      exercises: [
+        // Разминка
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Разминка',
+            type: 'timed',
+            sets: 1,
+            duration: 300,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['cardio'],
+            description: 'Общая разминка',
+            equipment: ['bodyweight']
+          },
+          1,
+          60,
+          { duration: 300 }
+        ),
+        // Интервалы высокой интенсивности
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Интервалы высокой интенсивности',
+            type: 'timed',
+            sets: 4,
+            duration: 30,
+            restTime: 30,
+            difficulty: 'intermediate',
+            muscleGroups: ['cardio', 'full-body'],
+            description: 'Интенсивные интервалы с максимальной нагрузкой',
+            equipment: ['bodyweight']
+          },
+          4,
+          30,
+          { duration: 30 }
+        ),
+        // Отдых между интервалами
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Отдых',
+            type: 'timed',
+            sets: 4,
+            duration: 30,
+            restTime: 0,
+            difficulty: 'beginner',
+            muscleGroups: [],
+            description: 'Активный отдых между интервалами',
+            equipment: []
+          },
+          4,
+          0,
+          { duration: 30 }
+        ),
+        // Завершающая растяжка
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Растяжка',
+            type: 'timed',
+            sets: 1,
+            duration: 300,
+            restTime: 0,
+            difficulty: 'beginner',
+            muscleGroups: ['flexibility'],
+            description: 'Завершающая растяжка',
+            equipment: ['bodyweight']
+          },
+          1,
+          0,
+          { duration: 300 }
+        )
+      ]
+    }
+  ]
+};
+
+// Функция для добавления программы для похудения в локальное хранилище
+export function addWeightLossProgramToUserPrograms(): void {
+  try {
+    const savedPrograms = localStorage.getItem('programs');
+    let userPrograms = savedPrograms ? JSON.parse(savedPrograms) : [];
+    
+    const programCopy = {...WEIGHT_LOSS_PROGRAM};
+    if (!programCopy.exercises || programCopy.exercises.length === 0) {
+      programCopy.exercises = programCopy.workouts[0].exercises;
+    }
+    
+    const existingProgram = userPrograms.find((p: any) => p.name === programCopy.name);
+    
+    if (!existingProgram) {
+      userPrograms.push(programCopy);
+      localStorage.setItem('programs', JSON.stringify(userPrograms));
+      console.log('Программа для похудения добавлена');
+    } else {
+      console.log('Программа с таким названием уже существует');
+    }
+  } catch (error) {
+    console.error('Ошибка при добавлении программы для похудения:', error);
+  }
+}
+
+// Программа для начинающих
+export const BEGINNER_PROGRAM: Program = {
+  id: uuidv4(),
+  name: 'Программа для начинающих',
+  description: 'Простая программа тренировок для начинающих, не требующая специального оборудования',
+  createdBy: 'system',
+  isPublic: true,
+  isSample: true,
+  category: 'beginner',
+  difficulty: 1,
+  weeks: 4,
+  restBetweenSets: 90,
+  restBetweenExercises: 120,
+  workouts: [
+    // День 1: Верхняя часть тела
+    {
+      id: uuidv4(),
+      programId: uuidv4(),
+      name: 'День 1: Верхняя часть тела',
+      exercises: [
+        // Разминка
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Разминка',
+            type: 'timed',
+            sets: 1,
+            duration: 300,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['cardio'],
+            description: 'Общая разминка для подготовки тела к тренировке',
+            equipment: ['bodyweight']
+          },
+          1,
+          60,
+          { duration: 300 }
+        ),
+        // Отжимания от стены
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Отжимания от стены',
+            type: 'reps',
+            sets: 3,
+            reps: 10,
+            restTime: 90,
+            difficulty: 'beginner',
+            muscleGroups: ['chest', 'triceps', 'shoulders'],
+            description: 'Упрощенная версия отжиманий для начинающих',
+            equipment: ['bodyweight']
+          },
+          3,
+          90,
+          { reps: 10 }
+        ),
+        // Планка на коленях
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Планка на коленях',
+            type: 'timed',
+            sets: 3,
+            duration: 20,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['core'],
+            description: 'Упрощенная версия планки для начинающих',
+            equipment: ['bodyweight']
+          },
+          3,
+          60,
+          { duration: 20 }
+        ),
+        // Подъемы рук в стороны
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Подъемы рук в стороны',
+            type: 'reps',
+            sets: 3,
+            reps: 12,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['shoulders'],
+            description: 'Упражнение для укрепления плечевых мышц',
+            equipment: ['bodyweight']
+          },
+          3,
+          60,
+          { reps: 12 }
+        ),
+        // Растяжка
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Растяжка',
+            type: 'timed',
+            sets: 1,
+            duration: 300,
+            restTime: 0,
+            difficulty: 'beginner',
+            muscleGroups: ['flexibility'],
+            description: 'Завершающая растяжка',
+            equipment: ['bodyweight']
+          },
+          1,
+          0,
+          { duration: 300 }
+        )
+      ]
+    },
+    // День 2: Нижняя часть тела
+    {
+      id: uuidv4(),
+      programId: uuidv4(),
+      name: 'День 2: Нижняя часть тела',
+      exercises: [
+        // Разминка
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Разминка',
+            type: 'timed',
+            sets: 1,
+            duration: 300,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['cardio'],
+            description: 'Общая разминка для подготовки тела к тренировке',
+            equipment: ['bodyweight']
+          },
+          1,
+          60,
+          { duration: 300 }
+        ),
+        // Приседания с опорой
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Приседания с опорой',
+            type: 'reps',
+            sets: 3,
+            reps: 10,
+            restTime: 90,
+            difficulty: 'beginner',
+            muscleGroups: ['legs', 'glutes'],
+            description: 'Упрощенная версия приседаний для начинающих',
+            equipment: ['bodyweight']
+          },
+          3,
+          90,
+          { reps: 10 }
+        ),
+        // Подъемы на носки
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Подъемы на носки',
+            type: 'reps',
+            sets: 3,
+            reps: 15,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['calves'],
+            description: 'Упражнение для укрепления икроножных мышц',
+            equipment: ['bodyweight']
+          },
+          3,
+          60,
+          { reps: 15 }
+        ),
+        // Подъемы ног лежа
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Подъемы ног лежа',
+            type: 'reps',
+            sets: 3,
+            reps: 10,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['abs', 'core'],
+            description: 'Упражнение для укрепления мышц пресса',
+            equipment: ['bodyweight']
+          },
+          3,
+          60,
+          { reps: 10 }
+        ),
+        // Растяжка
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Растяжка',
+            type: 'timed',
+            sets: 1,
+            duration: 300,
+            restTime: 0,
+            difficulty: 'beginner',
+            muscleGroups: ['flexibility'],
+            description: 'Завершающая растяжка',
+            equipment: ['bodyweight']
+          },
+          1,
+          0,
+          { duration: 300 }
+        )
+      ]
+    },
+    // День 3: Общая физическая подготовка
+    {
+      id: uuidv4(),
+      programId: uuidv4(),
+      name: 'День 3: Общая физическая подготовка',
+      exercises: [
+        // Разминка
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Разминка',
+            type: 'timed',
+            sets: 1,
+            duration: 300,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['cardio'],
+            description: 'Общая разминка для подготовки тела к тренировке',
+            equipment: ['bodyweight']
+          },
+          1,
+          60,
+          { duration: 300 }
+        ),
+        // Ходьба на месте
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Ходьба на месте',
+            type: 'timed',
+            sets: 1,
+            duration: 300,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['cardio'],
+            description: 'Легкое кардио упражнение',
+            equipment: ['bodyweight']
+          },
+          1,
+          60,
+          { duration: 300 }
+        ),
+        // Наклоны вперед
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Наклоны вперед',
+            type: 'reps',
+            sets: 3,
+            reps: 10,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['back', 'hamstrings'],
+            description: 'Упражнение для растяжки и укрепления спины',
+            equipment: ['bodyweight']
+          },
+          3,
+          60,
+          { reps: 10 }
+        ),
+        // Круговые движения руками
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Круговые движения руками',
+            type: 'reps',
+            sets: 3,
+            reps: 10,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['shoulders'],
+            description: 'Упражнение для улучшения подвижности плечевых суставов',
+            equipment: ['bodyweight']
+          },
+          3,
+          60,
+          { reps: 10 }
+        ),
+        // Растяжка
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Растяжка',
+            type: 'timed',
+            sets: 1,
+            duration: 300,
+            restTime: 0,
+            difficulty: 'beginner',
+            muscleGroups: ['flexibility'],
+            description: 'Завершающая растяжка',
+            equipment: ['bodyweight']
+          },
+          1,
+          0,
+          { duration: 300 }
+        )
+      ]
+    }
+  ]
+};
+
+// Функция для добавления программы для начинающих в локальное хранилище
+export function addBeginnerProgramToUserPrograms(): void {
+  try {
+    const savedPrograms = localStorage.getItem('programs');
+    let userPrograms = savedPrograms ? JSON.parse(savedPrograms) : [];
+    
+    const programCopy = {...BEGINNER_PROGRAM};
+    if (!programCopy.exercises || programCopy.exercises.length === 0) {
+      programCopy.exercises = programCopy.workouts[0].exercises;
+    }
+    
+    const existingProgram = userPrograms.find((p: any) => p.name === programCopy.name);
+    
+    if (!existingProgram) {
+      userPrograms.push(programCopy);
+      localStorage.setItem('programs', JSON.stringify(userPrograms));
+      console.log('Программа для начинающих добавлена');
+    } else {
+      console.log('Программа с таким названием уже существует');
+    }
+  } catch (error) {
+    console.error('Ошибка при добавлении программы для начинающих:', error);
+  }
+}
+
+// Программа для развития выносливости
+export const ENDURANCE_PROGRAM: Program = {
+  id: uuidv4(),
+  name: 'Программа для развития выносливости',
+  description: 'Программа тренировок для развития общей выносливости и кардио-подготовки',
+  createdBy: 'system',
+  isPublic: true,
+  isSample: true,
+  category: 'endurance',
+  difficulty: 2,
+  weeks: 4,
+  restBetweenSets: 60,
+  restBetweenExercises: 90,
+  workouts: [
+    // День 1: Кардио + Силовая выносливость
+    {
+      id: uuidv4(),
+      programId: uuidv4(),
+      name: 'День 1: Кардио + Силовая выносливость',
+      exercises: [
+        // Разминка
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Разминка',
+            type: 'timed',
+            sets: 1,
+            duration: 300,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['cardio'],
+            description: 'Общая разминка для подготовки тела к тренировке',
+            equipment: ['bodyweight']
+          },
+          1,
+          60,
+          { duration: 300 }
+        ),
+        // Бег на месте
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Бег на месте',
+            type: 'timed',
+            sets: 1,
+            duration: 600,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['cardio'],
+            description: 'Базовое кардио упражнение',
+            equipment: ['bodyweight']
+          },
+          1,
+          60,
+          { duration: 600 }
+        ),
+        // Берпи
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Берпи',
+            type: 'reps',
+            sets: 3,
+            reps: 15,
+            restTime: 60,
+            difficulty: 'intermediate',
+            muscleGroups: ['full-body', 'cardio'],
+            description: 'Комплексное упражнение для всего тела',
+            equipment: ['bodyweight']
+          },
+          3,
+          60,
+          { reps: 15 }
+        ),
+        // Прыжки на скакалке
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Прыжки на скакалке',
+            type: 'timed',
+            sets: 1,
+            duration: 300,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['cardio'],
+            description: 'Упражнение для развития координации и выносливости',
+            equipment: ['jump rope']
+          },
+          1,
+          60,
+          { duration: 300 }
+        ),
+        // Завершающая растяжка
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Растяжка',
+            type: 'timed',
+            sets: 1,
+            duration: 300,
+            restTime: 0,
+            difficulty: 'beginner',
+            muscleGroups: ['flexibility'],
+            description: 'Завершающая растяжка',
+            equipment: ['bodyweight']
+          },
+          1,
+          0,
+          { duration: 300 }
+        )
+      ]
+    },
+    // День 2: Интервальная тренировка
+    {
+      id: uuidv4(),
+      programId: uuidv4(),
+      name: 'День 2: Интервальная тренировка',
+      exercises: [
+        // Разминка
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Разминка',
+            type: 'timed',
+            sets: 1,
+            duration: 300,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['cardio'],
+            description: 'Общая разминка для подготовки тела к тренировке',
+            equipment: ['bodyweight']
+          },
+          1,
+          60,
+          { duration: 300 }
+        ),
+        // Интервалы высокой интенсивности
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Интервалы высокой интенсивности',
+            type: 'timed',
+            sets: 5,
+            duration: 30,
+            restTime: 30,
+            difficulty: 'intermediate',
+            muscleGroups: ['cardio', 'full-body'],
+            description: 'Интенсивные интервалы с максимальной нагрузкой',
+            equipment: ['bodyweight']
+          },
+          5,
+          30,
+          { duration: 30 }
+        ),
+        // Отдых между интервалами
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Отдых',
+            type: 'timed',
+            sets: 5,
+            duration: 30,
+            restTime: 0,
+            difficulty: 'beginner',
+            muscleGroups: [],
+            description: 'Активный отдых между интервалами',
+            equipment: []
+          },
+          5,
+          0,
+          { duration: 30 }
+        ),
+        // Завершающая растяжка
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Растяжка',
+            type: 'timed',
+            sets: 1,
+            duration: 300,
+            restTime: 0,
+            difficulty: 'beginner',
+            muscleGroups: ['flexibility'],
+            description: 'Завершающая растяжка',
+            equipment: ['bodyweight']
+          },
+          1,
+          0,
+          { duration: 300 }
+        )
+      ]
+    },
+    // День 3: Длительная кардио тренировка
+    {
+      id: uuidv4(),
+      programId: uuidv4(),
+      name: 'День 3: Длительная кардио тренировка',
+      exercises: [
+        // Разминка
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Разминка',
+            type: 'timed',
+            sets: 1,
+            duration: 300,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['cardio'],
+            description: 'Общая разминка для подготовки тела к тренировке',
+            equipment: ['bodyweight']
+          },
+          1,
+          60,
+          { duration: 300 }
+        ),
+        // Бег на месте
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Бег на месте',
+            type: 'timed',
+            sets: 1,
+            duration: 1200,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['cardio'],
+            description: 'Длительное кардио упражнение',
+            equipment: ['bodyweight']
+          },
+          1,
+          60,
+          { duration: 1200 }
+        ),
+        // Прыжки на скакалке
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Прыжки на скакалке',
+            type: 'timed',
+            sets: 1,
+            duration: 600,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['cardio'],
+            description: 'Упражнение для развития координации и выносливости',
+            equipment: ['jump rope']
+          },
+          1,
+          60,
+          { duration: 600 }
+        ),
+        // Завершающая растяжка
+        createWorkoutExercise(
+          {
+            id: uuidv4(),
+            name: 'Растяжка',
+            type: 'timed',
+            sets: 1,
+            duration: 300,
+            restTime: 0,
+            difficulty: 'beginner',
+            muscleGroups: ['flexibility'],
+            description: 'Завершающая растяжка',
+            equipment: ['bodyweight']
+          },
+          1,
+          0,
+          { duration: 300 }
+        )
+      ]
+    }
+  ]
+};
+
+// Функция для добавления программы для развития выносливости в локальное хранилище
+export function addEnduranceProgramToUserPrograms(): void {
+  try {
+    const savedPrograms = localStorage.getItem('programs');
+    let userPrograms = savedPrograms ? JSON.parse(savedPrograms) : [];
+    
+    const programCopy = {...ENDURANCE_PROGRAM};
+    if (!programCopy.exercises || programCopy.exercises.length === 0) {
+      programCopy.exercises = programCopy.workouts[0].exercises;
+    }
+    
+    const existingProgram = userPrograms.find((p: any) => p.name === programCopy.name);
+    
+    if (!existingProgram) {
+      userPrograms.push(programCopy);
+      localStorage.setItem('programs', JSON.stringify(userPrograms));
+      console.log('Программа для развития выносливости добавлена');
+    } else {
+      console.log('Программа с таким названием уже существует');
+    }
+  } catch (error) {
+    console.error('Ошибка при добавлении программы для развития выносливости:', error);
+  }
+}
+
+export const FULL_BODY_WORKOUT: Program = {
+  id: uuidv4(),
+  name: 'Полноценная тренировка всего тела',
+  description: 'Комплексная тренировка для развития силы и выносливости всего тела',
+  createdBy: 'system',
+  isPublic: true,
+  isSample: true,
+  category: 'fullbody',
+  difficulty: 2,
+  weeks: 1,
+  restBetweenSets: 60,
+  restBetweenExercises: 120,
+  workouts: [
+    {
+      id: uuidv4(),
+      programId: uuidv4(),
+      name: 'Тренировка всего тела',
+      exercises: [
+        // Беговая дорожка
+        createWorkoutExercise(
+          {
+            id: '1009',
+            name: 'Беговая дорожка',
+            type: 'timed',
+            sets: 1,
+            duration: 300,
+            restTime: 0,
+            difficulty: 'beginner',
+            muscleGroups: ['cardio', 'legs'],
+            description: 'Кардио-тренировка на беговой дорожке',
+            equipment: ['treadmill'],
+            recommendations: ['Держите ровную осанку', 'Постепенно увеличивайте скорость'],
+            imageUrl: '/images/exercises/treadmill.jpg',
+            isPublic: true
+          },
+          1,
+          0,
+          { duration: 300 }
+        ),
+        // Пресс
+        createWorkoutExercise(
+          {
+            id: '1013',
+            name: 'Пресс',
+            type: 'reps',
+            sets: 4,
+            reps: 20,
+            restTime: 60,
+            difficulty: 'beginner',
+            muscleGroups: ['abs', 'core'],
+            description: 'Классическое упражнение для мышц брюшного пресса',
+            equipment: ['bodyweight'],
+            recommendations: ['Держите поясницу прижатой к полу', 'Не тяните шею руками'],
+            imageUrl: '/images/exercises/crunches.jpg',
+            isPublic: true
+          },
+          4,
+          60,
+          { reps: 20 }
+        ),
+        // Тяга троса на бицепс
+        createWorkoutExercise(
+          {
+            id: '1014',
+            name: 'Тяга троса на бицепс',
+            type: 'reps',
+            sets: 3,
+            reps: 12,
+            restTime: 60,
+            difficulty: 'intermediate',
+            muscleGroups: ['biceps', 'forearms'],
+            description: 'Изолирующее упражнение для развития бицепсов на блочном тренажере',
+            equipment: ['cable machine'],
+            recommendations: ['Держите локти неподвижно', 'Контролируйте движение'],
+            imageUrl: '/images/exercises/cable-biceps-curl.jpg',
+            isPublic: true
+          },
+          3,
+          60,
+          { reps: 12, weight: 25 }
+        ),
+        // Жим в рычажном тренажере
+        createWorkoutExercise(
+          {
+            id: '1015',
+            name: 'Жим в рычажном тренажере',
+            type: 'reps',
+            sets: 3,
+            reps: 12,
+            restTime: 60,
+            difficulty: 'intermediate',
+            muscleGroups: ['chest', 'triceps', 'shoulders'],
+            description: 'Упражнение для развития грудных мышц в рычажном тренажере',
+            equipment: ['machine'],
+            recommendations: ['Держите спину прижатой к спинке', 'Контролируйте движение'],
+            imageUrl: '/images/exercises/chest-press-machine.jpg',
+            isPublic: true
+          },
+          3,
+          60,
+          { reps: 12, weight: 35 }
+        ),
+        // Вертикальная тяга узким хватом
+        createWorkoutExercise(
+          {
+            id: '1016',
+            name: 'Вертикальная тяга узким хватом',
+            type: 'reps',
+            sets: 3,
+            reps: 12,
+            restTime: 60,
+            difficulty: 'intermediate',
+            muscleGroups: ['back', 'biceps'],
+            description: 'Упражнение для развития широчайших мышц спины и бицепсов',
+            equipment: ['cable machine'],
+            recommendations: ['Тяните рукоятку к верхней части груди', 'Сводите лопатки'],
+            imageUrl: '/images/exercises/close-grip-lat-pulldown.jpg',
+            isPublic: true
+          },
+          3,
+          60,
+          { reps: 12, weight: 60 }
+        ),
+        // Жим гантелей сидя
+        createWorkoutExercise(
+          {
+            id: '1017',
+            name: 'Жим гантелей сидя',
+            type: 'reps',
+            sets: 3,
+            reps: 12,
+            restTime: 60,
+            difficulty: 'intermediate',
+            muscleGroups: ['shoulders', 'triceps'],
+            description: 'Упражнение для развития дельтовидных мышц и трицепсов',
+            equipment: ['dumbbell', 'bench'],
+            recommendations: ['Не прогибайте спину', 'Контролируйте движение гантелей'],
+            imageUrl: '/images/exercises/dumbbell-shoulder-press.jpg',
+            isPublic: true
+          },
+          3,
+          60,
+          { reps: 12, weight: 16 }
+        ),
+        // Становая тяга
+        createWorkoutExercise(
+          {
+            id: '1002',
+            name: 'Становая тяга',
+            type: 'reps',
+            sets: 3,
+            reps: 12,
+            restTime: 60,
+            difficulty: 'advanced',
+            muscleGroups: ['back', 'glutes', 'hamstrings'],
+            description: 'Многосуставное упражнение для развития спины, ягодиц и задней поверхности бедра',
+            equipment: ['barbell'],
+            recommendations: ['Держите спину прямой', 'Не округляйте поясницу', 'Держите штангу ближе к телу'],
+            imageUrl: '/images/exercises/deadlift.jpg',
+            isPublic: true
+          },
+          3,
+          60,
+          { reps: 12, weight: 30 }
+        )
+      ]
+    }
+  ]
+}; 

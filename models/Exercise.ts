@@ -378,6 +378,81 @@ export const SAMPLE_EXERCISES: Exercise[] = [
     imageUrl: '/images/exercises/rowing-machine.jpg',
     isPublic: true
   },
+  {
+    id: '1013',
+    name: 'Пресс',
+    type: 'reps',
+    sets: 4,
+    reps: 20,
+    restTime: 60,
+    difficulty: 'beginner',
+    muscleGroups: ['abs', 'core'],
+    description: 'Классическое упражнение для мышц брюшного пресса',
+    equipment: ['bodyweight'],
+    recommendations: ['Держите поясницу прижатой к полу', 'Не тяните шею руками'],
+    imageUrl: '/images/exercises/crunches.jpg',
+    isPublic: true
+  },
+  {
+    id: '1014',
+    name: 'Тяга троса на бицепс',
+    type: 'reps',
+    sets: 3,
+    reps: 12,
+    restTime: 60,
+    difficulty: 'intermediate',
+    muscleGroups: ['biceps', 'forearms'],
+    description: 'Изолирующее упражнение для развития бицепсов на блочном тренажере',
+    equipment: ['cable machine'],
+    recommendations: ['Держите локти неподвижно', 'Контролируйте движение'],
+    imageUrl: '/images/exercises/cable-biceps-curl.jpg',
+    isPublic: true
+  },
+  {
+    id: '1015',
+    name: 'Жим в рычажном тренажере',
+    type: 'reps',
+    sets: 3,
+    reps: 12,
+    restTime: 60,
+    difficulty: 'intermediate',
+    muscleGroups: ['chest', 'triceps', 'shoulders'],
+    description: 'Упражнение для развития грудных мышц в рычажном тренажере',
+    equipment: ['machine'],
+    recommendations: ['Держите спину прижатой к спинке', 'Контролируйте движение'],
+    imageUrl: '/images/exercises/chest-press-machine.jpg',
+    isPublic: true
+  },
+  {
+    id: '1016',
+    name: 'Вертикальная тяга узким хватом',
+    type: 'reps',
+    sets: 3,
+    reps: 12,
+    restTime: 60,
+    difficulty: 'intermediate',
+    muscleGroups: ['back', 'biceps'],
+    description: 'Упражнение для развития широчайших мышц спины и бицепсов',
+    equipment: ['cable machine'],
+    recommendations: ['Тяните рукоятку к верхней части груди', 'Сводите лопатки'],
+    imageUrl: '/images/exercises/close-grip-lat-pulldown.jpg',
+    isPublic: true
+  },
+  {
+    id: '1017',
+    name: 'Жим гантелей сидя',
+    type: 'reps',
+    sets: 3,
+    reps: 12,
+    restTime: 60,
+    difficulty: 'intermediate',
+    muscleGroups: ['shoulders', 'triceps'],
+    description: 'Упражнение для развития дельтовидных мышц и трицепсов',
+    equipment: ['dumbbell', 'bench'],
+    recommendations: ['Не прогибайте спину', 'Контролируйте движение гантелей'],
+    imageUrl: '/images/exercises/dumbbell-shoulder-press.jpg',
+    isPublic: true
+  }
 ];
 
 export const pushUps: RepsExercise = {

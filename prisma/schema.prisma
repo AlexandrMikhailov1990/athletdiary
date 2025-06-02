@@ -21,6 +21,7 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   workoutHistory WorkoutHistory[]
+  programs Program[]
 }
 
 model WorkoutHistory {
@@ -39,19 +40,35 @@ model WorkoutHistory {
   user        User     @relation(fields: [userId], references: [id])
 }
 
-model WorkoutExercise {
-  id           String   @id @default(cuid())
-  workoutId    String
-  exerciseId   String?
-  name         String
-  sets         Int?
-  reps         Int?
-  weight       Float?
-  duration     Int?     // в секундах
-  restTime     Int?     // в секундах
-  muscleGroups String[] @default([])
-  note         String?
-  createdAt    DateTime @default(now())
+model Program {
+  id          String    @id @default(cuid())
+  name        String
+  description String
+  userId      Int
+  user        User      @relation(fields: [userId], references: [id])
+  workouts    Workout[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
 
-  workout      WorkoutHistory @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+model Workout {
+  id        String    @id @default(cuid())
+  name      String
+  programId String
+  program   Program   @relation(fields: [programId], references: [id])
+  exercises WorkoutExercise[]
+}
+
+model WorkoutExercise {
+  id        String   @id @default(cuid())
+  workoutId String
+  name      String
+  sets      Int?
+  reps      Int?
+  weight    Float?
+  duration  Int?
+  restTime  Int?
+  workout   Workout  @relation(fields: [workoutId], references: [id])
+  workoutHistoryId String?
+  workoutHistory   WorkoutHistory? @relation(fields: [workoutHistoryId], references: [id])
 } 

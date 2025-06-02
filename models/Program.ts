@@ -1,5 +1,6 @@
 import { Exercise } from './Exercise';
 import { v4 as uuidv4 } from 'uuid';
+import { WEIGHT_LOSS_PROGRAM, BEGINNER_PROGRAM, ENDURANCE_PROGRAM } from './HomeExercises';
 
 export interface ProgramExercise {
   id: string;
@@ -75,7 +76,8 @@ export function getPrograms(): Program[] {
 
 export function getProgramById(id: string): Program | null {
   const programs = getPrograms();
-  return programs.find(program => program.id === id) || null;
+  const samplePrograms = JSON.parse(localStorage.getItem('samplePrograms') || '[]');
+  return [...programs, ...samplePrograms].find(program => program.id === id) || null;
 }
 
 export function saveProgram(program: Program): void {
@@ -128,12 +130,30 @@ export function initializePrograms(): void {
     const { addJumpRopeAndResistanceProgramToUserPrograms } = require('./HomeExercises');
     addJumpRopeAndResistanceProgramToUserPrograms();
     
+    // Добавляем программу для набора мышечной массы
+    const { addMuscleGainProgramToUserPrograms } = require('./HomeExercises');
+    addMuscleGainProgramToUserPrograms();
+    
+    // Добавляем программу для похудения
+    const { addWeightLossProgramToUserPrograms } = require('./HomeExercises');
+    addWeightLossProgramToUserPrograms();
+    
+    // Добавляем программу для начинающих
+    const { addBeginnerProgramToUserPrograms } = require('./HomeExercises');
+    addBeginnerProgramToUserPrograms();
+    
+    // Добавляем программу для развития выносливости
+    const { addEnduranceProgramToUserPrograms } = require('./HomeExercises');
+    addEnduranceProgramToUserPrograms();
+    
     // Если программ нет, инициализируем пустым массивом
     if (!programs) {
       localStorage.setItem('programs', JSON.stringify([]));
     }
+
+    // Сохраняем примеры программ в localStorage
+    localStorage.setItem('samplePrograms', JSON.stringify(SAMPLE_PROGRAMS));
   } catch (error) {
-    console.error('Ошибка при инициализации программ:', error);
     // В случае ошибки, убедимся что есть хотя бы пустой массив
     localStorage.setItem('programs', JSON.stringify([]));
   }
@@ -177,7 +197,7 @@ export function migratePrograms(): void {
 }
 
 // Обновим и демо-программы
-export const SAMPLE_PROGRAMS: Program[] = [];
+export const SAMPLE_PROGRAMS: Program[] = [WEIGHT_LOSS_PROGRAM, BEGINNER_PROGRAM, ENDURANCE_PROGRAM];
 
 export function copyProgram(programId: string): Program {
   const program = getProgramById(programId);
