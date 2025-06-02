@@ -34,6 +34,7 @@ model WorkoutHistory {
   programId   String?
   programName String?
   workoutId   String?
+  exercises   Json
   user        User     @relation(fields: [userId], references: [id])
 }
 

@@ -32,12 +32,16 @@ export default async function handler(
   if (req.method === 'GET') {
     try {
       const programs = await prisma.program.findMany({
-        where: { userId: user.id },
-        include: { workouts: { include: { exercises: true } } }
+        where: { isPublic: true },
+        include: { workouts: true }
       });
       return res.status(200).json(programs);
     } catch (error) {
-      return res.status(500).json({ error: 'Failed to fetch programs', details: error instanceof Error ? error.message : 'Unknown error' });
+      console.error('Error fetching programs:', error);
+      return res.status(500).json({ 
+        error: 'Failed to fetch programs',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   }
 
@@ -67,7 +71,7 @@ export default async function handler(
             })) || []
           }
         },
-        include: { workouts: { include: { exercises: true } } }
+        include: { workouts: true }
       });
       return res.status(201).json(program);
     } catch (error) {
@@ -82,7 +86,7 @@ export default async function handler(
       const program = await prisma.program.update({
         where: { id },
         data,
-        include: { workouts: { include: { exercises: true } } }
+        include: { workouts: true }
       });
       return res.status(200).json(program);
     } catch (error) {
