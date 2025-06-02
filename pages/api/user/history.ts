@@ -34,8 +34,7 @@ export default async function handler(
     try {
       const workoutHistory = await prisma.workoutHistory.findMany({
         where: { userId: user.id },
-        orderBy: { date: 'desc' },
-        include: { exercises: true }
+        orderBy: { date: 'desc' }
       });
       
       return res.status(200).json(workoutHistory);
@@ -66,22 +65,15 @@ export default async function handler(
           programName,
           workoutId,
           workoutName,
-          exercises: {
-            create: exercises.map((ex: any) => ({
-              exerciseId: ex.exerciseId || ex.id,
-              name: ex.name || ex.exercise?.name,
-              sets: ex.sets,
-              reps: ex.reps,
-              weight: ex.weight,
-              duration: ex.duration,
-              restTime: ex.restTime,
-              muscleGroups: ex.muscleGroups || ex.exercise?.muscleGroups || [],
-              note: ex.note
-            }))
-          }
-        },
-        include: {
-          exercises: true
+          exercises: exercises.map((ex: any) => ({
+            name: ex.name || ex.exercise?.name,
+            sets: ex.sets?.length || 0,
+            reps: ex.sets?.[0]?.reps || null,
+            weight: ex.sets?.[0]?.weight || null,
+            duration: ex.sets?.[0]?.duration || null,
+            restTime: ex.restTime || null,
+            note: ex.note
+          }))
         }
       });
       

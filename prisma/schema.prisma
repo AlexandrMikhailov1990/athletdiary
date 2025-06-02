@@ -8,35 +8,32 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String
-  name      String
-  birthDate DateTime?
-  gender    String?
-  city      String?
-  goals     String?
-  bio       String?
-  favorites String[]  @default([])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             Int              @id @default(autoincrement())
+  email          String           @unique
+  password       String
+  name           String
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  bio            String?
+  birthDate      DateTime?
+  city           String?
+  favorites      String[]         @default([])
+  gender         String?
+  goals          String?
   workoutHistory WorkoutHistory[]
-  programs Program[]
 }
 
 model WorkoutHistory {
   id          String   @id @default(cuid())
   userId      Int
   date        DateTime
-  programId   String?
-  programName String?
-  workoutId   String?
   workoutName String?
-  exercises   WorkoutExercise[]
   notes       String?
   rating      Int?
   createdAt   DateTime @default(now())
-
+  programId   String?
+  programName String?
+  workoutId   String?
   user        User     @relation(fields: [userId], references: [id])
 }
 
@@ -44,31 +41,31 @@ model Program {
   id          String    @id @default(cuid())
   name        String
   description String
-  userId      Int
-  user        User      @relation(fields: [userId], references: [id])
-  workouts    Workout[]
+  isPublic    Boolean   @default(true)
+  isSample    Boolean   @default(false)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  workouts    Workout[]
 }
 
 model Workout {
-  id        String    @id @default(cuid())
-  name      String
-  programId String
-  program   Program   @relation(fields: [programId], references: [id])
-  exercises WorkoutExercise[]
+  id              String            @id @default(cuid())
+  programId       String
+  name            String
+  order           Int
+  program         Program           @relation(fields: [programId], references: [id])
+  WorkoutExercise WorkoutExercise[]
 }
 
 model WorkoutExercise {
-  id        String   @id @default(cuid())
+  id        String  @id
   workoutId String
   name      String
-  sets      Int?
+  sets      Int
   reps      Int?
   weight    Float?
   duration  Int?
   restTime  Int?
-  workout   Workout  @relation(fields: [workoutId], references: [id])
-  workoutHistoryId String?
-  workoutHistory   WorkoutHistory? @relation(fields: [workoutHistoryId], references: [id])
-} 
+  order     Int
+  Workout   Workout @relation(fields: [workoutId], references: [id])
+}
