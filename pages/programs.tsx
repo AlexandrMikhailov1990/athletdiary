@@ -6,12 +6,42 @@ import { SAMPLE_ACTIVE_PROGRAM, ActiveProgram } from '../models/ActiveProgram';
 import { Exercise, translateMuscleGroup } from '../models/Exercise';
 import ContinueWorkoutButton from '../components/ContinueWorkoutButton';
 import ProgramCard from '../components/ProgramCard';
+import { YOGA_BACK_PROGRAM } from '../models/YogaProgram';
+import { KETTLEBELL_DAILY_PROGRAM } from '../models/KettlebellProgram';
+import { JUMP_ROPE_AND_RESISTANCE_PROGRAM } from '../models/HomeExercises';
 
 export default function Programs() {
   const router = useRouter();
   const [programs, setPrograms] = useState<Program[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);
+
+  // Функция для удаления дублирующих программ по имени
+  function removeDuplicatePrograms(programs: Program[]): Program[] {
+    const unique = new Map();
+    for (const p of programs) {
+      if (!unique.has(p.name)) {
+        unique.set(p.name, p);
+      }
+    }
+    return Array.from(unique.values());
+  }
+
+  // Функция для восстановления упражнений в программах
+  function fixProgramsExercises(programs: Program[]): Program[] {
+    return programs.map(p => {
+      if (p.name === 'Йога для спины' && p.workouts && p.workouts[0] && p.workouts[0].exercises.length === 0) {
+        return YOGA_BACK_PROGRAM;
+      }
+      if (p.name === 'Программа на каждый день с гирей' && p.workouts && p.workouts[0] && p.workouts[0].exercises.length === 0) {
+        return KETTLEBELL_DAILY_PROGRAM;
+      }
+      if (p.name === 'Программа с прыжками на скакалке и резиновыми лентами' && p.workouts && p.workouts[0] && p.workouts[0].exercises.length === 0) {
+        return JUMP_ROPE_AND_RESISTANCE_PROGRAM;
+      }
+      return p;
+    });
+  }
 
   // Загрузка программ
   const loadPrograms = async () => {
@@ -22,17 +52,12 @@ export default function Programs() {
         throw new Error('Failed to fetch programs');
       }
       const apiPrograms = await response.json();
-      
-      // Получаем ID удаленных стандартных программ
       const deletedSampleProgramIds = JSON.parse(localStorage.getItem('deletedSamplePrograms') || '[]');
-      
-      // Фильтруем стандартные программы, исключая удаленные
       const filteredSamplePrograms = SAMPLE_PROGRAMS.filter(
         program => !deletedSampleProgramIds.includes(program.id)
       );
-      
-      // Объединяем программы из API и доступные стандартные программы
-      setPrograms([...filteredSamplePrograms, ...apiPrograms]);
+      // Фильтруем дубликаты после объединения
+      setPrograms(removeDuplicatePrograms(fixProgramsExercises([...filteredSamplePrograms, ...apiPrograms])));
       setIsLoaded(true);
     } catch (error) {
       console.error('Ошибка при загрузке программ:', error);
@@ -42,7 +67,7 @@ export default function Programs() {
       const filteredSamplePrograms = SAMPLE_PROGRAMS.filter(
         program => !deletedSampleProgramIds.includes(program.id)
       );
-      setPrograms([...filteredSamplePrograms, ...savedPrograms]);
+      setPrograms(removeDuplicatePrograms(fixProgramsExercises([...filteredSamplePrograms, ...savedPrograms])));
       setIsLoaded(true);
     }
   };
@@ -77,6 +102,17 @@ export default function Programs() {
       router.events.off('routeChangeComplete', handleRouteChange);
     };
   }, [router, isLoaded]);
+
+  // Загрузка программ при монтировании компонента
+  useEffect(() => {
+    // Чистим дубликаты в пользовательских программах
+    const savedPrograms = JSON.parse(localStorage.getItem('programs') || '[]');
+    const cleaned = removeDuplicatePrograms(savedPrograms);
+    if (cleaned.length !== savedPrograms.length) {
+      localStorage.setItem('programs', JSON.stringify(cleaned));
+      setPrograms(prev => removeDuplicatePrograms(prev));
+    }
+  }, []);
 
   // Фильтрация программ
   const filteredPrograms = programs.filter(program => {

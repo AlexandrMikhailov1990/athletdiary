@@ -452,6 +452,36 @@ export const SAMPLE_EXERCISES: Exercise[] = [
     recommendations: ['Не прогибайте спину', 'Контролируйте движение гантелей'],
     imageUrl: '/images/exercises/dumbbell-shoulder-press.jpg',
     isPublic: true
+  },
+  {
+    id: '2001',
+    name: 'Выпады в тренажере Смита',
+    type: 'reps',
+    sets: 3,
+    reps: 12,
+    restTime: 60,
+    difficulty: 'intermediate',
+    muscleGroups: ['legs', 'glutes'],
+    description: 'Выпады с отягощением в машине Смита для проработки ног и ягодиц.',
+    equipment: ['smith machine'],
+    recommendations: ['Следите за положением колена', 'Держите корпус прямо', 'Контролируйте движение'],
+    imageUrl: '/images/exercises/smith-lunges.jpg',
+    isPublic: true
+  },
+  {
+    id: '2002',
+    name: 'Подъем ног в висе с поворотами',
+    type: 'reps',
+    sets: 4,
+    reps: 20,
+    restTime: 60,
+    difficulty: 'intermediate',
+    muscleGroups: ['abs', 'core', 'obliques'],
+    description: 'Упражнение для мышц пресса и косых мышц живота, выполняется в висе на турнике с поворотом таза.',
+    equipment: ['pull-up bar'],
+    recommendations: ['Не раскачивайтесь', 'Выполняйте движение медленно', 'Контролируйте дыхание'],
+    imageUrl: '/images/exercises/hanging-leg-raise-twist.jpg',
+    isPublic: true
   }
 ];
 

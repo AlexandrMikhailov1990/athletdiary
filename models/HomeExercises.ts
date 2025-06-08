@@ -1708,4 +1708,34 @@ export const FULL_BODY_WORKOUT: Program = {
       ]
     }
   ]
+};
+
+export const GYM_COMPLEX_WORKOUT_1: Program = {
+  id: uuidv4(),
+  name: 'Зал: комплексная тренировка №1',
+  description: 'Комплексная тренировка для зала: кардио, грудные, спина, ноги, плечи, бицепс, пресс.',
+  createdBy: 'system',
+  isPublic: true,
+  isSample: true,
+  category: 'gym',
+  difficulty: 2,
+  weeks: 1,
+  restBetweenSets: 60,
+  restBetweenExercises: 120,
+  workouts: [
+    {
+      id: uuidv4(),
+      programId: '', // будет подставлен при инициализации
+      name: 'Комплексная тренировка',
+      exercises: [
+        createWorkoutExercise(getExerciseByName('Беговая дорожка') || { id: '1009', name: 'Беговая дорожка' } as Exercise, 1, 0, { duration: 240 }),
+        createWorkoutExercise(getExerciseByName('Жим в рычажном тренажере') || { id: '1015', name: 'Жим в рычажном тренажере' } as Exercise, 3, 60, { reps: 12, weight: 35 }),
+        createWorkoutExercise(getExerciseByName('Вертикальная тяга узким хватом') || { id: '1016', name: 'Вертикальная тяга узким хватом' } as Exercise, 3, 60, { reps: 12, weight: 60 }),
+        createWorkoutExercise(getExerciseByName('Выпады в тренажере Смита') || { id: '2001', name: 'Выпады в тренажере Смита' } as Exercise, 3, 60, { reps: 12, weight: 37.5 }),
+        createWorkoutExercise(getExerciseByName('Жим гантелей сидя') || { id: '1017', name: 'Жим гантелей сидя' } as Exercise, 3, 60, { reps: 12, weight: 16 }),
+        createWorkoutExercise(getExerciseByName('Тяга троса на бицепс') || { id: '1014', name: 'Тяга троса на бицепс' } as Exercise, 3, 60, { reps: 12, weight: 25 }),
+        createWorkoutExercise(getExerciseByName('Подъем ног в висе с поворотами') || { id: '2002', name: 'Подъем ног в висе с поворотами' } as Exercise, 4, 60, { reps: 20 })
+      ]
+    }
+  ]
 }; 

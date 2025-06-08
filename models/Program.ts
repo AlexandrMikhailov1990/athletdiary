@@ -1,6 +1,6 @@
 import { Exercise } from './Exercise';
 import { v4 as uuidv4 } from 'uuid';
-import { WEIGHT_LOSS_PROGRAM, BEGINNER_PROGRAM, ENDURANCE_PROGRAM } from './HomeExercises';
+import { WEIGHT_LOSS_PROGRAM, BEGINNER_PROGRAM, ENDURANCE_PROGRAM, GYM_COMPLEX_WORKOUT_1 } from './HomeExercises';
 
 export interface ProgramExercise {
   id: string;
@@ -197,7 +197,7 @@ export function migratePrograms(): void {
 }
 
 // Обновим и демо-программы
-export const SAMPLE_PROGRAMS: Program[] = [WEIGHT_LOSS_PROGRAM, BEGINNER_PROGRAM, ENDURANCE_PROGRAM];
+export const SAMPLE_PROGRAMS: Program[] = [WEIGHT_LOSS_PROGRAM, BEGINNER_PROGRAM, ENDURANCE_PROGRAM, GYM_COMPLEX_WORKOUT_1];
 
 export function copyProgram(programId: string): Program {
   const program = getProgramById(programId);
