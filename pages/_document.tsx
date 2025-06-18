@@ -11,7 +11,26 @@ export default function Document() {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-        <script src="//code.jivo.ru/widget/baAsKme1em" async />
+        {/* Заменён Jivosite на LiveTex */}
+        <script
+          type="text/javascript"
+          dangerouslySetInnerHTML={{
+            __html: `
+window['li'+'v'+'e'+'Te'+'x'] = true,
+window['li'+'veTe'+'xID'] = 182128,
+window['li'+'ve'+'Tex_obj'+'ect'] = true;
+(function() {
+var t = document['c'+'reateE'+'le'+'me'+'nt']('script');
+t.type ='text/javascript';
+t.async = true;
+t.src = '/'+'/cs15.l'+'ivet'+'ex.'+'ru/js'+'/client.js';
+var c = document['getElement'+'sByTag'+'Na'+'me']('script')[0];
+if ( c ) c['p'+'ar'+'e'+'ntNo'+'de']['inse'+'rtB'+'efore'](t, c);
+else document['docum'+'entEl'+'em'+'ent']['firs'+'tChi'+'ld']['appe'+'ndC'+'hil'+'d'](t);
+})();
+            `
+          }}
+        />
         
         {/* Yandex.Metrika counter */}
         <script
